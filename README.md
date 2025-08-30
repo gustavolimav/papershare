@@ -14,13 +14,13 @@ Com ela, você pode enviar documentos, gerar links configuráveis e ter insights
 
 ## 🚀 Tecnologias Utilizadas
 
-* ⚛️ **Next.js** – Framework React para frontend + backend integrados
-* 📘 **TypeScript** – Tipagem estática para mais segurança e produtividade
-* 🐳 **Docker** – Containerização para desenvolvimento e deploy
-* 🐘 **PostgreSQL + Neon** – Banco de dados relacional escalável (serverless)
-* 📝 **SQL puro** – Sem ORM, consultas otimizadas
-* 🧪 **Jest** – Testes automatizados
-* ▲ **Vercel** – Deploy simples e rápido
+- ⚛️ **Next.js** – Framework React para frontend + backend integrados
+- 📘 **TypeScript** – Tipagem estática para mais segurança e produtividade
+- 🐳 **Docker** – Containerização para desenvolvimento e deploy
+- 🐘 **PostgreSQL + Neon** – Banco de dados relacional escalável (serverless)
+- 📝 **SQL puro** – Sem ORM, consultas otimizadas
+- 🧪 **Jest** – Testes automatizados
+- ▲ **Vercel** – Deploy simples e rápido
 
 ---
 
@@ -103,8 +103,8 @@ npm run test
 
 ## 🌍 Deploy
 
-* **Frontend + API**: [Vercel](https://vercel.com/)
-* **Banco de Dados**: [Neon](https://neon.tech/)
+- **Frontend + API**: [Vercel](https://vercel.com/)
+- **Banco de Dados**: [Neon](https://neon.tech/)
 
 ---
 
@@ -118,26 +118,29 @@ Este é um projeto **open source** – contribuições são **super bem-vindas**
    ```bash
    git checkout -b minha-feature
    ```
+
 3. Faça commit das mudanças
 
    ```bash
    git commit -m "feat: adiciona minha nova feature"
    ```
+
 4. Envie a branch
 
    ```bash
    git push origin minha-feature
    ```
+
 5. Abra um **Pull Request** 🎉
 
 ---
 
 ## 🔮 Roadmap Futuro
 
-* 🔒 Permissões avançadas para links (senha, expiração, bloqueio de download)
-* 📊 Dashboard com insights (views, tempo por página, geolocalização)
-* 🖋️ Assinatura eletrônica integrada
-* 🧠 Insights com IA (resumos automáticos, sugestões de melhorias)
+- 🔒 Permissões avançadas para links (senha, expiração, bloqueio de download)
+- 📊 Dashboard com insights (views, tempo por página, geolocalização)
+- 🖋️ Assinatura eletrônica integrada
+- 🧠 Insights com IA (resumos automáticos, sugestões de melhorias)
 
 ---
 

@@ -1,0 +1,18 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  /* Takes up all the remaining space, pushing the footer down */
+  justify-content: center;
+  align-items: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 10px;
+}

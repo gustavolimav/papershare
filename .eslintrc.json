@@ -1,0 +1,28 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:jest/recommended",
+    "eslint:recommended",
+    "prettier",
+    "plugin:jsonc/base"
+  ],
+  "plugins": ["no-secrets"],
+  "rules": {
+    "no-secrets/no-secrets": [
+      "error",
+      {
+        "additionalRegexes": {
+          "Basic Auth": "Authorization: Basic [A-Za-z0-9+/=]*"
+        }
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["package-lock.json", ".eslintrc.json"],
+      "rules": {
+        "no-secrets/no-secrets": "off"
+      }
+    }
+  ]
+}
