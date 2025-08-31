@@ -1,7 +1,7 @@
-import migrationRunner from 'node-pg-migrate';
-import { resolve } from 'node:path';
-import database from '../infra/database.ts';
-import type { MigratorModel } from '../types/index.ts';
+import migrationRunner from "node-pg-migrate";
+import { resolve } from "node:path";
+import database from "../infra/database.ts";
+import type { MigratorModel } from "../types/index.ts";
 
 // Define the actual return type from node-pg-migrate
 interface RunMigration {
@@ -11,10 +11,10 @@ interface RunMigration {
 
 const defaultMigrationOptions = {
   dryRun: true,
-  dir: resolve('infra', 'migrations'),
-  direction: 'up' as const,
+  dir: resolve("infra", "migrations"),
+  direction: "up" as const,
   log: () => {},
-  migrationsTable: 'pgmigrations',
+  migrationsTable: "pgmigrations",
 };
 
 async function listPendingMigrations(): Promise<RunMigration[]> {

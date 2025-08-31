@@ -1,9 +1,15 @@
-import { Client } from 'pg';
-import type { QueryResultRow } from 'pg';
-import { ServiceError } from './errors.ts';
-import type { DatabaseQuery, DatabaseResult, DatabaseModel } from '../types/index.ts';
+import { Client } from "pg";
+import type { QueryResultRow } from "pg";
+import { ServiceError } from "./errors.ts";
+import type {
+  DatabaseQuery,
+  DatabaseResult,
+  DatabaseModel,
+} from "../types/index.ts";
 
-async function query<T extends QueryResultRow = any>(queryObject: string | DatabaseQuery): Promise<DatabaseResult<T>> {
+async function query<T extends QueryResultRow = any>(
+  queryObject: string | DatabaseQuery,
+): Promise<DatabaseResult<T>> {
   let client: Client | undefined;
 
   try {
@@ -15,7 +21,7 @@ async function query<T extends QueryResultRow = any>(queryObject: string | Datab
   } catch (error) {
     const serviceErrorObject = new ServiceError({
       cause: error as Error,
-      message: 'Error connecting to the database',
+      message: "Error connecting to the database",
     });
 
     throw serviceErrorObject;
@@ -40,7 +46,7 @@ async function getNewClient(): Promise<Client> {
 }
 
 function getSSLValues(): boolean {
-  return process.env.NODE_ENV === 'production';
+  return process.env.NODE_ENV === "production";
 }
 
 const database: DatabaseModel = {

@@ -1,7 +1,7 @@
-import orchestrator from 'tests/orchestrator.ts';
-import { version as uuidVersion } from 'uuid';
-import session from 'models/session.ts';
-import setCookieParser from 'set-cookie-parser';
+import orchestrator from "tests/orchestrator.ts";
+import { version as uuidVersion } from "uuid";
+import session from "models/session.ts";
+import setCookieParser from "set-cookie-parser";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -9,21 +9,21 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe('POST /api/v1/sessions', () => {
-  describe('Running as anonymous user', () => {
-    test('With incorrect `email` but correct `password`', async () => {
+describe("POST /api/v1/sessions", () => {
+  describe("Running as anonymous user", () => {
+    test("With incorrect `email` but correct `password`", async () => {
       await orchestrator.createUser({
-        password: 'password123',
+        password: "password123",
       });
 
-      const response = await fetch('http://localhost:3000/api/v1/sessions', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: 'email@gmail.com',
-          password: 'password123',
+          email: "email@gmail.com",
+          password: "password123",
         }),
       });
 
@@ -32,27 +32,27 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: 'UnathorizedError',
-        message: 'Email ou senha inválidos.',
-        action: 'Verifique se o email e a senha estão digitados corretamente.',
+        name: "UnathorizedError",
+        message: "Email ou senha inválidos.",
+        action: "Verifique se o email e a senha estão digitados corretamente.",
         status: 401,
       });
     });
 
-    test('With correct `email` but Incorrect `password`', async () => {
+    test("With correct `email` but Incorrect `password`", async () => {
       const userCreated = await orchestrator.createUser({
-        email: 'email@email.com',
-        password: 'password123',
+        email: "email@email.com",
+        password: "password123",
       });
 
-      const response = await fetch('http://localhost:3000/api/v1/sessions', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: userCreated.email,
-          password: 'wrongpassword',
+          password: "wrongpassword",
         }),
       });
 
@@ -61,27 +61,27 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: 'UnathorizedError',
-        message: 'Email ou senha inválidos.',
-        action: 'Verifique se o email e a senha estão digitados corretamente.',
+        name: "UnathorizedError",
+        message: "Email ou senha inválidos.",
+        action: "Verifique se o email e a senha estão digitados corretamente.",
         status: 401,
       });
     });
 
-    test('With incorrect `email` and incorrect `password`', async () => {
+    test("With incorrect `email` and incorrect `password`", async () => {
       await orchestrator.createUser({
-        email: 'emailIncorreto@email.com',
-        password: 'password123',
+        email: "emailIncorreto@email.com",
+        password: "password123",
       });
 
-      const response = await fetch('http://localhost:3000/api/v1/sessions', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: 'mariaChica@email.com',
-          password: 'password1234',
+          email: "mariaChica@email.com",
+          password: "password1234",
         }),
       });
 
@@ -90,26 +90,26 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: 'UnathorizedError',
-        message: 'Email ou senha inválidos.',
-        action: 'Verifique se o email e a senha estão digitados corretamente.',
+        name: "UnathorizedError",
+        message: "Email ou senha inválidos.",
+        action: "Verifique se o email e a senha estão digitados corretamente.",
         status: 401,
       });
     });
 
-    test('With correct `email` and correct `password`', async () => {
+    test("With correct `email` and correct `password`", async () => {
       const userCreated = await orchestrator.createUser({
-        email: 'emailCorreto@email.com',
-        password: 'password123',
+        email: "emailCorreto@email.com",
+        password: "password123",
       });
-      const response = await fetch('http://localhost:3000/api/v1/sessions', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: userCreated.email,
-          password: 'password123',
+          password: "password123",
         }),
       });
 
@@ -150,10 +150,10 @@ describe('POST /api/v1/sessions', () => {
       });
 
       expect(parsedSetCookie.session_id).toEqual({
-        name: 'session_id',
+        name: "session_id",
         value: responseBody.token,
         maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
-        path: '/',
+        path: "/",
         httpOnly: true,
       });
     });

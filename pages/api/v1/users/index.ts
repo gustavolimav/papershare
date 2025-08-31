@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { createRouter } from 'next-connect';
-import controller from '../../../../infra/controller.ts';
-import users from '../../../../models/user.ts';
-import type { UserCreateInput, UserPublic } from '../../../../types/index.ts';
+import type { NextApiRequest, NextApiResponse } from "next";
+import { createRouter } from "next-connect";
+import controller from "../../../../infra/controller.ts";
+import users from "../../../../models/user.ts";
+import type { UserCreateInput, UserPublic } from "../../../../types/index.ts";
 
 interface UserCreateRequest extends NextApiRequest {
   body: UserCreateInput;
@@ -14,7 +14,10 @@ router.post(postHandler);
 
 export default router.handler(controller.errorHandlers);
 
-async function postHandler(request: UserCreateRequest, response: NextApiResponse<UserPublic>) {
+async function postHandler(
+  request: UserCreateRequest,
+  response: NextApiResponse<UserPublic>,
+) {
   const userInputValues: UserCreateInput = request.body;
 
   const newUser = await users.create(userInputValues);

@@ -1,21 +1,25 @@
-import database from '../infra/database.ts';
-import { ValidationError, NotFoundError } from '../infra/errors.ts';
-import password from './password.ts';
-import type { 
-  User, 
-  UserPublic, 
-  UserCreateInput, 
-  UserUpdateInput, 
-  UserModel 
-} from '../types/index.ts';
+import database from "../infra/database.ts";
+import { ValidationError, NotFoundError } from "../infra/errors.ts";
+import password from "./password.ts";
+import type {
+  User,
+  UserPublic,
+  UserCreateInput,
+  UserUpdateInput,
+  UserModel,
+} from "../types/index.ts";
 
 async function create(userInputValues: UserCreateInput): Promise<UserPublic> {
   await validateUniqueEmail(userInputValues.email);
   await validateUniqueUserName(userInputValues.username);
 
-  await hashPasswordInObject(userInputValues as UserCreateInput & { password: string });
+  await hashPasswordInObject(
+    userInputValues as UserCreateInput & { password: string },
+  );
 
-  const newUser = await runInsertQuery(userInputValues as UserCreateInput & { password: string });
+  const newUser = await runInsertQuery(
+    userInputValues as UserCreateInput & { password: string },
+  );
 
   return newUser;
 }
@@ -37,8 +41,8 @@ async function findOneByEmail(email: string): Promise<User> {
 
   if (!results.rowCount || results.rowCount === 0) {
     throw new NotFoundError({
-      message: 'O email informado não foi encontrado no sistema.',
-      action: 'Verifique se o email está digitado corretamente.',
+      message: "O email informado não foi encontrado no sistema.",
+      action: "Verifique se o email está digitado corretamente.",
     });
   }
 
@@ -62,27 +66,32 @@ async function findOneByUsername(username: string): Promise<User> {
 
   if (!results.rowCount || results.rowCount === 0) {
     throw new NotFoundError({
-      message: 'O username informado não foi encontrado no sistema.',
-      action: 'Verifique se o username está digitado corretamente.',
+      message: "O username informado não foi encontrado no sistema.",
+      action: "Verifique se o username está digitado corretamente.",
     });
   }
 
   return results.rows[0]!;
 }
 
-async function updateByUsername(username: string, userInputValues: UserUpdateInput): Promise<UserPublic> {
+async function updateByUsername(
+  username: string,
+  userInputValues: UserUpdateInput,
+): Promise<UserPublic> {
   const currentUser = await findOneByUsername(username);
 
-  if ('email' in userInputValues && userInputValues.email) {
+  if ("email" in userInputValues && userInputValues.email) {
     await validateUniqueEmail(userInputValues.email);
   }
 
-  if ('username' in userInputValues && userInputValues.username) {
+  if ("username" in userInputValues && userInputValues.username) {
     await validateUniqueUserName(userInputValues.username);
   }
 
-  if ('password' in userInputValues && userInputValues.password) {
-    await hashPasswordInObject(userInputValues as UserUpdateInput & { password: string });
+  if ("password" in userInputValues && userInputValues.password) {
+    await hashPasswordInObject(
+      userInputValues as UserUpdateInput & { password: string },
+    );
   }
 
   const userToBeUpdated = {
@@ -94,8 +103,8 @@ async function updateByUsername(username: string, userInputValues: UserUpdateInp
 
   if (!updatedUser.rowCount || updatedUser.rowCount === 0) {
     throw new NotFoundError({
-      message: 'O username informado não foi encontrado no sistema.',
-      action: 'Verifique se o username está digitado corretamente.',
+      message: "O username informado não foi encontrado no sistema.",
+      action: "Verifique se o username está digitado corretamente.",
     });
   }
 
@@ -117,8 +126,8 @@ async function validateUniqueEmail(email: string): Promise<void> {
 
   if (results.rowCount && results.rowCount > 0) {
     throw new ValidationError({
-      message: 'O email informado já está sendo utilizado.',
-      action: 'Utilize outro email para realizar esta operação.',
+      message: "O email informado já está sendo utilizado.",
+      action: "Utilize outro email para realizar esta operação.",
     });
   }
 }
@@ -138,13 +147,15 @@ async function validateUniqueUserName(userName: string): Promise<void> {
 
   if (results.rowCount && results.rowCount > 0) {
     throw new ValidationError({
-      action: 'Utilize outro username para realizar esta operação.',
-      message: 'O username informado já está sendo utilizado.',
+      action: "Utilize outro username para realizar esta operação.",
+      message: "O username informado já está sendo utilizado.",
     });
   }
 }
 
-async function hashPasswordInObject(userInputValues: { password: string }): Promise<void> {
+async function hashPasswordInObject(userInputValues: {
+  password: string;
+}): Promise<void> {
   const hashedPassword = await password.hash(userInputValues.password);
 
   userInputValues.password = hashedPassword;
@@ -174,7 +185,9 @@ async function runUpdateQuery(userWithNewValues: User, username: string) {
   });
 }
 
-async function runInsertQuery(userInputValues: UserCreateInput & { password: string }): Promise<UserPublic> {
+async function runInsertQuery(
+  userInputValues: UserCreateInput & { password: string },
+): Promise<UserPublic> {
   const results = await database.query<UserPublic>({
     text: `
         INSERT INTO 

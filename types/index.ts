@@ -1,5 +1,6 @@
-import type { QueryResult, QueryResultRow } from 'pg';
-import type { NextApiRequest, NextApiResponse } from 'next';
+/* eslint-disable no-unused-vars */
+import type { QueryResult, QueryResultRow } from "pg";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 // Database Models
 export interface User {
@@ -52,7 +53,8 @@ export interface DatabaseQuery {
   values?: any[];
 }
 
-export interface DatabaseResult<T extends QueryResultRow = any> extends QueryResult<T> {
+export interface DatabaseResult<T extends QueryResultRow = any>
+  extends QueryResult<T> {
   rows: T[];
   rowCount: number | null;
 }
@@ -98,7 +100,7 @@ export interface AuthenticatedNextApiRequest extends NextApiRequest {
 
 export type NextApiHandler = (
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) => void | Promise<void>;
 
 // Migration Types
@@ -118,7 +120,10 @@ export interface UserModel {
   create(userInput: UserCreateInput): Promise<UserPublic>;
   findOneByUsername(username: string): Promise<User>;
   findOneByEmail(email: string): Promise<User>;
-  updateByUsername(username: string, userInput: UserUpdateInput): Promise<UserPublic>;
+  updateByUsername(
+    username: string,
+    userInput: UserUpdateInput,
+  ): Promise<UserPublic>;
 }
 
 export interface PasswordModel {
@@ -141,13 +146,15 @@ export interface MigratorModel {
 }
 
 export interface DatabaseModel {
-  query<T extends QueryResultRow = any>(query: string | DatabaseQuery): Promise<DatabaseResult<T>>;
+  query<T extends QueryResultRow = any>(
+    query: string | DatabaseQuery,
+  ): Promise<DatabaseResult<T>>;
   getNewClient(): Promise<any>;
 }
 
 // Environment Variables
 export interface ProcessEnv {
-  NODE_ENV: 'development' | 'production' | 'test';
+  NODE_ENV: "development" | "production" | "test";
   POSTGRES_HOST: string;
   POSTGRES_PORT: string;
   POSTGRES_USER: string;
