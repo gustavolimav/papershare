@@ -1,4 +1,4 @@
-import orchestrator from 'tests/orchestrator.ts';
+import orchestrator from "tests/orchestrator.ts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -6,29 +6,29 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe('GET /api/v1/users/[username]', () => {
-  describe('Running as anonymous user', () => {
-    test('With exact case match', async () => {
-      const response1 = await fetch('http://localhost:3000/api/v1/users', {
-        method: 'POST',
+describe("GET /api/v1/users/[username]", () => {
+  describe("Running as anonymous user", () => {
+    test("With exact case match", async () => {
+      const response1 = await fetch("http://localhost:3000/api/v1/users", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: 'testuser1',
-          password: 'password123',
-          email: 'email@gmail.com',
+          username: "testuser1",
+          password: "password123",
+          email: "email@gmail.com",
         }),
       });
 
       expect(response1.status).toBe(201);
 
       const response2 = await fetch(
-        'http://localhost:3000/api/v1/users/testuser1',
+        "http://localhost:3000/api/v1/users/testuser1",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         },
       );
@@ -45,27 +45,27 @@ describe('GET /api/v1/users/[username]', () => {
       expect(user.updated_at).toBe(expectedUser.updated_at);
     });
 
-    test('With case mismatch', async () => {
-      const response1 = await fetch('http://localhost:3000/api/v1/users', {
-        method: 'POST',
+    test("With case mismatch", async () => {
+      const response1 = await fetch("http://localhost:3000/api/v1/users", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: 'testuser2',
-          password: 'password123',
-          email: 'email2@gmail.com',
+          username: "testuser2",
+          password: "password123",
+          email: "email2@gmail.com",
         }),
       });
 
       expect(response1.status).toBe(201);
 
       const response2 = await fetch(
-        'http://localhost:3000/api/v1/users/tesTUser2',
+        "http://localhost:3000/api/v1/users/tesTUser2",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         },
       );
@@ -82,13 +82,13 @@ describe('GET /api/v1/users/[username]', () => {
       expect(user.updated_at).toBe(expectedUser.updated_at);
     });
 
-    test('With nonexistent username', async () => {
+    test("With nonexistent username", async () => {
       const response2 = await fetch(
-        'http://localhost:3000/api/v1/users/testing',
+        "http://localhost:3000/api/v1/users/testing",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         },
       );
@@ -98,9 +98,9 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response2.json();
 
       expect(responseBody).toEqual({
-        name: 'NotFoundError',
-        message: 'O username informado não foi encontrado no sistema.',
-        action: 'Verifique se o username está digitado corretamente.',
+        name: "NotFoundError",
+        message: "O username informado não foi encontrado no sistema.",
+        action: "Verifique se o username está digitado corretamente.",
         status: 404,
       });
     });

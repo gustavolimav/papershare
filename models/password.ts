@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs';
-import type { PasswordModel } from '../types/index.ts';
+import bcrypt from "bcryptjs";
+import type { PasswordModel } from "../types/index.ts";
 
 async function hash(password: string): Promise<string> {
   const rounds = getNumberOfRounds();
@@ -15,14 +15,14 @@ function pepperPassword(password: string): string {
   const pepper = process.env.PEPPER;
 
   if (!pepper) {
-    throw new Error('PEPPER environment variable is not set');
+    throw new Error("PEPPER environment variable is not set");
   }
 
   return password + pepper;
 }
 
 function getNumberOfRounds(): number {
-  return process.env.NODE_ENV === 'production' ? 14 : 1;
+  return process.env.NODE_ENV === "production" ? 14 : 1;
 }
 
 const password: PasswordModel = {

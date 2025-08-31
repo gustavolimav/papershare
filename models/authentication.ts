@@ -1,9 +1,12 @@
-import user from './user.ts';
-import password from './password.ts';
-import { NotFoundError, UnathorizedError } from '../infra/errors.ts';
-import type { User, AuthenticationModel } from '../types/index.ts';
+import user from "./user.ts";
+import password from "./password.ts";
+import { NotFoundError, UnathorizedError } from "../infra/errors.ts";
+import type { User, AuthenticationModel } from "../types/index.ts";
 
-async function getAuthentication(providedEmail: string, providedPassword: string): Promise<User> {
+async function getAuthentication(
+  providedEmail: string,
+  providedPassword: string,
+): Promise<User> {
   let storedUser: User;
 
   try {
@@ -13,8 +16,8 @@ async function getAuthentication(providedEmail: string, providedPassword: string
   } catch (error) {
     if (error instanceof UnathorizedError) {
       throw new UnathorizedError({
-        message: 'Email ou senha inválidos.',
-        action: 'Verifique se o email e a senha estão digitados corretamente.',
+        message: "Email ou senha inválidos.",
+        action: "Verifique se o email e a senha estão digitados corretamente.",
       });
     }
 
@@ -24,13 +27,19 @@ async function getAuthentication(providedEmail: string, providedPassword: string
   return storedUser;
 }
 
-async function validatePassword(providedPassword: string, userPassword: string): Promise<void> {
-  const isPasswordValid = await password.compare(providedPassword, userPassword);
+async function validatePassword(
+  providedPassword: string,
+  userPassword: string,
+): Promise<void> {
+  const isPasswordValid = await password.compare(
+    providedPassword,
+    userPassword,
+  );
 
   if (!isPasswordValid) {
     throw new UnathorizedError({
-      message: 'Senha inválida.',
-      action: 'Verifique se a senha está digitada corretamente.',
+      message: "Senha inválida.",
+      action: "Verifique se a senha está digitada corretamente.",
     });
   }
 }
@@ -43,8 +52,8 @@ async function findUserByEmail(providedEmail: string): Promise<User> {
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw new UnathorizedError({
-        message: 'Email inválido.',
-        action: 'Verifique se o email está digitado corretamente.',
+        message: "Email inválido.",
+        action: "Verifique se o email está digitado corretamente.",
       });
     }
 

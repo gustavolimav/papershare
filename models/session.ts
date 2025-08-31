@@ -1,11 +1,11 @@
-import crypto from 'crypto';
-import database from '../infra/database.ts';
-import type { Session, SessionModel } from '../types/index.ts';
+import crypto from "crypto";
+import database from "../infra/database.ts";
+import type { Session, SessionModel } from "../types/index.ts";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 days
 
 async function create(userId: string): Promise<Session> {
-  const token = crypto.randomBytes(48).toString('hex');
+  const token = crypto.randomBytes(48).toString("hex");
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
   const newSession = await runInsertQuery(token, userId, expiresAt);
@@ -13,7 +13,11 @@ async function create(userId: string): Promise<Session> {
   return newSession;
 }
 
-async function runInsertQuery(token: string, userId: string, expiresAt: Date): Promise<Session> {
+async function runInsertQuery(
+  token: string,
+  userId: string,
+  expiresAt: Date,
+): Promise<Session> {
   const results = await database.query<Session>({
     text: `
         INSERT INTO 

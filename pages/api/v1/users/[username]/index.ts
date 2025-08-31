@@ -1,13 +1,16 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { createRouter } from 'next-connect';
-import controller from '../../../../../infra/controller.ts';
-import users from '../../../../../models/user.ts';
-import type { UserUpdateInput, UserPublic } from '../../../../../types/index.ts';
+import type { NextApiRequest, NextApiResponse } from "next";
+import { createRouter } from "next-connect";
+import controller from "../../../../../infra/controller.ts";
+import users from "../../../../../models/user.ts";
+import type {
+  UserUpdateInput,
+  UserPublic,
+} from "../../../../../types/index.ts";
 
 interface UserRequest extends NextApiRequest {
   query: {
     username?: string;
-  } & NextApiRequest['query'];
+  } & NextApiRequest["query"];
 }
 
 interface UserUpdateRequest extends UserRequest {
@@ -21,7 +24,10 @@ router.patch(patchHandler);
 
 export default router.handler(controller.errorHandlers);
 
-async function getHandler(request: UserRequest, response: NextApiResponse<UserPublic>) {
+async function getHandler(
+  request: UserRequest,
+  response: NextApiResponse<UserPublic>,
+) {
   const username = request.query.username as string;
 
   const user = await users.findOneByUsername(username);
@@ -35,7 +41,10 @@ async function getHandler(request: UserRequest, response: NextApiResponse<UserPu
   });
 }
 
-async function patchHandler(request: UserUpdateRequest, response: NextApiResponse<UserPublic>) {
+async function patchHandler(
+  request: UserUpdateRequest,
+  response: NextApiResponse<UserPublic>,
+) {
   const username = request.query.username as string;
   const userInputValues: UserUpdateInput = request.body;
 

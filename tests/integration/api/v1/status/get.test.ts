@@ -1,13 +1,13 @@
-import orchestrator from '../../../../orchestrator.ts';
+import orchestrator from "../../../../orchestrator.ts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
 });
 
-describe('Get /api/v1/status', () => {
-  describe('Anonymous User', () => {
-    test('Retrieving current system status', async () => {
-      const response = await fetch('http://localhost:3000/api/v1/status');
+describe("Get /api/v1/status", () => {
+  describe("Anonymous User", () => {
+    test("Retrieving current system status", async () => {
+      const response = await fetch("http://localhost:3000/api/v1/status");
 
       expect(response.status).toBe(200);
 
@@ -24,20 +24,20 @@ describe('Get /api/v1/status', () => {
 
       expect(updated_at).toBeDefined();
       expect(updated_at).toEqual(parsedUpdatedAt);
-      expect(database_version).toBe('16.0');
+      expect(database_version).toBe("16.0");
       expect(database_max_connections).toBe(100);
       expect(database_opened_connections).toBe(1);
       expect(Object.keys(responseBody)).toStrictEqual([
-        'updated_at',
-        'dependencies',
+        "updated_at",
+        "dependencies",
       ]);
       expect(Object.keys(responseBody.dependencies)).toStrictEqual([
-        'database',
+        "database",
       ]);
       expect(Object.keys(responseBody.dependencies.database)).toStrictEqual([
-        'version',
-        'max_connections',
-        'opened_connections',
+        "version",
+        "max_connections",
+        "opened_connections",
       ]);
     });
   });
