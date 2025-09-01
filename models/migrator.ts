@@ -13,7 +13,7 @@ const defaultMigrationOptions = {
   dryRun: true,
   dir: resolve("infra", "migrations"),
   direction: "up" as const,
-  log: () => {},
+  log: () => { },
   migrationsTable: "pgmigrations",
 };
 
@@ -35,6 +35,8 @@ async function listPendingMigrations(): Promise<RunMigration[]> {
 
 async function runPendingMigrations(): Promise<RunMigration[]> {
   let dbClient;
+
+  console.log("Running pending migrations...");
 
   try {
     dbClient = await database.getNewClient();
