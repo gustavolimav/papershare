@@ -151,21 +151,3 @@ export interface DatabaseModel {
   ): Promise<DatabaseResult<T>>;
   getNewClient(): Promise<any>;
 }
-
-// Environment Variables
-export interface ProcessEnv {
-  NODE_ENV: "development" | "production" | "test";
-  POSTGRES_HOST: string;
-  POSTGRES_PORT: string;
-  POSTGRES_USER: string;
-  POSTGRES_DB: string;
-  POSTGRES_PASSWORD: string;
-  DATABASE_URL: string;
-  PEPPER: string;
-}
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv extends ProcessEnv {}
-  }
-}
