@@ -1,6 +1,6 @@
-import password from "models/password.ts";
-import user from "models/user.ts";
-import orchestrator from "tests/orchestrator.ts";
+import password from "models/password";
+import user from "models/user";
+import orchestrator from "tests/orchestrator";
 import { version as uuidVersion } from "uuid";
 
 beforeAll(async () => {

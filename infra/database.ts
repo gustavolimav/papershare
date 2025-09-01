@@ -1,11 +1,11 @@
 import { Client } from "pg";
 import type { QueryResultRow } from "pg";
-import { ServiceError } from "./errors.ts";
+import { ServiceError } from "./errors";
 import type {
   DatabaseQuery,
   DatabaseResult,
   DatabaseModel,
-} from "../types/index.ts";
+} from "../types/index";
 
 async function query<T extends QueryResultRow = any>(
   queryObject: string | DatabaseQuery,

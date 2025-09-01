@@ -5,7 +5,7 @@ import {
   NotFoundError,
   UnathorizedError,
   ValidationError,
-} from "./errors.ts";
+} from "./errors";
 
 function onNoMatchHandler(
   request: NextApiRequest,

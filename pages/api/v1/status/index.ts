@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
-import database from "../../../../infra/database.ts";
-import controller from "../../../../infra/controller.ts";
-import type { StatusResponse } from "../../../../types/index.ts";
+import database from "../../../../infra/database";
+import controller from "../../../../infra/controller";
+import type { StatusResponse } from "../../../../types/index";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 

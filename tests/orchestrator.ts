@@ -1,10 +1,10 @@
 import retry from "async-retry";
 import { faker } from "@faker-js/faker";
 
-import database from "../infra/database.ts";
-import migrator from "../models/migrator.ts";
-import user from "../models/user.ts";
-import type { UserCreateInput, UserPublic } from "../types/index.ts";
+import database from "../infra/database";
+import migrator from "../models/migrator";
+import user from "../models/user";
+import type { UserCreateInput, UserPublic } from "../types/index";
 
 async function waitForAllServices(): Promise<void> {
   await waitForWebServer();

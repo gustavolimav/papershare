@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
-import controller from "../../../../infra/controller.ts";
-import authentication from "../../../../models/authentication.ts";
-import session from "../../../../models/session.ts";
+import controller from "../../../../infra/controller";
+import authentication from "../../../../models/authentication";
+import session from "../../../../models/session";
 import * as cookie from "cookie";
-import type { AuthenticationInput, Session } from "../../../../types/index.ts";
+import type { AuthenticationInput, Session } from "../../../../types/index";
 
 interface SessionCreateRequest extends NextApiRequest {
   body: AuthenticationInput;

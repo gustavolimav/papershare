@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import database from "../infra/database.ts";
-import type { Session, SessionModel } from "../types/index.ts";
+import database from "../infra/database";
+import type { Session, SessionModel } from "../types/index";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 days
 

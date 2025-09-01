@@ -1,7 +1,7 @@
 import migrationRunner from "node-pg-migrate";
 import { resolve } from "node:path";
-import database from "../infra/database.ts";
-import type { MigratorModel } from "../types/index.ts";
+import database from "../infra/database";
+import type { MigratorModel } from "../types/index";
 
 // Define the actual return type from node-pg-migrate
 interface RunMigration {

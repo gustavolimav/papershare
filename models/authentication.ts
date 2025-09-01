@@ -1,7 +1,7 @@
-import user from "./user.ts";
-import password from "./password.ts";
-import { NotFoundError, UnathorizedError } from "../infra/errors.ts";
-import type { User, AuthenticationModel } from "../types/index.ts";
+import user from "./user";
+import password from "./password";
+import { NotFoundError, UnathorizedError } from "../infra/errors";
+import type { User, AuthenticationModel } from "../types/index";
 
 async function getAuthentication(
   providedEmail: string,

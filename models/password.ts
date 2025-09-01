@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import type { PasswordModel } from "../types/index.ts";
+import type { PasswordModel } from "../types/index";
 
 async function hash(password: string): Promise<string> {
   const rounds = getNumberOfRounds();

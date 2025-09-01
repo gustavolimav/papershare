@@ -1,13 +1,13 @@
-import database from "../infra/database.ts";
-import { ValidationError, NotFoundError } from "../infra/errors.ts";
-import password from "./password.ts";
+import database from "../infra/database";
+import { ValidationError, NotFoundError } from "../infra/errors";
+import password from "./password";
 import type {
   User,
   UserPublic,
   UserCreateInput,
   UserUpdateInput,
   UserModel,
-} from "../types/index.ts";
+} from "../types/index";
 
 async function create(userInputValues: UserCreateInput): Promise<UserPublic> {
   await validateUniqueEmail(userInputValues.email);

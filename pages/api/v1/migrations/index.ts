@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
-import controller from "../../../../infra/controller.ts";
-import migrator from "../../../../models/migrator.ts";
-import type { RunMigration } from "../../../../types/index.ts";
+import controller from "../../../../infra/controller";
+import migrator from "../../../../models/migrator";
+import type { RunMigration } from "../../../../types/index";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 

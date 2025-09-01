@@ -1,11 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
-import controller from "../../../../../infra/controller.ts";
-import users from "../../../../../models/user.ts";
-import type {
-  UserUpdateInput,
-  UserPublic,
-} from "../../../../../types/index.ts";
+import controller from "../../../../../infra/controller";
+import users from "../../../../../models/user";
+import type { UserUpdateInput, UserPublic } from "../../../../../types/index";
 
 interface UserRequest extends NextApiRequest {
   query: {
