@@ -1,14 +1,6 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
 export const shorthands = undefined;
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-export const up = (pgm) => {
+export function up(pgm) {
   pgm.alterColumn("users", "created_at", {
     default: pgm.func("timezone('utc', now())"),
   });
@@ -21,4 +13,4 @@ export const up = (pgm) => {
     type: "VARCHAR(60)",
     notNull: true,
   });
-};
+}
