@@ -111,8 +111,9 @@ export interface Migration {
 }
 
 export interface RunMigration {
+  path: string;
   name: string;
-  filename: string;
+  timestamp: string;
 }
 
 // Model Interface Types
