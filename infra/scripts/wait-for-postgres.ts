@@ -2,7 +2,7 @@ import { exec } from "node:child_process";
 
 function checkPostgres(): void {
   exec(
-    "docker exec linkpaper-dev-db pg_isready --host localhost",
+    "docker exec papershare-dev-db pg_isready --host localhost",
     handleReturn,
   );
 

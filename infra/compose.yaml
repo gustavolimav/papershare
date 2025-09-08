@@ -1,6 +1,6 @@
 services:
   database:
-    container_name: "linkpaper-dev-db"
+    container_name: "papershare-dev-db"
     image: "postgres:16.0-alpine3.18"
     env_file:
       - ../.env.development
