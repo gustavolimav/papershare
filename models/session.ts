@@ -67,10 +67,23 @@ async function deleteByToken(token: string): Promise<void> {
   });
 }
 
+async function deleteByUserId(userId: string): Promise<void> {
+  await database.query({
+    text: `
+        DELETE FROM
+          sessions
+        WHERE
+          user_id = $1
+        ;`,
+    values: [userId],
+  });
+}
+
 const session: SessionModel = {
   create,
   findOneByToken,
   deleteByToken,
+  deleteByUserId,
   EXPIRATION_IN_MILLISECONDS,
 };
 

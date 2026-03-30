@@ -4,6 +4,7 @@ import controller from "../../../../../infra/controller";
 import { authMiddleware } from "../../../../../infra/auth";
 import { ForbiddenError } from "../../../../../infra/errors";
 import users from "../../../../../models/user";
+import session from "../../../../../models/session";
 import type {
   AuthenticatedNextApiRequest,
   UserUpdateInput,
@@ -82,6 +83,7 @@ async function deleteHandler(request: UserRequest, response: NextApiResponse) {
     });
   }
 
+  await session.deleteByUserId(request.user!.id);
   await users.deleteByUsername(username);
 
   return response.status(204).end();
