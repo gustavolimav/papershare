@@ -85,8 +85,7 @@ describe("Authentication Middleware", () => {
       expect(setCookieHeader).not.toBeNull();
       expect(setCookieHeader).toContain("Max-Age=0");
 
-      const sessionStillExists =
-        await orchestrator.sessionExists(expiredToken);
+      const sessionStillExists = await orchestrator.sessionExists(expiredToken);
       expect(sessionStillExists).toBe(false);
     });
 
