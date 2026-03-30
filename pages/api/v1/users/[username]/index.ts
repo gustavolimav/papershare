@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import controller from "../../../../../infra/controller";
+import { authMiddleware } from "../../../../../infra/auth";
 import users from "../../../../../models/user";
 import type { UserUpdateInput, UserPublic } from "../../../../../types/index";
 
@@ -16,6 +17,7 @@ interface UserUpdateRequest extends UserRequest {
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
+router.use(authMiddleware);
 router.get(getHandler);
 router.patch(patchHandler);
 
