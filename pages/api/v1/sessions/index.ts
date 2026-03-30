@@ -3,30 +3,27 @@ import { createRouter } from "next-connect";
 import * as cookie from "cookie";
 import controller from "../../../../infra/controller";
 import { authMiddleware } from "../../../../infra/auth";
+import { rateLimit } from "../../../../infra/rate-limit";
+import { validate, authenticationSchema } from "../../../../infra/schemas";
 import authentication from "../../../../models/authentication";
 import session from "../../../../models/session";
 import type {
   AuthenticatedNextApiRequest,
-  AuthenticationInput,
   Session,
 } from "../../../../types/index";
 
-interface SessionCreateRequest extends NextApiRequest {
-  body: AuthenticationInput;
-}
-
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.post(postHandler);
+router.post(rateLimit({ limit: 5, windowMs: 60 * 1000 }), postHandler);
 router.delete(authMiddleware, deleteHandler);
 
 export default router.handler(controller.errorHandlers);
 
 async function postHandler(
-  request: SessionCreateRequest,
+  request: NextApiRequest,
   response: NextApiResponse<Session>,
 ) {
-  const userInputValue: AuthenticationInput = request.body;
+  const userInputValue = validate(authenticationSchema, request.body);
 
   const authenticatedUser = await authentication.getAuthentication(
     userInputValue.email,

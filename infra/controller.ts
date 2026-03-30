@@ -4,6 +4,7 @@ import {
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
+  TooManyRequestsError,
   UnathorizedError,
   ValidationError,
 } from "./errors";
@@ -39,6 +40,11 @@ function onErrorHandler(
   }
 
   if (err instanceof ForbiddenError) {
+    response.status(err.statusCode).json(err);
+    return;
+  }
+
+  if (err instanceof TooManyRequestsError) {
     response.status(err.statusCode).json(err);
     return;
   }
