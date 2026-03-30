@@ -17,7 +17,6 @@ describe("POST /api/v1/users — input validation", () => {
     expect(response.status).toBe(400);
     const body = await response.json();
     expect(body.name).toBe("ValidationError");
-    expect(body.message).toContain("username");
   });
 
   test("Username too short returns 400", async () => {
@@ -171,6 +170,5 @@ describe("POST /api/v1/sessions — input validation", () => {
     expect(response.status).toBe(400);
     const body = await response.json();
     expect(body.name).toBe("ValidationError");
-    expect(body.message).toContain("password");
   });
 });

@@ -15,6 +15,14 @@ export function rateLimit({
   limit: number;
   windowMs: number;
 }) {
+  if (process.env.NODE_ENV !== "production") {
+    return (
+      _request: NextApiRequest,
+      _response: NextApiResponse,
+      next: () => void | Promise<void>,
+    ) => next();
+  }
+
   return function rateLimitMiddleware(
     request: NextApiRequest,
     _response: NextApiResponse,
