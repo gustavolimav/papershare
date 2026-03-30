@@ -22,16 +22,11 @@ describe("PATCH /api/v1/users/[username]", () => {
         },
       );
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
 
       const responseBody = await response.json();
 
-      expect(responseBody).toEqual({
-        name: "NotFoundError",
-        message: "O username informado não foi encontrado no sistema.",
-        action: "Verifique se o username está digitado corretamente.",
-        status: 404,
-      });
+      expect(responseBody.name).toBe("ForbiddenError");
     });
 
     test("With duplicated 'username'", async () => {

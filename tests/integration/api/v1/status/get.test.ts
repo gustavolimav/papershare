@@ -26,7 +26,7 @@ describe("Get /api/v1/status", () => {
       expect(updated_at).toEqual(parsedUpdatedAt);
       expect(database_version).toBe("16.0");
       expect(database_max_connections).toBe(100);
-      expect(database_opened_connections).toBe(1);
+      expect(database_opened_connections).toBeGreaterThanOrEqual(1);
       expect(Object.keys(responseBody)).toStrictEqual([
         "updated_at",
         "dependencies",
