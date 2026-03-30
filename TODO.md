@@ -40,7 +40,7 @@ Core authentication infrastructure. All items delivered.
 
 ### API
 
-- [ ] `DELETE /api/v1/sessions` — Logout (delete session, clear cookie)
+- [x] `DELETE /api/v1/sessions` — Logout (delete session, clear cookie)
 - [ ] Authorization guard: `PATCH /api/v1/users/[username]` must verify `req.user.username === params.username`
 - [ ] `DELETE /api/v1/users/[username]` — Soft-delete account (add `deleted_at` column)
 
