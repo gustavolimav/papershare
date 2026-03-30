@@ -34,8 +34,12 @@ describe("GET /api/v1/users/[username]", () => {
       expect(user.id).toBe(createdUser.id);
       expect(user.username).toBe(createdUser.username);
       expect(user.email).toBe(createdUser.email);
-      expect(user.created_at).toBe(createdUser.created_at);
-      expect(user.updated_at).toBe(createdUser.updated_at);
+      expect(user.created_at).toBe(
+        new Date(createdUser.created_at).toISOString(),
+      );
+      expect(user.updated_at).toBe(
+        new Date(createdUser.updated_at).toISOString(),
+      );
     });
 
     test("With case mismatch", async () => {
@@ -64,8 +68,12 @@ describe("GET /api/v1/users/[username]", () => {
       expect(user.id).toBe(createdUser.id);
       expect(user.username).toBe(createdUser.username);
       expect(user.email).toBe(createdUser.email);
-      expect(user.created_at).toBe(createdUser.created_at);
-      expect(user.updated_at).toBe(createdUser.updated_at);
+      expect(user.created_at).toBe(
+        new Date(createdUser.created_at).toISOString(),
+      );
+      expect(user.updated_at).toBe(
+        new Date(createdUser.updated_at).toISOString(),
+      );
     });
 
     test("With nonexistent username", async () => {
