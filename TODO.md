@@ -41,13 +41,13 @@ Core authentication infrastructure. All items delivered.
 ### API
 
 - [x] `DELETE /api/v1/sessions` — Logout (delete session, clear cookie)
-- [ ] Authorization guard: `PATCH /api/v1/users/[username]` must verify `req.user.username === params.username`
-- [ ] `DELETE /api/v1/users/[username]` — Soft-delete account (add `deleted_at` column)
+- [x] Authorization guard: `PATCH /api/v1/users/[username]` must verify `req.user.username === params.username`
+- [x] `DELETE /api/v1/users/[username]` — Soft-delete account (add `deleted_at` column)
 
 ### Model
 
 - [ ] `session.deleteByUserId(userId)` — Invalidate all sessions on account deletion
-- [ ] Add `ForbiddenError` (403) to `infra/errors.ts` for authorization failures
+- [x] Add `ForbiddenError` (403) to `infra/errors.ts` for authorization failures
 
 ### Infrastructure
 

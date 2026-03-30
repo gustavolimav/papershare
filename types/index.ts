@@ -10,6 +10,7 @@ export interface User {
   password: string;
   created_at: Date;
   updated_at: Date;
+  deleted_at: Date | null;
 }
 
 export interface UserPublic {
@@ -125,6 +126,7 @@ export interface UserModel {
     username: string,
     userInput: UserUpdateInput,
   ): Promise<UserPublic>;
+  deleteByUsername(username: string): Promise<void>;
 }
 
 export interface PasswordModel {

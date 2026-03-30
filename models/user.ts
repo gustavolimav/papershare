@@ -27,12 +27,13 @@ async function create(userInputValues: UserCreateInput): Promise<UserPublic> {
 async function findOneByEmail(email: string): Promise<User> {
   const results = await database.query<User>({
     text: `
-        SELECT 
+        SELECT
           *
-        FROM 
+        FROM
           users
-        WHERE 
+        WHERE
           LOWER(email) = LOWER($1)
+          AND deleted_at IS NULL
         LIMIT
           1
         ;`,
@@ -52,12 +53,13 @@ async function findOneByEmail(email: string): Promise<User> {
 async function findOneByUsername(username: string): Promise<User> {
   const results = await database.query<User>({
     text: `
-        SELECT 
-          id, username, email, created_at, updated_at, password
-        FROM 
+        SELECT
+          id, username, email, created_at, updated_at, deleted_at, password
+        FROM
           users
-        WHERE 
+        WHERE
           LOWER(username) = LOWER($1)
+          AND deleted_at IS NULL
         LIMIT
           1
         ;`,
@@ -207,11 +209,27 @@ async function runInsertQuery(
   return results.rows[0]!;
 }
 
+async function deleteByUsername(username: string): Promise<void> {
+  await database.query({
+    text: `
+        UPDATE
+          users
+        SET
+          deleted_at = NOW()
+        WHERE
+          LOWER(username) = LOWER($1)
+          AND deleted_at IS NULL
+        ;`,
+    values: [username],
+  });
+}
+
 const user: UserModel = {
   create,
   findOneByUsername,
   findOneByEmail,
   updateByUsername,
+  deleteByUsername,
 };
 
 export default user;
