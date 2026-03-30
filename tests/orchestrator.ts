@@ -71,12 +71,36 @@ async function sessionExists(token: string): Promise<boolean> {
   return result.rows[0]!.count !== "0";
 }
 
+async function createUserSession(
+  userObject?: Partial<UserCreateInput>,
+): Promise<{ user: UserPublic; cookie: string }> {
+  const plainPassword = userObject?.password || "validpassword";
+  const createdUser = await createUser({
+    ...userObject,
+    password: plainPassword,
+  });
+
+  const loginResponse = await fetch("http://localhost:3000/api/v1/sessions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: createdUser.email, password: plainPassword }),
+  });
+
+  const cookie = loginResponse.headers.get("set-cookie") ?? "";
+  return { user: createdUser, cookie };
+}
+
 interface Orchestrator {
   waitForAllServices(): Promise<void>;
   cleanDatabase(): Promise<void>;
   runPendingMigrations(): Promise<void>;
   // eslint-disable-next-line no-unused-vars
   createUser(userObject?: Partial<UserCreateInput>): Promise<UserPublic>;
+  // eslint-disable-next-line no-unused-vars
+  createUserSession(userObject?: Partial<UserCreateInput>): Promise<{
+    user: UserPublic;
+    cookie: string;
+  }>;
   // eslint-disable-next-line no-unused-vars
   createExpiredSession(userId: string): Promise<string>;
   // eslint-disable-next-line no-unused-vars
@@ -88,6 +112,7 @@ const orchestrator: Orchestrator = {
   cleanDatabase,
   runPendingMigrations,
   createUser,
+  createUserSession,
   createExpiredSession,
   sessionExists,
 };

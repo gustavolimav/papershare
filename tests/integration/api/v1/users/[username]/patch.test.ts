@@ -12,10 +12,13 @@ beforeAll(async () => {
 describe("PATCH /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
     test("With nonexistent 'username'", async () => {
+      const { cookie } = await orchestrator.createUserSession();
+
       const response = await fetch(
         "http://localhost:3000/api/v1/users/UsuarioInexistente",
         {
           method: "PATCH",
+          headers: { Cookie: cookie },
         },
       );
 
@@ -36,7 +39,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: "user1",
       });
 
-      await orchestrator.createUser({
+      const { cookie } = await orchestrator.createUserSession({
         username: "user2",
       });
 
@@ -44,6 +47,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Cookie: cookie,
         },
         body: JSON.stringify({
           username: "user1",
@@ -67,9 +71,10 @@ describe("PATCH /api/v1/users/[username]", () => {
         email: "email1@curso.dev",
       });
 
-      const createdUser2 = await orchestrator.createUser({
-        email: "email2@curso.dev",
-      });
+      const { user: createdUser2, cookie } =
+        await orchestrator.createUserSession({
+          email: "email2@curso.dev",
+        });
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser2.username}`,
@@ -77,6 +82,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: cookie,
           },
           body: JSON.stringify({
             email: "email1@curso.dev",
@@ -97,7 +103,8 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With unique 'username'", async () => {
-      const createdUser = await orchestrator.createUser();
+      const { user: createdUser, cookie } =
+        await orchestrator.createUserSession();
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser.username}`,
@@ -105,6 +112,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: cookie,
           },
           body: JSON.stringify({
             username: "uniqueUser2",
@@ -133,15 +141,16 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With unique 'email'", async () => {
-      const createdUser = await orchestrator.createUser();
+      const { user: createdUser, cookie } =
+        await orchestrator.createUserSession();
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser.username}`,
-
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: cookie,
           },
           body: JSON.stringify({
             email: "uniqueEmail2@curso.dev",
@@ -170,9 +179,10 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With new 'password'", async () => {
-      const createdUser = await orchestrator.createUser({
-        password: "newPassword1",
-      });
+      const { user: createdUser, cookie } =
+        await orchestrator.createUserSession({
+          password: "newPassword1",
+        });
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser.username}`,
@@ -180,6 +190,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: cookie,
           },
           body: JSON.stringify({
             password: "newPassword2",
