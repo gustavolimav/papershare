@@ -9,6 +9,7 @@ import session from "../../../../../models/session";
 import type {
   AuthenticatedNextApiRequest,
   UserPublic,
+  UserUpdateInput,
 } from "../../../../../types/index";
 
 interface UserRequest extends AuthenticatedNextApiRequest {
@@ -56,7 +57,10 @@ async function patchHandler(
     });
   }
 
-  const userInputValues = validate(userUpdateSchema, request.body);
+  const validated = validate(userUpdateSchema, request.body);
+  const userInputValues = Object.fromEntries(
+    Object.entries(validated).filter(([, v]) => v !== undefined),
+  ) as UserUpdateInput;
 
   const updatedUser = await users.updateByUsername(username, userInputValues);
 
