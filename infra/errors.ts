@@ -108,6 +108,22 @@ export class MethodNotAllowedError extends Error {
   }
 }
 
+export class TooManyRequestsError extends Error {
+  public readonly name = "TooManyRequestsError";
+  public readonly action = "Aguarde um momento antes de tentar novamente.";
+  public readonly message = "Você realizou muitas requisições recentemente.";
+  public readonly statusCode = 429;
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status: this.statusCode,
+    };
+  }
+}
+
 export class ForbiddenError extends Error {
   public readonly name = "ForbiddenError";
   public readonly action: string;

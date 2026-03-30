@@ -3,11 +3,11 @@ import { createRouter } from "next-connect";
 import controller from "../../../../../infra/controller";
 import { authMiddleware } from "../../../../../infra/auth";
 import { ForbiddenError } from "../../../../../infra/errors";
+import { validate, userUpdateSchema } from "../../../../../infra/schemas";
 import users from "../../../../../models/user";
 import session from "../../../../../models/session";
 import type {
   AuthenticatedNextApiRequest,
-  UserUpdateInput,
   UserPublic,
 } from "../../../../../types/index";
 
@@ -15,10 +15,6 @@ interface UserRequest extends AuthenticatedNextApiRequest {
   query: {
     username?: string;
   } & NextApiRequest["query"];
-}
-
-interface UserUpdateRequest extends UserRequest {
-  body: UserUpdateInput;
 }
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
@@ -48,7 +44,7 @@ async function getHandler(
 }
 
 async function patchHandler(
-  request: UserUpdateRequest,
+  request: UserRequest,
   response: NextApiResponse<UserPublic>,
 ) {
   const username = request.query.username as string;
@@ -60,7 +56,7 @@ async function patchHandler(
     });
   }
 
-  const userInputValues: UserUpdateInput = request.body;
+  const userInputValues = validate(userUpdateSchema, request.body);
 
   const updatedUser = await users.updateByUsername(username, userInputValues);
 

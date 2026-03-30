@@ -11,6 +11,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Rate limiting middleware (`infra/rate-limit.ts`) — in-memory sliding window; 5 req/min on `POST /api/v1/sessions`, 10 req/min on `POST /api/v1/users`; returns `TooManyRequestsError` (429)
+- `TooManyRequestsError` (429) error class in `infra/errors.ts`
+- Zod input validation (`infra/schemas.ts`) on `POST /api/v1/users`, `PATCH /api/v1/users/[username]`, `POST /api/v1/sessions` — invalid input returns 400 `ValidationError`
 - `session.deleteByUserId(userId)` — invalidates all sessions for a user; called on account deletion
 - `DELETE /api/v1/users/[username]` — soft-delete own account (`deleted_at` column), returns 204; all sessions invalidated, deleted users are no longer findable
 - `ForbiddenError` (403) error class in `infra/errors.ts`

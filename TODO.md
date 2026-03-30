@@ -10,7 +10,7 @@
 | Phase | Name                               | Status     |
 | ----- | ---------------------------------- | ---------- |
 | 1     | Foundation                         | ✅ Done    |
-| 2     | Authorization & Account Management | 🔄 Next    |
+| 2     | Authorization & Account Management | ✅ Done    |
 | 3     | Documents Core                     | ⏳ Planned |
 | 4     | Share Links                        | ⏳ Planned |
 | 5     | Analytics & Tracking               | ⏳ Planned |
@@ -34,7 +34,7 @@ Core authentication infrastructure. All items delivered.
 
 ---
 
-## Phase 2 — Authorization & Account Management 🔄
+## Phase 2 — Authorization & Account Management ✅
 
 **Goal:** Users can only manage their own resources. Provide complete session lifecycle.
 
@@ -51,8 +51,8 @@ Core authentication infrastructure. All items delivered.
 
 ### Infrastructure
 
-- [ ] Rate limiting middleware (protect login and registration endpoints)
-- [ ] Input validation with Zod (replace ad-hoc validation in models)
+- [x] Rate limiting middleware (protect login and registration endpoints)
+- [x] Input validation with Zod (replace ad-hoc validation in models)
 - [x] Database connection pool (replace single-connection pattern in `infra/database.ts`)
 
 ### Tests
