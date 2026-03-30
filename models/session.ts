@@ -33,8 +33,44 @@ async function runInsertQuery(
   return results.rows[0]!;
 }
 
+async function findOneByToken(token: string): Promise<Session | null> {
+  const results = await database.query<Session>({
+    text: `
+        SELECT
+          id, token, user_id, expires_at, created_at, updated_at
+        FROM
+          sessions
+        WHERE
+          token = $1
+        LIMIT
+          1
+        ;`,
+    values: [token],
+  });
+
+  if (!results.rowCount || results.rowCount === 0) {
+    return null;
+  }
+
+  return results.rows[0]!;
+}
+
+async function deleteByToken(token: string): Promise<void> {
+  await database.query({
+    text: `
+        DELETE FROM
+          sessions
+        WHERE
+          token = $1
+        ;`,
+    values: [token],
+  });
+}
+
 const session: SessionModel = {
   create,
+  findOneByToken,
+  deleteByToken,
   EXPIRATION_IN_MILLISECONDS,
 };
 
