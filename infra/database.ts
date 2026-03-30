@@ -1,4 +1,4 @@
-import { Client } from "pg";
+import { Client, Pool } from "pg";
 import type { QueryResultRow } from "pg";
 import { ServiceError } from "./errors";
 import type {
@@ -7,29 +7,33 @@ import type {
   DatabaseModel,
 } from "../types/index";
 
+const pool = new Pool({
+  host: process.env.POSTGRES_HOST,
+  port: Number(process.env.POSTGRES_PORT),
+  user: process.env.POSTGRES_USER,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  ssl: getSSLValues(),
+});
+
 async function query<T extends QueryResultRow = any>(
   queryObject: string | DatabaseQuery,
 ): Promise<DatabaseResult<T>> {
-  let client: Client | undefined;
-
   try {
-    client = await getNewClient();
-
-    const result = await client.query(queryObject);
+    const result = await pool.query(queryObject);
 
     return result;
   } catch (error) {
-    const serviceErrorObject = new ServiceError({
+    throw new ServiceError({
       cause: error as Error,
       message: "Error connecting to the database",
     });
-
-    throw serviceErrorObject;
-  } finally {
-    await client?.end();
   }
 }
 
+// Returns a dedicated Client for callers that manage their own connection
+// lifecycle (e.g. the migrator with advisory locks). Pool is not used here
+// because those callers call client.end() to release the connection.
 async function getNewClient(): Promise<Client> {
   const client = new Client({
     host: process.env.POSTGRES_HOST,

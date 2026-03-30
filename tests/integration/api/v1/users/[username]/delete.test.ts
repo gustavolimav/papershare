@@ -41,10 +41,12 @@ describe("DELETE /api/v1/users/[username]", () => {
     });
   });
 
-  test("Deleting own account returns 204 and account becomes inaccessible", async () => {
+  test("Deleting own account returns 204, account becomes inaccessible and sessions are invalidated", async () => {
     const { user: createdUser, cookie } = await orchestrator.createUserSession({
       username: "tobedeleted",
     });
+
+    const sessionToken = cookie.split("=")[1]?.split(";")[0] ?? "";
 
     const deleteResponse = await fetch(
       `http://localhost:3000/api/v1/users/${createdUser.username}`,
@@ -56,12 +58,16 @@ describe("DELETE /api/v1/users/[username]", () => {
 
     expect(deleteResponse.status).toBe(204);
 
-    // Deleted user should no longer be found
+    // All sessions for this user must be deleted from DB
+    const sessionStillExists = await orchestrator.sessionExists(sessionToken);
+    expect(sessionStillExists).toBe(false);
+
+    // Subsequent requests with the old cookie should return 401
     const getResponse = await fetch(
       `http://localhost:3000/api/v1/users/${createdUser.username}`,
       { headers: { Cookie: cookie } },
     );
 
-    expect(getResponse.status).toBe(404);
+    expect(getResponse.status).toBe(401);
   });
 });

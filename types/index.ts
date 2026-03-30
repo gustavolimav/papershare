@@ -138,6 +138,7 @@ export interface SessionModel {
   create(userId: string): Promise<Session>;
   findOneByToken(token: string): Promise<Session | null>;
   deleteByToken(token: string): Promise<void>;
+  deleteByUserId(userId: string): Promise<void>;
   EXPIRATION_IN_MILLISECONDS: number;
 }
 

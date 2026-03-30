@@ -46,20 +46,20 @@ Core authentication infrastructure. All items delivered.
 
 ### Model
 
-- [ ] `session.deleteByUserId(userId)` — Invalidate all sessions on account deletion
+- [x] `session.deleteByUserId(userId)` — Invalidate all sessions on account deletion
 - [x] Add `ForbiddenError` (403) to `infra/errors.ts` for authorization failures
 
 ### Infrastructure
 
 - [ ] Rate limiting middleware (protect login and registration endpoints)
 - [ ] Input validation with Zod (replace ad-hoc validation in models)
-- [ ] Database connection pool (replace single-connection pattern in `infra/database.ts`)
+- [x] Database connection pool (replace single-connection pattern in `infra/database.ts`)
 
 ### Tests
 
-- [ ] Logout flow: session deleted, cookie cleared, subsequent requests return 401
-- [ ] Forbidden: user A cannot PATCH user B's profile
-- [ ] Account deletion: user gone, sessions invalidated
+- [x] Logout flow: session deleted, cookie cleared, subsequent requests return 401
+- [x] Forbidden: user A cannot PATCH user B's profile
+- [x] Account deletion: user gone, sessions invalidated
 
 ---
 
