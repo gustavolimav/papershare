@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
+  ForbiddenError,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
@@ -33,6 +34,11 @@ function onErrorHandler(
   }
 
   if (err instanceof UnathorizedError) {
+    response.status(err.statusCode).json(err);
+    return;
+  }
+
+  if (err instanceof ForbiddenError) {
     response.status(err.statusCode).json(err);
     return;
   }

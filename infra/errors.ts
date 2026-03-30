@@ -108,6 +108,28 @@ export class MethodNotAllowedError extends Error {
   }
 }
 
+export class ForbiddenError extends Error {
+  public readonly name = "ForbiddenError";
+  public readonly action: string;
+  public readonly statusCode = 403;
+
+  constructor({ cause, message, action }: ErrorConstructorOptions = {}) {
+    super(message || "Você não tem permissão para realizar esta operação.", {
+      cause,
+    });
+    this.action = action || "Verifique se você tem as permissões necessárias.";
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status: this.statusCode,
+    };
+  }
+}
+
 export class UnathorizedError extends Error {
   public readonly name = "UnathorizedError";
   public readonly action: string;

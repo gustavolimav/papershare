@@ -11,6 +11,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `DELETE /api/v1/users/[username]` — soft-delete own account (`deleted_at` column), returns 204; deleted users are no longer findable
+- `ForbiddenError` (403) error class in `infra/errors.ts`
+- Authorization guard on `PATCH /api/v1/users/[username]` — returns 403 if authenticated user tries to update another user's profile
+- Authorization guard on `DELETE /api/v1/users/[username]` — returns 403 if authenticated user tries to delete another user's account
+- Migration `004-soft-delete-users.sql` — adds `deleted_at TIMESTAMPTZ` column to `users` table
+- `user.deleteByUsername(username)` — sets `deleted_at` to now
 - `DELETE /api/v1/sessions` — logout endpoint, deletes session from DB and clears `session_id` cookie, requires valid session
 - Authentication middleware (`infra/auth.ts`) that validates `session_id` cookie on protected routes
 - `session.findOneByToken(token)` — look up a session by its token
