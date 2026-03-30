@@ -11,6 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `DELETE /api/v1/sessions` — logout endpoint, deletes session from DB and clears `session_id` cookie, requires valid session
 - Authentication middleware (`infra/auth.ts`) that validates `session_id` cookie on protected routes
 - `session.findOneByToken(token)` — look up a session by its token
 - `session.deleteByToken(token)` — delete a session (used on expiration cleanup)
