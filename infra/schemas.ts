@@ -53,7 +53,7 @@ export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
   if (!result.success) {
     const firstError = result.error.issues[0];
     throw new ValidationError({
-      message: firstError?.message,
+      message: firstError?.message ?? "Dados inválidos.",
       action: "Corrija os dados enviados e tente novamente.",
     });
   }
