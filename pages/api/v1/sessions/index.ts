@@ -1,10 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
+import * as cookie from "cookie";
 import controller from "../../../../infra/controller";
+import { authMiddleware } from "../../../../infra/auth";
 import authentication from "../../../../models/authentication";
 import session from "../../../../models/session";
-import * as cookie from "cookie";
-import type { AuthenticationInput, Session } from "../../../../types/index";
+import type {
+  AuthenticatedNextApiRequest,
+  AuthenticationInput,
+  Session,
+} from "../../../../types/index";
 
 interface SessionCreateRequest extends NextApiRequest {
   body: AuthenticationInput;
@@ -13,6 +18,7 @@ interface SessionCreateRequest extends NextApiRequest {
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
 router.post(postHandler);
+router.delete(authMiddleware, deleteHandler);
 
 export default router.handler(controller.errorHandlers);
 
@@ -39,4 +45,22 @@ async function postHandler(
   response.setHeader("Set-Cookie", cookieOptions);
 
   return response.status(201).json(newSession);
+}
+
+async function deleteHandler(
+  request: AuthenticatedNextApiRequest,
+  response: NextApiResponse,
+) {
+  await session.deleteByToken(request.session!.token);
+
+  const expiredCookie = cookie.serialize("session_id", "", {
+    path: "/",
+    maxAge: 0,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  response.setHeader("Set-Cookie", expiredCookie);
+
+  return response.status(204).end();
 }
