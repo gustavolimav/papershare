@@ -30,6 +30,33 @@ export interface Session {
   updated_at: Date;
 }
 
+export interface Document {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface DocumentPublic {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // Input Types
 export interface UserCreateInput {
   username: string;
@@ -140,6 +167,38 @@ export interface SessionModel {
   deleteByToken(token: string): Promise<void>;
   deleteByUserId(userId: string): Promise<void>;
   EXPIRATION_IN_MILLISECONDS: number;
+}
+
+export interface DocumentCreateInput {
+  title: string;
+  description?: string;
+  originalFilename: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  pageCount?: number;
+  userId: string;
+}
+
+export interface DocumentUpdateInput {
+  title?: string;
+  description?: string;
+}
+
+export interface DocumentModel {
+  create(input: DocumentCreateInput): Promise<DocumentPublic>;
+  findAllByUserId(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ documents: DocumentPublic[]; total: number }>;
+  findOneById(id: string, userId: string): Promise<DocumentPublic>;
+  updateById(
+    id: string,
+    userId: string,
+    input: DocumentUpdateInput,
+  ): Promise<DocumentPublic>;
+  deleteById(id: string, userId: string): Promise<string>;
 }
 
 export interface AuthenticationModel {

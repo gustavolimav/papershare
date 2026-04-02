@@ -11,7 +11,7 @@
 | ----- | ---------------------------------- | ---------- |
 | 1     | Foundation                         | ✅ Done    |
 | 2     | Authorization & Account Management | ✅ Done    |
-| 3     | Documents Core                     | ⏳ Planned |
+| 3     | Documents Core                     | ✅ Done    |
 | 4     | Share Links                        | ⏳ Planned |
 | 5     | Analytics & Tracking               | ⏳ Planned |
 | 6     | Frontend                           | ⏳ Planned |
@@ -63,13 +63,13 @@ Core authentication infrastructure. All items delivered.
 
 ---
 
-## Phase 3 — Documents Core ⏳
+## Phase 3 — Documents Core ✅
 
 **Goal:** Users can upload, manage, and retrieve documents. This is the core product.
 
 ### Database
 
-- [ ] Migration: `documents` table
+- [x] Migration: `documents` table
   ```sql
   id, title, description, original_filename, storage_key,
   mime_type, size_bytes, page_count, user_id,
@@ -78,30 +78,28 @@ Core authentication infrastructure. All items delivered.
 
 ### Storage
 
-- [ ] Storage adapter interface (`infra/storage.ts`) with two implementations:
-  - Local filesystem (development)
-  - AWS S3 / Cloudflare R2 (production)
-- [ ] File type validation (PDF, DOCX, PPTX only at first)
-- [ ] File size limit (configurable via env, default 50 MB)
+- [x] Storage adapter interface (`infra/storage.ts`) — local filesystem (dev/test), pluggable for S3/R2
+- [x] File type validation (PDF, DOCX, PPTX only at first)
+- [x] File size limit (configurable via env, default 50 MB)
 
 ### API
 
-- [ ] `POST /api/v1/documents` — Upload document (multipart/form-data)
-- [ ] `GET /api/v1/documents` — List authenticated user's documents (paginated)
-- [ ] `GET /api/v1/documents/[id]` — Get document metadata
-- [ ] `PATCH /api/v1/documents/[id]` — Update title/description
-- [ ] `DELETE /api/v1/documents/[id]` — Soft-delete document
+- [x] `POST /api/v1/documents` — Upload document (multipart/form-data)
+- [x] `GET /api/v1/documents` — List authenticated user's documents (paginated)
+- [x] `GET /api/v1/documents/[id]` — Get document metadata
+- [x] `PATCH /api/v1/documents/[id]` — Update title/description
+- [x] `DELETE /api/v1/documents/[id]` — Soft-delete document
 
 ### Model
 
-- [ ] `models/document.ts` — CRUD + ownership validation
-- [ ] PDF page count extraction on upload
+- [x] `models/document.ts` — CRUD + ownership validation
+- [x] PDF page count extraction on upload
 
 ### Tests
 
-- [ ] Upload, list, get, update, delete flows
-- [ ] Authorization: user cannot manage another user's documents
-- [ ] Invalid file type / size: returns 400
+- [x] Upload, list, get, update, delete flows
+- [x] Authorization: user cannot manage another user's documents
+- [x] Invalid file type / size: returns 400
 
 ---
 
