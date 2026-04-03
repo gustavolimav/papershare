@@ -11,6 +11,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `POST /api/v1/documents` — Upload document (multipart/form-data); accepts PDF, DOCX, PPTX; max 50 MB (configurable via `MAX_FILE_SIZE_BYTES`); stores file via local filesystem adapter
+- `GET /api/v1/documents` — List authenticated user's documents with pagination (`page`, `limit` query params); returns `{ data, meta }` envelope
+- `GET /api/v1/documents/[id]` — Get document metadata by id; returns 404 if not found or soft-deleted
+- `PATCH /api/v1/documents/[id]` — Update document title/description; returns 403 if user doesn't own the document
+- `DELETE /api/v1/documents/[id]` — Soft-delete document (`deleted_at`); returns 403 if user doesn't own it
+- `models/document.ts` — CRUD model with ownership validation via `ForbiddenError`
+- `infra/storage.ts` — `StorageAdapter` interface with local filesystem implementation (saves to `./uploads/`)
+- Migration `005-create-documents.sql` — `documents` table
+- Zod schema `documentUpdateSchema` in `infra/schemas.ts`
+- `Document`, `DocumentPublic`, `DocumentCreateInput`, `DocumentUpdateInput`, `DocumentModel`, `StorageAdapter` types in `types/index.ts`
+- Integration tests for all document endpoints (upload, list, get, update, delete, authorization)
+
+---
+
+### Added (Phase 2)
+
 - Rate limiting middleware (`infra/rate-limit.ts`) — in-memory sliding window; 5 req/min on `POST /api/v1/sessions`, 10 req/min on `POST /api/v1/users`; returns `TooManyRequestsError` (429)
 - `TooManyRequestsError` (429) error class in `infra/errors.ts`
 - Zod input validation (`infra/schemas.ts`) on `POST /api/v1/users`, `PATCH /api/v1/users/[username]`, `POST /api/v1/sessions` — invalid input returns 400 `ValidationError`

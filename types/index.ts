@@ -146,6 +146,71 @@ export interface AuthenticationModel {
   getAuthentication(email: string, password: string): Promise<User>;
 }
 
+export interface Document {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface DocumentPublic {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface DocumentCreateInput {
+  title: string;
+  description?: string;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count?: number;
+  user_id: string;
+}
+
+export interface DocumentUpdateInput {
+  title?: string;
+  description?: string;
+}
+
+export interface DocumentModel {
+  create(input: DocumentCreateInput): Promise<DocumentPublic>;
+  findAllByUserId(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ documents: DocumentPublic[]; total: number }>;
+  findOneById(id: string): Promise<Document>;
+  updateById(
+    id: string,
+    userId: string,
+    input: DocumentUpdateInput,
+  ): Promise<DocumentPublic>;
+  deleteById(id: string, userId: string): Promise<void>;
+}
+
+export interface StorageAdapter {
+  save(key: string, buffer: Buffer, mimeType: string): Promise<void>;
+  delete(key: string): Promise<void>;
+}
+
 export interface MigratorModel {
   listPendingMigrations(): Promise<RunMigration[]>;
   runPendingMigrations(): Promise<RunMigration[]>;
