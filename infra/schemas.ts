@@ -47,6 +47,22 @@ export const authenticationSchema = z.object({
   password: z.string().min(1, "O campo 'password' é obrigatório."),
 });
 
+export const documentUpdateSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, "O 'title' não pode ser vazio.")
+      .max(255, "O 'title' deve ter no máximo 255 caracteres.")
+      .optional(),
+    description: z
+      .string()
+      .max(5000, "A 'description' deve ter no máximo 5000 caracteres.")
+      .optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Pelo menos um campo deve ser fornecido para atualização.",
+  });
+
 export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
 
