@@ -11,6 +11,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `POST /api/v1/documents` — upload document (multipart/form-data); validates file type (PDF, DOCX, PPTX) and size (50 MB default); extracts PDF page count
+- `GET /api/v1/documents` — list authenticated user's documents with pagination (`page`, `limit`)
+- `GET /api/v1/documents/[id]` — get document metadata (403 if not owner)
+- `PATCH /api/v1/documents/[id]` — update title/description (403 if not owner)
+- `DELETE /api/v1/documents/[id]` — soft-delete document and remove from storage (403 if not owner)
+- `models/document.ts` — full CRUD with ownership validation
+- `infra/storage.ts` — local filesystem storage adapter (no-op in test env)
+- Migration `005-create-documents.sql` — `documents` table
+- `documentUpdateSchema` Zod schema and `ALLOWED_MIME_TYPES` / `MAX_FILE_SIZE_BYTES` constants in `infra/schemas.ts`
+
 - Rate limiting middleware (`infra/rate-limit.ts`) — in-memory sliding window; 5 req/min on `POST /api/v1/sessions`, 10 req/min on `POST /api/v1/users`; returns `TooManyRequestsError` (429)
 - `TooManyRequestsError` (429) error class in `infra/errors.ts`
 - Zod input validation (`infra/schemas.ts`) on `POST /api/v1/users`, `PATCH /api/v1/users/[username]`, `POST /api/v1/sessions` — invalid input returns 400 `ValidationError`
