@@ -62,7 +62,9 @@ describe("GET /api/v1/documents", () => {
       expect(body.data).toHaveLength(2);
       expect(body.meta.total).toBe(2);
       expect(
-        body.data.every((d: { storage_key?: string }) => d.storage_key === undefined),
+        body.data.every(
+          (d: { storage_key?: string }) => d.storage_key === undefined,
+        ),
       ).toBe(true);
     });
 
