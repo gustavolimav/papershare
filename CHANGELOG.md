@@ -11,6 +11,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `POST /api/v1/documents/[id]/links` — create share link for a document; supports optional label, password, expiration date and download flag
+- `GET /api/v1/documents/[id]/links` — list all share links for a document (owner only)
+- `PATCH /api/v1/documents/[id]/links/[linkId]` — update link config (label, password, expiration, allow_download, is_active)
+- `DELETE /api/v1/documents/[id]/links/[linkId]` — revoke share link (sets `is_active = false`)
+- `GET /api/v1/share/[token]` — public endpoint; validates link (active, not expired, correct password) and returns document + link metadata
+- `models/shareLink.ts` — full CRUD with ownership validation and password hashing/verification
+- Migration `006-create-share-links.sql` — `share_links` table with token, password hash, expiration and download flag
+- `shareLinkCreateSchema` and `shareLinkUpdateSchema` Zod schemas in `infra/schemas.ts`
+- `ShareLink`, `ShareLinkPublic`, `ShareLinkWithDocument`, `ShareLinkCreateInput`, `ShareLinkUpdateInput`, `ShareLinkModel` types in `types/index.ts`
+
 - `POST /api/v1/documents` — upload document (multipart/form-data); validates file type (PDF, DOCX, PPTX) and size (50 MB default); extracts PDF page count
 - `GET /api/v1/documents` — list authenticated user's documents with pagination (`page`, `limit`)
 - `GET /api/v1/documents/[id]` — get document metadata (403 if not owner)

@@ -201,6 +201,82 @@ export interface DocumentModel {
   deleteById(id: string, userId: string): Promise<string>;
 }
 
+export interface ShareLink {
+  id: string;
+  token: string;
+  document_id: string;
+  user_id: string;
+  label: string | null;
+  password_hash: string | null;
+  expires_at: Date | null;
+  allow_download: boolean;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ShareLinkPublic {
+  id: string;
+  token: string;
+  document_id: string;
+  label: string | null;
+  expires_at: Date | null;
+  allow_download: boolean;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ShareLinkCreateInput {
+  documentId: string;
+  userId: string;
+  label?: string;
+  password?: string;
+  expiresAt?: Date;
+  allowDownload?: boolean;
+}
+
+export interface ShareLinkUpdateInput {
+  label?: string;
+  password?: string | null;
+  expiresAt?: Date | null;
+  allowDownload?: boolean;
+  isActive?: boolean;
+}
+
+export interface ShareLinkWithDocument {
+  link: ShareLinkPublic;
+  document: DocumentPublic;
+}
+
+export interface ShareLinkModel {
+  create(input: ShareLinkCreateInput): Promise<ShareLinkPublic>;
+  findAllByDocumentId(
+    documentId: string,
+    userId: string,
+  ): Promise<ShareLinkPublic[]>;
+  findOneById(
+    id: string,
+    documentId: string,
+    userId: string,
+  ): Promise<ShareLinkPublic>;
+  getByToken(
+    token: string,
+    password?: string,
+  ): Promise<ShareLinkWithDocument>;
+  updateById(
+    id: string,
+    documentId: string,
+    userId: string,
+    input: ShareLinkUpdateInput,
+  ): Promise<ShareLinkPublic>;
+  deleteById(
+    id: string,
+    documentId: string,
+    userId: string,
+  ): Promise<void>;
+}
+
 export interface AuthenticationModel {
   getAuthentication(email: string, password: string): Promise<User>;
 }

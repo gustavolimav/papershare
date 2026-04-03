@@ -63,6 +63,49 @@ export const documentUpdateSchema = z
     message: "Pelo menos um campo deve ser fornecido para atualização.",
   });
 
+export const shareLinkCreateSchema = z.object({
+  label: z
+    .string()
+    .min(1, "O 'label' não pode ser vazio.")
+    .max(255, "O 'label' deve ter no máximo 255 caracteres.")
+    .optional(),
+  password: z
+    .string()
+    .min(1, "A 'password' não pode ser vazia.")
+    .optional(),
+  expires_at: z
+    .string()
+    .datetime({ message: "O 'expires_at' deve ser uma data ISO 8601 válida." })
+    .transform((s) => new Date(s))
+    .optional(),
+  allow_download: z.boolean().optional(),
+});
+
+export const shareLinkUpdateSchema = z
+  .object({
+    label: z
+      .string()
+      .min(1, "O 'label' não pode ser vazio.")
+      .max(255, "O 'label' deve ter no máximo 255 caracteres.")
+      .optional(),
+    password: z
+      .string()
+      .min(1, "A 'password' não pode ser vazia.")
+      .nullable()
+      .optional(),
+    expires_at: z
+      .string()
+      .datetime({ message: "O 'expires_at' deve ser uma data ISO 8601 válida." })
+      .transform((s) => new Date(s))
+      .nullable()
+      .optional(),
+    allow_download: z.boolean().optional(),
+    is_active: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Pelo menos um campo deve ser fornecido para atualização.",
+  });
+
 export const ALLOWED_MIME_TYPES = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

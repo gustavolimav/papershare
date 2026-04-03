@@ -12,7 +12,7 @@
 | 1     | Foundation                         | ✅ Done    |
 | 2     | Authorization & Account Management | ✅ Done    |
 | 3     | Documents Core                     | ✅ Done    |
-| 4     | Share Links                        | ⏳ Planned |
+| 4     | Share Links                        | ✅ Done    |
 | 5     | Analytics & Tracking               | ⏳ Planned |
 | 6     | Frontend                           | ⏳ Planned |
 | 7     | AI Features                        | ⏳ Future  |
@@ -103,13 +103,13 @@ Core authentication infrastructure. All items delivered.
 
 ---
 
-## Phase 4 — Share Links ⏳
+## Phase 4 — Share Links ✅
 
 **Goal:** Users can generate configurable sharing links for documents.
 
 ### Database
 
-- [ ] Migration: `share_links` table
+- [x] Migration: `share_links` table
   ```sql
   id, token (UUID), document_id, user_id,
   label, password_hash, expires_at,
@@ -119,25 +119,25 @@ Core authentication infrastructure. All items delivered.
 
 ### API
 
-- [ ] `POST /api/v1/documents/[id]/links` — Create share link
-- [ ] `GET /api/v1/documents/[id]/links` — List links for a document
-- [ ] `PATCH /api/v1/documents/[id]/links/[linkId]` — Update link config
-- [ ] `DELETE /api/v1/documents/[id]/links/[linkId]` — Revoke link
-- [ ] `GET /api/v1/share/[token]` — Public endpoint: validate link and serve document
+- [x] `POST /api/v1/documents/[id]/links` — Create share link
+- [x] `GET /api/v1/documents/[id]/links` — List links for a document
+- [x] `PATCH /api/v1/documents/[id]/links/[linkId]` — Update link config
+- [x] `DELETE /api/v1/documents/[id]/links/[linkId]` — Revoke link
+- [x] `GET /api/v1/share/[token]` — Public endpoint: validate link and serve document
   - Checks expiration, active status, password if set
-  - Returns document viewer URL (not raw file for non-downloadable links)
+  - Returns document metadata (link + document JSON)
 
 ### Model
 
-- [ ] `models/shareLink.ts`
-- [ ] Password-protected links: hash on create, verify on access
+- [x] `models/shareLink.ts`
+- [x] Password-protected links: hash on create, verify on access
 
 ### Tests
 
-- [ ] Link creation with/without password and expiration
-- [ ] Expired link returns 403
-- [ ] Revoked link returns 403
-- [ ] Download-disabled link: file bytes not served
+- [x] Link creation with/without password and expiration
+- [x] Expired link returns 403
+- [x] Revoked link returns 403
+- [x] Download-disabled link: file bytes not served
 
 ---
 
