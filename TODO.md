@@ -16,6 +16,7 @@
 | 5     | Analytics & Tracking               | ⏳ Planned |
 | 6     | Frontend                           | ⏳ Planned |
 | 7     | AI Features                        | ⏳ Future  |
+| 8     | Monetization                       | ⏳ Future  |
 
 ---
 
@@ -201,12 +202,16 @@ Core authentication infrastructure. All items delivered.
 
 - [ ] Authentication context (React Context + SWR)
 - [ ] Redirect unauthenticated users to `/login`
+- [ ] Deploy to Vercel (connect GitHub repo, configure env vars)
+- [ ] Set up webapp-testing skill (`anthropics/skills`) for automated UI regression tests
 
 ---
 
 ## Phase 7 — AI Features ⏳
 
 **Goal:** Add AI-powered value on top of existing data.
+
+> **Tools to evaluate:** Flowise (drag-and-drop agent builder, fast prototyping) or LangChain (full control, better for RAG pipelines over user documents).
 
 - [ ] Auto-summarization on upload (extract text → Claude API → store summary)
 - [ ] `GET /api/v1/documents/[id]/summary` — Return AI summary
@@ -216,9 +221,47 @@ Core authentication infrastructure. All items delivered.
 
 ---
 
+---
+
+## Phase 8 — Monetization ⏳
+
+**Goal:** Gate premium features behind a paid plan.
+
+> **Tools:** Stripe for subscriptions and one-time payments. Open SaaS (wasp-lang) has a ready integration as reference.
+
+### Infrastructure
+
+- [ ] Stripe account + webhook setup
+- [ ] Migration: `subscriptions` table (`user_id`, `stripe_customer_id`, `plan`, `status`, `current_period_end`)
+- [ ] Stripe webhook handler (`POST /api/v1/webhooks/stripe`) — update subscription status on events
+
+### Plans (TBD)
+
+- [ ] Define plan tiers (e.g. Free / Pro) and which features are gated
+- [ ] Enforce plan limits in relevant model functions (e.g. max documents, max share links)
+
+### API
+
+- [ ] `POST /api/v1/billing/checkout` — Create Stripe Checkout session
+- [ ] `GET /api/v1/billing/portal` — Redirect to Stripe Customer Portal (manage/cancel)
+- [ ] `GET /api/v1/billing/subscription` — Current user's plan and status
+
+### Tests
+
+- [ ] Webhook events correctly update subscription state
+- [ ] Plan-gated endpoints return 402 when limit exceeded
+
+---
+
 ## Technical Debt Backlog
 
 These are not tied to a specific phase but should be addressed progressively.
+
+### Developer Experience
+
+- [ ] Install Repomix (`npx repomix`) + MCP plugin for richer Claude Code context in exploratory sessions
+
+### Code Quality
 
 - [ ] Replace `any` types in `DatabaseQuery.values` with proper typing
 - [ ] Add `ForbiddenError` (403) — currently missing from `infra/errors.ts`
