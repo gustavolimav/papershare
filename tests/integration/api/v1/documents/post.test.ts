@@ -8,14 +8,14 @@ beforeAll(async () => {
 
 async function buildUploadForm(
   title: string,
-  fileBuffer?: Buffer,
+  fileContent?: string,
   mimeType = "application/pdf",
   filename = "test.pdf",
 ) {
   const form = new FormData();
   form.append("title", title);
-  if (fileBuffer) {
-    const blob = new Blob([fileBuffer], { type: mimeType });
+  if (fileContent !== undefined) {
+    const blob = new Blob([fileContent], { type: mimeType });
     form.append("file", blob, filename);
   }
   return form;
@@ -42,7 +42,7 @@ describe("POST /api/v1/documents", () => {
 
       const form = await buildUploadForm(
         "My Test PDF",
-        Buffer.from("%PDF-1.4 test content"),
+        "%PDF-1.4 test content",
       );
       form.append("description", "A test description");
 
@@ -83,10 +83,7 @@ describe("POST /api/v1/documents", () => {
     test("Without a title returns 400", async () => {
       const { cookie } = await orchestrator.createUserSession();
 
-      const form = await buildUploadForm(
-        "",
-        Buffer.from("%PDF-1.4 test content"),
-      );
+      const form = await buildUploadForm("", "%PDF-1.4 test content");
 
       const response = await fetch("http://localhost:3000/api/v1/documents", {
         method: "POST",
@@ -102,7 +99,7 @@ describe("POST /api/v1/documents", () => {
 
       const form = await buildUploadForm(
         "Bad file",
-        Buffer.from("image data"),
+        "image data",
         "image/jpeg",
         "photo.jpg",
       );

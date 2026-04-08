@@ -9,7 +9,7 @@ beforeAll(async () => {
 async function uploadDocument(cookie: string, title: string) {
   const form = new FormData();
   form.append("title", title);
-  const blob = new Blob([Buffer.from("%PDF-1.4 test content")], {
+  const blob = new Blob(["%PDF-1.4 test content"], {
     type: "application/pdf",
   });
   form.append("file", blob, "test.pdf");
