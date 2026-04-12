@@ -1,4 +1,9 @@
 .next
 node_modules
 .idea
-WARP.mdtsconfig.tsbuildinfo
+WARP.md
+tsconfig.tsbuildinfo
+uploads/
+.DS_Store
+.claude/
+user-stories/
