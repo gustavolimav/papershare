@@ -69,10 +69,7 @@ export const shareLinkCreateSchema = z.object({
     .min(1, "O 'label' não pode ser vazio.")
     .max(255, "O 'label' deve ter no máximo 255 caracteres.")
     .optional(),
-  password: z
-    .string()
-    .min(1, "A 'password' não pode ser vazia.")
-    .optional(),
+  password: z.string().min(1, "A 'password' não pode ser vazia.").optional(),
   expires_at: z
     .string()
     .datetime({ message: "O 'expires_at' deve ser uma data ISO 8601 válida." })
@@ -95,7 +92,9 @@ export const shareLinkUpdateSchema = z
       .optional(),
     expires_at: z
       .string()
-      .datetime({ message: "O 'expires_at' deve ser uma data ISO 8601 válida." })
+      .datetime({
+        message: "O 'expires_at' deve ser uma data ISO 8601 válida.",
+      })
       .transform((s) => new Date(s))
       .nullable()
       .optional(),

@@ -181,6 +181,7 @@ async function getByToken(
     });
   }
 
+  // eslint-disable-next-line no-unused-vars
   const { password_hash: _ph, user_id: _ui, ...linkPublic } = link;
 
   return {

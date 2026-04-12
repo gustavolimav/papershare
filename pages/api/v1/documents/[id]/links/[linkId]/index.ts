@@ -35,7 +35,8 @@ async function patchHandler(
 
   if (validated.label !== undefined) input.label = validated.label;
   if (validated.password !== undefined) input.password = validated.password;
-  if (validated.expires_at !== undefined) input.expiresAt = validated.expires_at;
+  if (validated.expires_at !== undefined)
+    input.expiresAt = validated.expires_at;
   if (validated.allow_download !== undefined)
     input.allowDownload = validated.allow_download;
   if (validated.is_active !== undefined) input.isActive = validated.is_active;
@@ -50,10 +51,7 @@ async function patchHandler(
   return response.status(200).json(updated);
 }
 
-async function deleteHandler(
-  request: LinkRequest,
-  response: NextApiResponse,
-) {
+async function deleteHandler(request: LinkRequest, response: NextApiResponse) {
   await shareLink.deleteById(
     request.query.linkId as string,
     request.query.id as string,

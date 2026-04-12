@@ -260,21 +260,14 @@ export interface ShareLinkModel {
     documentId: string,
     userId: string,
   ): Promise<ShareLinkPublic>;
-  getByToken(
-    token: string,
-    password?: string,
-  ): Promise<ShareLinkWithDocument>;
+  getByToken(token: string, password?: string): Promise<ShareLinkWithDocument>;
   updateById(
     id: string,
     documentId: string,
     userId: string,
     input: ShareLinkUpdateInput,
   ): Promise<ShareLinkPublic>;
-  deleteById(
-    id: string,
-    documentId: string,
-    userId: string,
-  ): Promise<void>;
+  deleteById(id: string, documentId: string, userId: string): Promise<void>;
 }
 
 export interface AuthenticationModel {
