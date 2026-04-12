@@ -96,6 +96,18 @@ npm run commit           # Interactive conventional commit (Commitizen)
 
 ---
 
+## Definition of Done — mandatory before closing any task
+
+Every task (feature, fix, refactor) is only considered complete when ALL of the following pass locally:
+
+1. **Formatting** — `npm run sf` exits with no errors (Prettier + ESLint clean)
+2. **Tests** — `npm test` passes with no failures (full integration suite against real DB)
+
+Do not mark a task done, open a PR, or commit a "done" message until both commands exit 0.
+If Docker is not running, start it first with `npm run services:up` before running tests.
+
+---
+
 ## Code conventions
 
 - Async/await everywhere. No `.then()` chains.
