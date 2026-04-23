@@ -117,6 +117,58 @@ export interface RunMigration {
   timestamp: string;
 }
 
+// Document Types
+export interface Document {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface DocumentResponse {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface DocumentCreateInput {
+  title: string;
+  description: string | undefined;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  id: string;
+}
+
+export interface DocumentUpdateInput {
+  title?: string;
+  description?: string;
+}
+
+export interface DocumentListResponse {
+  documents: DocumentResponse[];
+  total: number;
+}
+
 // Model Interface Types
 export interface UserModel {
   create(userInput: UserCreateInput): Promise<UserPublic>;
@@ -156,4 +208,20 @@ export interface DatabaseModel {
     query: string | DatabaseQuery,
   ): Promise<DatabaseResult<T>>;
   getNewClient(): Promise<any>;
+}
+
+export interface DocumentModel {
+  create(input: DocumentCreateInput): Promise<DocumentResponse>;
+  findAllByUserId(
+    userId: string,
+    page: number,
+    perPage: number,
+  ): Promise<DocumentListResponse>;
+  findOneById(id: string, userId: string): Promise<DocumentResponse>;
+  updateById(
+    id: string,
+    userId: string,
+    input: DocumentUpdateInput,
+  ): Promise<DocumentResponse>;
+  deleteById(id: string, userId: string): Promise<string>;
 }

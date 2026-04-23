@@ -47,6 +47,50 @@ export const authenticationSchema = z.object({
   password: z.string().min(1, "O campo 'password' é obrigatório."),
 });
 
+export const ALLOWED_MIME_TYPES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+] as const;
+
+const DEFAULT_MAX_FILE_SIZE_MB = 50;
+const configuredMb = parseInt(process.env.MAX_FILE_SIZE_MB ?? "", 10);
+const resolvedMb = isNaN(configuredMb)
+  ? DEFAULT_MAX_FILE_SIZE_MB
+  : configuredMb;
+export const MAX_FILE_SIZE_BYTES = resolvedMb * 1024 * 1024;
+
+export const documentCreateSchema = z.object({
+  title: z
+    .string()
+    .min(1, "O campo 'title' é obrigatório.")
+    .max(255, "O 'title' deve ter no máximo 255 caracteres."),
+  description: z
+    .string()
+    .max(1000, "A 'description' deve ter no máximo 1000 caracteres.")
+    .optional(),
+});
+
+export const documentUpdateSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, "O campo 'title' não pode ser vazio.")
+      .max(255, "O 'title' deve ter no máximo 255 caracteres.")
+      .optional(),
+    description: z
+      .string()
+      .max(1000, "A 'description' deve ter no máximo 1000 caracteres.")
+      .optional(),
+  })
+  .refine(
+    (data) => data.title !== undefined || data.description !== undefined,
+    {
+      message:
+        "Pelo menos um campo deve ser fornecido para atualização: 'title' ou 'description'.",
+    },
+  );
+
 export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
 
