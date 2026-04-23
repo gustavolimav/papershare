@@ -101,9 +101,10 @@ npm run commit           # Interactive conventional commit (Commitizen)
 Every task (feature, fix, refactor) is only considered complete when ALL of the following pass locally:
 
 1. **Formatting** — `npm run sf` exits with no errors (Prettier + ESLint clean)
-2. **Tests** — `npm test` passes with no failures (full integration suite against real DB)
+2. **Type-check** — `npx tsc --noEmit` produces no errors in source files (ignore pre-existing test path alias errors from Jest config)
+3. **Tests** — `npm test` passes with no failures (full integration suite against real DB)
 
-Do not mark a task done, open a PR, or commit a "done" message until both commands exit 0.
+Do not mark a task done, open a PR, or commit a "done" message until all three commands exit 0.
 If Docker is not running, start it first with `npm run services:up` before running tests.
 
 ---
@@ -122,21 +123,26 @@ If Docker is not running, start it first with `npm run services:up` before runni
 
 ## Environment variables
 
-| Variable            | Purpose                                        |
-| ------------------- | ---------------------------------------------- |
-| `POSTGRES_HOST`     | DB host                                        |
-| `POSTGRES_PORT`     | DB port                                        |
-| `POSTGRES_USER`     | DB user                                        |
-| `POSTGRES_DB`       | DB name                                        |
-| `POSTGRES_PASSWORD` | DB password                                    |
-| `DATABASE_URL`      | Full connection string                         |
-| `PEPPER`            | Password hashing pepper (never change in prod) |
-| `NODE_ENV`          | `development` / `production` / `test`          |
+| Variable            | Purpose                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| `POSTGRES_HOST`     | DB host                                                          |
+| `POSTGRES_PORT`     | DB port                                                          |
+| `POSTGRES_USER`     | DB user                                                          |
+| `POSTGRES_DB`       | DB name                                                          |
+| `POSTGRES_PASSWORD` | DB password                                                      |
+| `DATABASE_URL`      | Full connection string                                           |
+| `PEPPER`            | Password hashing pepper (never change in prod)                   |
+| `NODE_ENV`          | `development` / `production` / `test`                            |
+| `MAX_FILE_SIZE_MB`  | Max upload size in MB (default: 50; used by `infra/schemas.ts`)  |
+| `UPLOADS_DIR`       | Absolute path for local file storage (default: `<root>/uploads`) |
 
 ---
 
-## Current state (as of 2026-03-30)
+## Current state (as of 2026-04-23)
 
-Completed: user registration, login, session auth middleware, profile get/update.
-Next up: logout endpoint, authorization guard (own-resource check), documents upload.
+Completed: user registration, login, session auth middleware, profile get/update, logout,
+authorization guard, account soft-delete, rate limiting, Zod validation (Phases 1–2);
+document upload (multipart, PDF/DOCX/PPTX, size limit, page count extraction),
+document CRUD API with pagination and ownership enforcement, local file storage adapter (Phase 3).
+Next up: share links with expiration and password protection (Phase 4).
 See `TODO.md` for the full phased roadmap.
