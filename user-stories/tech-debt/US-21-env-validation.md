@@ -23,12 +23,12 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/env.ts` *(create)*
-  - `.env.example` *(create if not already present)*
-  - `pages/api/v1/status.ts` or `pages/_app.tsx` *(import `infra/env.ts` to trigger validation)*
+  - `infra/env.ts` _(create)_
+  - `.env.example` _(create if not already present)_
+  - `pages/api/v1/status.ts` or `pages/_app.tsx` _(import `infra/env.ts` to trigger validation)_
 - Recommended implementation: use Zod to define an env schema and parse `process.env` through it:
   ```ts
-  import { z } from 'zod';
+  import { z } from "zod";
   const envSchema = z.object({
     POSTGRES_HOST: z.string().min(1),
     POSTGRES_PORT: z.coerce.number().int().positive(),

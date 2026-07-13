@@ -1,0 +1,177 @@
+import orchestrator from "tests/orchestrator";
+
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
+  await orchestrator.cleanDatabase();
+  await orchestrator.runPendingMigrations();
+});
+
+describe("GET /api/v1/share/[token]", () => {
+  test("With a nonexistent token", async () => {
+    const response = await fetch(
+      "http://localhost:3000/api/v1/share/00000000-0000-4000-8000-000000000000",
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  test("With a revoked link", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      { method: "DELETE", headers: { Cookie: cookie } },
+    );
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Este link foi revogado.");
+  });
+
+  test("With an expired link", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    });
+
+    await orchestrator.expireShareLink(link.id);
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Este link expirou.");
+  });
+
+  test("With no password set", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie, {
+      title: "Public doc",
+    });
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      allow_download: false,
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+
+    expect(responseBody).toEqual({
+      id: link.id,
+      token: link.token,
+      label: null,
+      expires_at: null,
+      allow_download: false,
+      is_active: true,
+      created_at: responseBody.created_at,
+      has_password: false,
+      document: {
+        id: document.id,
+        title: "Public doc",
+        description: null,
+        mime_type: document.mime_type,
+        size_bytes: document.size_bytes,
+        page_count: document.page_count,
+      },
+    });
+  });
+
+  test("With a password set, no password provided", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      password: "secret123",
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Senha incorreta.");
+  });
+
+  test("With a password set, wrong password provided", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      password: "secret123",
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+      { headers: { "X-Share-Password": "wrongpassword" } },
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Senha incorreta.");
+  });
+
+  test("With a password set, correct password provided via header", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      password: "secret123",
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+      { headers: { "X-Share-Password": "secret123" } },
+    );
+
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+    expect(responseBody.has_password).toBe(true);
+  });
+
+  test("With a password set, password provided only via query param is ignored", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      password: "secret123",
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}?password=secret123`,
+    );
+
+    expect(response.status).toBe(403);
+  });
+
+  test("With the linked document soft-deleted", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    await fetch(`http://localhost:3000/api/v1/documents/${document.id}`, {
+      method: "DELETE",
+      headers: { Cookie: cookie },
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(404);
+  });
+});

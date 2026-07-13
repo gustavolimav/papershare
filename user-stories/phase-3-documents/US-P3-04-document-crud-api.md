@@ -11,6 +11,7 @@
 **Acceptance Criteria:**
 
 **List documents — `GET /api/v1/documents`:**
+
 - [ ] Requires authentication
 - [ ] Returns only the authenticated user's non-deleted documents
 - [ ] Supports pagination via `page` and `per_page` query params (defaults: page=1, per_page=10, max per_page=100)
@@ -18,12 +19,14 @@
 - [ ] Results are ordered by `created_at DESC`
 
 **Get document — `GET /api/v1/documents/[id]`:**
+
 - [ ] Requires authentication
 - [ ] Returns `404` if document does not exist or is soft-deleted
 - [ ] Returns `403` if the document belongs to a different user
 - [ ] Returns the full `DocumentResponse` on success
 
 **Update document — `PATCH /api/v1/documents/[id]`:**
+
 - [ ] Requires authentication and ownership
 - [ ] Accepts optional `title` and/or `description` — at least one must be provided
 - [ ] Returns `400` if neither field is supplied
@@ -31,6 +34,7 @@
 - [ ] Does NOT allow changing `mime_type`, `storage_key`, `size_bytes`, `page_count`, or `user_id`
 
 **Delete document — `DELETE /api/v1/documents/[id]`:**
+
 - [ ] Requires authentication and ownership
 - [ ] Performs a soft-delete: sets `deleted_at = NOW()` on the `documents` row
 - [ ] Returns the `storage_key` so the caller can clean up the stored file
@@ -40,10 +44,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/documents/index.ts` *(GET list + POST upload — already has upload from US-P3-03)*
-  - `pages/api/v1/documents/[id]/index.ts` *(GET, PATCH, DELETE single document)*
-  - `models/document.ts` *(add `findAllByUserId()`, `findOneById()`, `updateById()`, `deleteById()`)*
-  - `infra/schemas.ts` *(add `documentUpdateSchema` — at least one of title/description required)*
+  - `pages/api/v1/documents/index.ts` _(GET list + POST upload — already has upload from US-P3-03)_
+  - `pages/api/v1/documents/[id]/index.ts` _(GET, PATCH, DELETE single document)_
+  - `models/document.ts` _(add `findAllByUserId()`, `findOneById()`, `updateById()`, `deleteById()`)_
+  - `infra/schemas.ts` _(add `documentUpdateSchema` — at least one of title/description required)_
   - `tests/integration/api/v1/documents/index.test.ts`
   - `tests/integration/api/v1/documents/[id]/index.test.ts`
 - All model methods take `userId` as a parameter and enforce ownership — the model, not the handler, is responsible for returning `ForbiddenError`

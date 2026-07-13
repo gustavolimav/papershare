@@ -22,9 +22,9 @@
 **Technical Context:**
 
 - Relevant files:
-  - `.github/workflows/ci.yml` *(create or update)*
-  - `tsconfig.json` *(review — ensure `noEmit` is not set permanently in tsconfig, it belongs in the CI command)*
-  - `package.json` *(optionally add a `"typecheck": "tsc --noEmit"` script)*
+  - `.github/workflows/ci.yml` _(create or update)_
+  - `tsconfig.json` _(review — ensure `noEmit` is not set permanently in tsconfig, it belongs in the CI command)_
+  - `package.json` _(optionally add a `"typecheck": "tsc --noEmit"` script)_
 - Suggested workflow structure:
   ```yaml
   name: CI
@@ -40,8 +40,8 @@
         - uses: actions/checkout@v4
         - uses: actions/setup-node@v4
           with:
-            node-version-file: '.nvmrc'
-            cache: 'npm'
+            node-version-file: ".nvmrc"
+            cache: "npm"
         - run: npm ci
         - run: npm run typecheck
   ```

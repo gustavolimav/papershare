@@ -28,12 +28,12 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/share/[token]/chat.ts` *(create)*
-  - `models/chat.ts` *(create — RAG logic: chunk retrieval, prompt construction, Claude API call)*
-  - `models/documentChunks.ts` *(create — text chunking and storage)*
-  - `infra/migrations/009-create-document-chunks.sql` *(or 010, depending on prior migrations)*
-  - `components/viewer/ChatPanel.tsx` *(create — UI for the chat interface)*
-  - `types/index.ts` *(add `DocumentChunk`, `ChatMessage` interfaces)*
+  - `pages/api/v1/share/[token]/chat.ts` _(create)_
+  - `models/chat.ts` _(create — RAG logic: chunk retrieval, prompt construction, Claude API call)_
+  - `models/documentChunks.ts` _(create — text chunking and storage)_
+  - `infra/migrations/009-create-document-chunks.sql` _(or 010, depending on prior migrations)_
+  - `components/viewer/ChatPanel.tsx` _(create — UI for the chat interface)_
+  - `types/index.ts` _(add `DocumentChunk`, `ChatMessage` interfaces)_
 - Text chunking strategy: split extracted text into ~500 token chunks with 50-token overlap. Store each chunk with `document_id`, `chunk_index`, `content TEXT`, `page_number INTEGER`.
 - For MVP RAG without a vector DB: use the full document text (if < 100KB) or the top N most relevant chunks based on simple keyword overlap (no embedding required). A proper vector similarity search (pgvector) is a future enhancement.
 - Claude API call structure: system prompt = "You are a helpful assistant. Answer questions based only on the following document excerpts. If the answer is not in the excerpts, say so." + excerpts + user question. Use streaming API (`stream: true`).

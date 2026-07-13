@@ -52,6 +52,56 @@ export interface DocumentListResponse {
   total: number;
 }
 
+export interface ShareLink {
+  id: string;
+  token: string;
+  document_id: string;
+  user_id: string;
+  label: string | null;
+  password_hash: string | null;
+  expires_at: Date | null;
+  allow_download: boolean;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ShareLinkResponse {
+  id: string;
+  token: string;
+  document_id: string;
+  user_id: string;
+  label: string | null;
+  expires_at: Date | null;
+  allow_download: boolean;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  has_password: boolean;
+}
+
+// Deliberately narrower than ShareLinkResponse: this is what the public,
+// unauthenticated endpoint returns, so it must not leak the link's
+// document_id/user_id/updated_at or the document's storage_key/user_id/timestamps.
+export interface ShareLinkWithDocument {
+  id: string;
+  token: string;
+  label: string | null;
+  expires_at: Date | null;
+  allow_download: boolean;
+  is_active: boolean;
+  created_at: Date;
+  has_password: boolean;
+  document: {
+    id: string;
+    title: string;
+    description: string | null;
+    mime_type: string;
+    size_bytes: number;
+    page_count: number | null;
+  };
+}
+
 // Input Types
 export interface UserCreateInput {
   username: string;
@@ -84,6 +134,21 @@ export interface DocumentCreateInput {
 export interface DocumentUpdateInput {
   title?: string;
   description?: string;
+}
+
+export interface ShareLinkCreateInput {
+  label?: string;
+  password?: string;
+  expires_at?: string;
+  allow_download?: boolean;
+}
+
+export interface ShareLinkUpdateInput {
+  label?: string | null;
+  password?: string | null;
+  expires_at?: string | null;
+  allow_download?: boolean;
+  is_active?: boolean;
 }
 
 // Database Query Types
@@ -197,6 +262,23 @@ export interface DocumentModel {
     input: DocumentUpdateInput,
   ): Promise<DocumentResponse>;
   deleteById(id: string, userId: string): Promise<{ storage_key: string }>;
+}
+
+export interface ShareLinkModel {
+  create(
+    documentId: string,
+    userId: string,
+    input: ShareLinkCreateInput,
+  ): Promise<ShareLinkResponse>;
+  findAllByDocumentId(documentId: string): Promise<ShareLinkResponse[]>;
+  findOneById(id: string, documentId: string): Promise<ShareLinkResponse>;
+  updateById(
+    id: string,
+    documentId: string,
+    input: ShareLinkUpdateInput,
+  ): Promise<ShareLinkResponse>;
+  revokeById(id: string, documentId: string): Promise<ShareLinkResponse>;
+  getByToken(token: string, password?: string): Promise<ShareLinkWithDocument>;
 }
 
 export interface StorageModel {

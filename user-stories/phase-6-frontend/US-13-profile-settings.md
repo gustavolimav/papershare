@@ -14,6 +14,7 @@
 - [ ] The page is divided into two sections: "Profile" and "Account"
 
 **Profile section:**
+
 - [ ] Displays current username and email
 - [ ] An "Edit Profile" form allows updating username, email, and/or password
 - [ ] Client-side validation mirrors backend rules (same as registration: username 3–30 chars, valid email, password 8+ chars)
@@ -22,6 +23,7 @@
 - [ ] Validation errors from the API are displayed inline
 
 **Account section:**
+
 - [ ] A "Log Out" button calls `DELETE /api/v1/sessions`, clears the auth context, and redirects to `/`
 - [ ] A "Delete Account" button opens a confirmation dialog with a warning: "Esta ação é permanente e não pode ser desfeita."
 - [ ] Confirming account deletion calls `DELETE /api/v1/users/[username]` and redirects to `/` after success
@@ -30,10 +32,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/settings.tsx` *(create)*
-  - `components/settings/ProfileForm.tsx` *(create)*
-  - `components/settings/DangerZone.tsx` *(create — logout + delete account)*
-  - `components/ui/Toast.tsx` *(create — success/error notification)*
+  - `pages/settings.tsx` _(create)_
+  - `components/settings/ProfileForm.tsx` _(create)_
+  - `components/settings/DangerZone.tsx` _(create — logout + delete account)_
+  - `components/ui/Toast.tsx` _(create — success/error notification)_
 - After a successful `PATCH`, call `AuthContext.mutateUser()` to re-fetch the session (the username may have changed, which affects the API path for future calls)
 - After logout (`DELETE /api/v1/sessions`), call `AuthContext.mutateUser(null, false)` to immediately clear the user from the context before redirecting
 - The `PATCH /api/v1/users/[username]` endpoint uses the current username in the URL path — if the user changes their username, use the username from the original session (before the update) as the path parameter

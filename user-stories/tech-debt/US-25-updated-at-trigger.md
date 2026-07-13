@@ -21,12 +21,13 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/migrations/008-updated-at-trigger.sql` *(create — or next available migration number)*
-  - `models/user.ts` *(remove `updated_at = NOW()` from UPDATE queries)*
-  - `models/session.ts` *(same)*
-  - `models/document.ts` *(same)*
-  - `models/shareLink.ts` *(same)*
+  - `infra/migrations/008-updated-at-trigger.sql` _(create — or next available migration number)_
+  - `models/user.ts` _(remove `updated_at = NOW()` from UPDATE queries)_
+  - `models/session.ts` _(same)_
+  - `models/document.ts` _(same)_
+  - `models/shareLink.ts` _(same)_
 - SQL for the trigger function:
+
   ```sql
   CREATE OR REPLACE FUNCTION set_updated_at()
   RETURNS TRIGGER AS $$
@@ -41,6 +42,7 @@
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
   -- Repeat for sessions, documents, share_links
   ```
+
 - Dependencies / considerations:
   - The migration number must not conflict with US-01's migration 007 — coordinate numbering if multiple migrations are being added in parallel
   - This is a safe refactor — removing `updated_at = NOW()` from queries doesn't change visible behaviour since the trigger achieves the same result

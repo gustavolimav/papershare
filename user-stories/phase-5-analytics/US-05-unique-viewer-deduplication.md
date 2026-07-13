@@ -27,8 +27,8 @@
 **Technical Context:**
 
 - Relevant files:
-  - `models/linkView.ts` *(update `recordView()` with deduplication logic)*
-  - `tests/integration/api/v1/share/[token]/view/post.test.ts` *(extend existing tests)*
+  - `models/linkView.ts` _(update `recordView()` with deduplication logic)_
+  - `tests/integration/api/v1/share/[token]/view/post.test.ts` _(extend existing tests)_
 - Recommended SQL approach — use `INSERT ... ON CONFLICT` with a partial unique index:
   ```sql
   CREATE UNIQUE INDEX idx_link_views_dedup
@@ -40,7 +40,7 @@
   1. `SELECT id FROM link_views WHERE share_link_id = $1 AND viewer_fingerprint = $2 AND created_at > NOW() - INTERVAL '30 minutes'`
   2. If found: `UPDATE link_views SET time_on_page = $3, pages_viewed = $4, updated_at = NOW() WHERE id = $5`
   3. If not found: `INSERT INTO link_views (...)`
-  Wrap both in a transaction to avoid race conditions.
+     Wrap both in a transaction to avoid race conditions.
 - Add an `updated_at TIMESTAMPTZ` column to `link_views` in the migration (US-01 should be updated, or add a new migration `008-add-updated-at-link-views.sql`)
 - Dependencies / considerations:
   - Requires US-01 and US-02

@@ -22,10 +22,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/index.tsx` *(create)*
-  - `styles/Home.module.css` *(create if using CSS modules)*
-  - `components/layout/Header.tsx` *(create — shared nav header used across pages)*
-  - `components/layout/Footer.tsx` *(create — minimal footer with copyright)*
+  - `pages/index.tsx` _(create)_
+  - `styles/Home.module.css` _(create if using CSS modules)_
+  - `components/layout/Header.tsx` _(create — shared nav header used across pages)_
+  - `components/layout/Footer.tsx` _(create — minimal footer with copyright)_
 - The auth redirect should use `useAuth()` from US-06 and Next.js `useRouter().replace('/dashboard')` once `isLoading` is false and `user` is non-null
 - Dependencies / considerations:
   - Requires US-06 (AuthContext) to be in place for redirect logic

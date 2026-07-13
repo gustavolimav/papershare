@@ -25,10 +25,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/pagination.ts` *(create)*
-  - `types/index.ts` *(add `PaginationParams`, `PaginationMeta`)*
-  - `pages/api/v1/documents/index.ts` *(refactor to use helpers)*
-  - `models/document.ts → findAllByUserId()` *(already accepts offset/limit — no change needed)*
+  - `infra/pagination.ts` _(create)_
+  - `types/index.ts` _(add `PaginationParams`, `PaginationMeta`)_
+  - `pages/api/v1/documents/index.ts` _(refactor to use helpers)_
+  - `models/document.ts → findAllByUserId()` _(already accepts offset/limit — no change needed)_
 - Current state: `GET /api/v1/documents` has inline pagination parsing logic. Extract it to the helper.
 - The `parsePagination` helper should handle `query.page` being `string | string[] | undefined` (Next.js query type) — use `Array.isArray(v) ? v[0] : v` to normalize, then `parseInt`.
 - Dependencies / considerations:

@@ -88,6 +88,56 @@ export const paginationSchema = z.object({
   per_page: z.coerce.number().int().min(1).max(100).optional().default(10),
 });
 
+function isFutureDate(value: string): boolean {
+  return new Date(value) > new Date();
+}
+
+export const shareLinkCreateSchema = z.object({
+  label: z
+    .string()
+    .max(255, "O 'label' deve ter no máximo 255 caracteres.")
+    .optional(),
+  password: z
+    .string()
+    .min(4, "A 'password' deve ter no mínimo 4 caracteres.")
+    .optional(),
+  expires_at: z
+    .string()
+    .datetime("A 'expires_at' deve ser uma data ISO válida.")
+    .refine(isFutureDate, {
+      message: "A data de expiração deve ser futura.",
+    })
+    .optional(),
+  allow_download: z.boolean().optional(),
+});
+
+export const shareLinkUpdateSchema = z
+  .object({
+    label: z
+      .string()
+      .max(255, "O 'label' deve ter no máximo 255 caracteres.")
+      .nullable()
+      .optional(),
+    password: z
+      .string()
+      .min(4, "A 'password' deve ter no mínimo 4 caracteres.")
+      .nullable()
+      .optional(),
+    expires_at: z
+      .string()
+      .datetime("A 'expires_at' deve ser uma data ISO válida.")
+      .refine(isFutureDate, {
+        message: "A data de expiração deve ser futura.",
+      })
+      .nullable()
+      .optional(),
+    allow_download: z.boolean().optional(),
+    is_active: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Pelo menos um campo deve ser fornecido para atualização.",
+  });
+
 export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
 

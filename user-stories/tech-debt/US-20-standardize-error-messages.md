@@ -27,7 +27,7 @@
   - `models/shareLink.ts`
   - `models/authentication.ts`
   - `infra/auth.ts`
-  - `infra/schemas.ts` *(Zod error messages)*
+  - `infra/schemas.ts` _(Zod error messages)_
   - `infra/rate-limit.ts`
   - `pages/api/v1/**/*.ts`
 - Known mixed-language areas: `infra/schemas.ts` has Zod validation messages some of which may be in English; `infra/auth.ts` error messages on session expiry/missing cookie

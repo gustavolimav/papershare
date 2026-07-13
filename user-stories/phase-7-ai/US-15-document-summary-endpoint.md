@@ -30,11 +30,11 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/documents/[id]/summary.ts` *(create)*
-  - `models/document.ts` *(add summary-related methods)*
-  - `models/summarizer.ts` *(reuse/extend from US-14)*
-  - `infra/migrations/009-add-ai-summary-generated-at.sql` *(create — adds `ai_summary_generated_at` column if not added in US-14)*
-  - `types/index.ts` *(add `DocumentSummaryResponse` interface)*
+  - `pages/api/v1/documents/[id]/summary.ts` _(create)_
+  - `models/document.ts` _(add summary-related methods)_
+  - `models/summarizer.ts` _(reuse/extend from US-14)_
+  - `infra/migrations/009-add-ai-summary-generated-at.sql` _(create — adds `ai_summary_generated_at` column if not added in US-14)_
+  - `types/index.ts` _(add `DocumentSummaryResponse` interface)_
 - The rate-limit for summary regeneration can be implemented at the model layer with a simple SQL count: `SELECT COUNT(*) FROM summary_regeneration_log WHERE user_id = $1 AND created_at > NOW() - INTERVAL '1 hour'`. Alternatively, add a `summary_regenerated_count` and `summary_last_regenerated_at` on the documents row and reset hourly — simpler but less precise.
 - The `POST` endpoint should reuse the same Claude API call from US-14 (`models/summarizer.ts`)
 - Dependencies / considerations:

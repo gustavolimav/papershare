@@ -24,16 +24,18 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/migrations/index.ts` *(update — add token check middleware)*
-  - `infra/env.ts` *(if US-21 is done, add optional `MIGRATIONS_SECRET` variable)*
-  - `.env.example` *(add `MIGRATIONS_SECRET`)*
-  - `tests/integration/api/v1/migrations/*.test.ts` *(update to pass correct token)*
+  - `pages/api/v1/migrations/index.ts` _(update — add token check middleware)_
+  - `infra/env.ts` _(if US-21 is done, add optional `MIGRATIONS_SECRET` variable)_
+  - `.env.example` _(add `MIGRATIONS_SECRET`)_
+  - `tests/integration/api/v1/migrations/*.test.ts` _(update to pass correct token)_
 - Implementation: create a simple `adminAuthMiddleware` in `infra/auth.ts` (alongside the existing `authMiddleware`):
   ```ts
   export function adminAuthMiddleware(req, res, next) {
-    const token = req.headers['x-migrations-secret'] || req.headers.authorization?.replace('Bearer ', '');
+    const token =
+      req.headers["x-migrations-secret"] ||
+      req.headers.authorization?.replace("Bearer ", "");
     if (!token || token !== process.env.MIGRATIONS_SECRET) {
-      throw new UnathorizedError('Token de admin inválido.');
+      throw new UnathorizedError("Token de admin inválido.");
     }
     next();
   }

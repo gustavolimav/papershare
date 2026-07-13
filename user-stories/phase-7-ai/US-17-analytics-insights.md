@@ -25,11 +25,11 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/documents/[id]/analytics/insights.ts` *(create)*
-  - `models/analyticsInsights.ts` *(create — fetches analytics, builds prompt, calls Claude, caches result)*
-  - `infra/migrations/010-add-analytics-insight-cache.sql` *(create — adds cache columns to documents or new table)*
-  - `types/index.ts` *(add `AnalyticsInsightResponse` interface)*
-  - `components/analytics/InsightCard.tsx` *(create — display component for the frontend)*
+  - `pages/api/v1/documents/[id]/analytics/insights.ts` _(create)_
+  - `models/analyticsInsights.ts` _(create — fetches analytics, builds prompt, calls Claude, caches result)_
+  - `infra/migrations/010-add-analytics-insight-cache.sql` _(create — adds cache columns to documents or new table)_
+  - `types/index.ts` _(add `AnalyticsInsightResponse` interface)_
+  - `components/analytics/InsightCard.tsx` _(create — display component for the frontend)_
 - Prompt structure: system = "You are a helpful analytics assistant. Respond in Brazilian Portuguese (pt-BR)." User = structured analytics data (total_views, unique_viewers, avg_time_on_page, top_links, views_by_day) formatted as JSON + "Please summarize these analytics in 3-5 sentences for the document owner, highlighting the most notable trends."
 - Cache invalidation: compare `total_views` and `last_viewed_at` from the current analytics against what was stored at insight generation time. If they match, return cached insight.
 - Use `claude-haiku-4-5-20251001` model for cost efficiency.

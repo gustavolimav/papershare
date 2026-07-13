@@ -33,10 +33,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/documents/[id]/links/[linkId]/analytics.ts` *(create)*
-  - `models/linkView.ts` *(add `getAnalyticsByLinkId()`)*
-  - `types/index.ts` *(add `LinkAnalyticsResponse` interface)*
-  - `tests/integration/api/v1/documents/[id]/links/[linkId]/analytics/get.test.ts` *(create)*
+  - `pages/api/v1/documents/[id]/links/[linkId]/analytics.ts` _(create)_
+  - `models/linkView.ts` _(add `getAnalyticsByLinkId()`)_
+  - `types/index.ts` _(add `LinkAnalyticsResponse` interface)_
+  - `tests/integration/api/v1/documents/[id]/links/[linkId]/analytics/get.test.ts` _(create)_
 - The ownership check pattern is already established in `models/shareLink.ts → findOneById()` — reuse the same pattern: join `share_links` to `documents` and verify `documents.user_id = $userId`
 - The `views_by_day` array should use a SQL `generate_series` or `GROUP BY DATE(created_at)` approach; ensure the last 30 days are always represented (fill zero counts for days with no views using `generate_series`)
 - Use `COALESCE(AVG(...), NULL)` pattern so that empty result sets return `null` rather than `0` for averages
