@@ -143,12 +143,16 @@ If Docker is not running, start it first with `npm run services:up` before runni
 
 ---
 
-## Current state (as of 2026-07-12)
+## Current state (as of 2026-07-13)
 
 Completed: user registration, login, session auth middleware, profile get/update,
 logout, authorization guards, soft-delete accounts, rate limiting, pre-Phase-3
 security hardening, Phase 3 (documents: S3/MinIO-backed upload, validation,
 CRUD API), Phase 4 (share links: CRUD, password/expiry/revocation, public
-share endpoint), and Phase 5 (analytics: view recording with 30-min dedup,
-per-link and per-document aggregation).
-Next up: Phase 6 (frontend). See `TODO.md` for the full phased roadmap.
+share endpoint), Phase 5 (analytics: view recording with 30-min dedup,
+per-link and per-document aggregation), and Phase 6 Block 1 of 6 (App Router
+foundation, Tailwind v4 + shadcn/ui, auth context, landing page).
+Next up: Phase 6 Block 2 (registration & login forms, `US-08`). See `TODO.md`
+for the full phased roadmap and `user-stories/phase-6-frontend/` for the
+per-block specs (each has a 2026-07-13 alignment note reconciling it with
+the App Router / shadcn decisions).

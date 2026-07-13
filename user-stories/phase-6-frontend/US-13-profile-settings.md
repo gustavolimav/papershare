@@ -8,9 +8,18 @@
 **I want to** view and update my profile information and manage my account from a settings page,
 **So that** I can keep my details current and control my account lifecycle.
 
+> **Alignment note (2026-07-13):** App Router: route is
+> `app/settings/page.tsx`, Server Component gate via `getServerUser()`
+> same as US-09/10/12. Toasts already exist — `components/ui/sonner.tsx`
+> is installed and `<Toaster />` is already mounted in `app/layout.tsx`;
+> just call `toast.success(...)`/`toast.error(...)` from the `sonner`
+> package, no custom `Toast.tsx` needed. Use `AlertDialog`
+> (`components/ui/alert-dialog.tsx`) for the delete-account
+> confirmation.
+
 **Acceptance Criteria:**
 
-- [ ] A settings page exists at `pages/settings.tsx`, accessible only to authenticated users
+- [ ] A settings page exists at `app/settings/page.tsx`, accessible only to authenticated users
 - [ ] The page is divided into two sections: "Profile" and "Account"
 
 **Profile section:**
@@ -32,10 +41,9 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/settings.tsx` _(create)_
+  - `app/settings/page.tsx` _(create)_
   - `components/settings/ProfileForm.tsx` _(create)_
-  - `components/settings/DangerZone.tsx` _(create — logout + delete account)_
-  - `components/ui/Toast.tsx` _(create — success/error notification)_
+  - `components/settings/DangerZone.tsx` _(create — logout + delete account, use `components/ui/alert-dialog.tsx`)_
 - After a successful `PATCH`, call `AuthContext.mutateUser()` to re-fetch the session (the username may have changed, which affects the API path for future calls)
 - After logout (`DELETE /api/v1/sessions`), call `AuthContext.mutateUser(null, false)` to immediately clear the user from the context before redirecting
 - The `PATCH /api/v1/users/[username]` endpoint uses the current username in the URL path — if the user changes their username, use the username from the original session (before the update) as the path parameter

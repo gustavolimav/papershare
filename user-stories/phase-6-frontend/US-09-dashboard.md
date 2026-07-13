@@ -8,9 +8,17 @@
 **I want to** see all my uploaded documents in a dashboard and upload new ones,
 **So that** I can manage my document library from a central place.
 
+> **Alignment note (2026-07-13):** App Router, not Pages Router (see
+> US-06/07). The auth gate should follow the landing page's pattern:
+> `app/dashboard/page.tsx` is a Server Component that calls
+> `getServerUser()` from `@/lib/auth-server` and `redirect("/login")`
+> if null, before rendering anything client-side — no `useAuth()`
+> loading-flicker check needed for the gate itself (client components
+> nested inside can still use `useAuth()` for the header/nav state).
+
 **Acceptance Criteria:**
 
-- [ ] A dashboard page exists at `pages/dashboard.tsx`, accessible only to authenticated users (unauthenticated users are redirected to `/login`)
+- [ ] A dashboard page exists at `app/dashboard/page.tsx`, accessible only to authenticated users (unauthenticated users are redirected to `/login`)
 - [ ] The page fetches and displays the authenticated user's documents using `GET /api/v1/documents` via SWR
 - [ ] Each document card/row shows: title, file type icon (PDF/DOCX/PPTX), file size (human-readable, e.g., "2.3 MB"), page count (if available), upload date, and a link to the document detail page
 - [ ] A "Upload Document" button opens a file picker or drag-and-drop zone
@@ -26,17 +34,17 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/dashboard.tsx` _(create)_
+  - `app/dashboard/page.tsx` _(create — Server Component wrapper; delegate interactive parts to a Client Component, e.g. `DashboardView`)_
   - `components/documents/DocumentList.tsx` _(create)_
   - `components/documents/DocumentCard.tsx` _(create)_
   - `components/documents/UploadZone.tsx` _(create — drag-and-drop + file picker)_
-  - `components/ui/ConfirmDialog.tsx` _(create — reusable confirm modal)_
-  - `components/ui/Skeleton.tsx` _(create — loading placeholder)_
+  - `components/ui/alert-dialog.tsx` _(already exists — shadcn/ui `AlertDialog`, use for the delete confirmation instead of a custom `ConfirmDialog`)_
+  - `components/ui/skeleton.tsx` _(already exists — shadcn/ui, reuse as-is)_
   - `lib/formatters.ts` _(create — `formatFileSize(bytes)`, `formatDate(iso)` helpers)_
 - The upload form needs `encType="multipart/form-data"` and should submit `file` (the file binary) and `title` (string) as form fields — matching what the existing `POST /api/v1/documents` handler expects via `formidable`
 - SWR key for document list: `'/api/v1/documents?page=1&per_page=10'`; use `useSWR` with `mutate` for post-upload revalidation
 - The `GET /api/v1/documents` response already includes `{ documents: [], total: number }` — use `total` and `per_page` to calculate page count
 - Dependencies / considerations:
-  - Requires US-06 (AuthContext), US-07/08 (shared layout, navigation)
+  - Requires US-06 (AuthContext, already built), US-07/08 (shared layout, navigation)
   - No backend changes needed — all required endpoints exist
   - For upload progress, use the `XMLHttpRequest` `progress` event or a fetch wrapper with `ReadableStream`

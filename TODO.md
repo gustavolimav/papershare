@@ -229,28 +229,44 @@ foundation from day one. Reasons:
   `app/page.tsx` / `app/status/page.tsx` since they're trivial and avoid
   routing collisions once `app/` exists.
 
-### Pages
+### Stack decisions made during Block 1
 
-- [ ] `/` — Landing page (marketing)
-- [ ] `/register` — Registration form
-- [ ] `/login` — Login form
-- [ ] `/dashboard` — Document list + upload button
-- [ ] `/documents/[id]` — Document detail + share link manager
-- [ ] `/documents/[id]/analytics` — Analytics view
-- [ ] `/share/[token]` — Public document viewer (PDF.js)
-- [ ] `/account` — Profile settings
+- **Styling:** Tailwind CSS v4 + shadcn/ui (Radix base — not the CLI's newer
+  "Base UI" preset; Radix has the `asChild`/`Slot` pattern and far more
+  precedent to build against reliably). 15 base components installed under
+  `components/ui/`: button, input, label, card, dialog, alert-dialog,
+  checkbox, textarea, badge, separator, skeleton, sonner (toast), switch,
+  dropdown-menu, avatar. **Reuse these — don't recreate custom versions.**
+- **Charts (US-12):** `recharts`, not yet installed — it's what shadcn/ui's
+  own chart wrapper is built on, fits better than `chart.js` here.
+- **Toasts:** `sonner`, already installed and mounted (`<Toaster />` in
+  `app/layout.tsx`). Use `toast()` from the `sonner` package directly.
+- **Auth gate pattern for protected pages:** Server Component calls
+  `getServerUser()` (`lib/auth-server.ts`) and `redirect("/login")` if null,
+  before any HTML renders — established by the landing page
+  (`app/page.tsx`), reused for dashboard/documents/analytics/settings.
+- **Route paths corrected vs. the original list below:** the public viewer
+  is `/view/[token]` (matches `US-11`, not `/share/[token]`) and the
+  settings page is `/settings` (matches `US-13`, not `/account`).
 
-### Components
+### Progress by block (see `user-stories/phase-6-frontend/` for full specs)
 
-- [ ] `DocumentCard` — Thumbnail, title, link count
-- [ ] `ShareLinkForm` — Create/edit link with config options
-- [ ] `AnalyticsDashboard` — Charts with Recharts or Chart.js
-- [ ] `PdfViewer` — Embedded PDF.js viewer (respects `allow_download` flag)
+- [x] **Block 1** — `GET /api/v1/sessions`, `AuthContext` + SWR (US-06),
+      shared Header/Footer + landing page (US-07). Tailwind v4 + shadcn/ui
+      set up. `pages/index.tsx`/`pages/status/index.tsx` migrated to
+      `app/page.tsx`/`app/status/page.tsx`; `pages/api/v1/*` untouched.
+- [ ] **Block 2** — Registration & login forms (US-08)
+- [ ] **Block 3** — Dashboard: document list + upload (US-09)
+- [ ] **Block 4** — Document detail page + share link manager (US-10)
+- [ ] **Block 5** — Public PDF viewer (US-11). Needs a new
+      `infra/storage.ts#getFile()` method (S3 `GetObjectCommand`) and a new
+      `GET /api/v1/share/[token]/file` proxy route — neither exists yet;
+      the original spec assumed a local `/uploads/` path that was never
+      built (Phase 3 went S3/MinIO-only, see `US-P3-02`).
+- [ ] **Block 6** — Analytics visualization (US-12) + Account settings (US-13)
 
 ### Infrastructure
 
-- [ ] Authentication context (React Context + SWR)
-- [ ] Redirect unauthenticated users to `/login`
 - [ ] Deploy to Vercel (connect GitHub repo, configure env vars)
 - [ ] Set up webapp-testing skill (`anthropics/skills`) for automated UI regression tests
 
