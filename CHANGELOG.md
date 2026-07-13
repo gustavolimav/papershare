@@ -9,6 +9,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- CI (`Jest Ubuntu`) was failing on every document-upload-dependent test with "Unexpected token < in JSON": `@aws-sdk/client-s3` requires Node `>=20.0.0` and `pdf-parse`/`pdfjs-dist` require Node `>=20.16.0`, but CI and `.nvmrc` were pinned to `lts/hydrogen` (Node 18) — confirmed via `npm warn EBADENGINE` in the CI log. Bumped `.nvmrc` and both GitHub Actions workflows to `lts/iron` (Node 20), and added an `engines` field to `package.json` so this fails fast with a clear message instead of an obscure runtime crash next time.
+
 ### Added
 
 - Phase 5 — Analytics & Tracking:
