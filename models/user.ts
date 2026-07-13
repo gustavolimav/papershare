@@ -50,6 +50,32 @@ async function findOneByEmail(email: string): Promise<User> {
   return results.rows[0]!;
 }
 
+async function findOneById(id: string): Promise<User> {
+  const results = await database.query<User>({
+    text: `
+        SELECT
+          id, username, email, password, created_at, updated_at, deleted_at
+        FROM
+          users
+        WHERE
+          id = $1
+          AND deleted_at IS NULL
+        LIMIT
+          1
+        ;`,
+    values: [id],
+  });
+
+  if (!results.rowCount || results.rowCount === 0) {
+    throw new NotFoundError({
+      message: "O usuário informado não foi encontrado no sistema.",
+      action: "Verifique se o identificador está correto.",
+    });
+  }
+
+  return results.rows[0]!;
+}
+
 async function findOneByUsername(username: string): Promise<User> {
   const results = await database.query<User>({
     text: `
@@ -271,6 +297,7 @@ async function deleteByUsername(username: string): Promise<void> {
 
 const user: UserModel = {
   create,
+  findOneById,
   findOneByUsername,
   findOneByEmail,
   updateByUsername,

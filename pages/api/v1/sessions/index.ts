@@ -10,14 +10,31 @@ import session from "../../../../models/session";
 import type {
   AuthenticatedNextApiRequest,
   Session,
+  UserPublic,
 } from "../../../../types/index";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
+router.get(authMiddleware, getHandler);
 router.post(rateLimit({ limit: 5, windowMs: 60 * 1000 }), postHandler);
 router.delete(authMiddleware, deleteHandler);
 
 export default router.handler(controller.errorHandlers);
+
+async function getHandler(
+  request: AuthenticatedNextApiRequest,
+  response: NextApiResponse<UserPublic>,
+) {
+  const user = request.user!;
+
+  return response.status(200).json({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  });
+}
 
 async function postHandler(
   request: NextApiRequest,

@@ -271,6 +271,7 @@ export interface RunMigration {
 // Model Interface Types
 export interface UserModel {
   create(userInput: UserCreateInput): Promise<UserPublic>;
+  findOneById(id: string): Promise<User>;
   findOneByUsername(username: string): Promise<User>;
   findOneByEmail(email: string): Promise<User>;
   updateByUsername(
