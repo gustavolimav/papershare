@@ -4,6 +4,13 @@ import type { Session, SessionModel } from "../types/index";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 days
 
+// Only the hash is persisted, so a leaked database backup can't be replayed
+// as a valid bearer token. Callers always deal in the raw token; hashing
+// happens at the DB boundary in this file only.
+function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 async function create(userId: string): Promise<Session> {
   const token = crypto.randomBytes(48).toString("hex");
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
@@ -20,24 +27,24 @@ async function runInsertQuery(
 ): Promise<Session> {
   const results = await database.query<Session>({
     text: `
-        INSERT INTO 
+        INSERT INTO
           sessions (token, user_id, expires_at)
-        VALUES 
+        VALUES
           ($1, $2, $3)
         RETURNING
-          id, token, user_id, expires_at, created_at, updated_at
+          id, user_id, expires_at, created_at, updated_at
         ;`,
-    values: [token, userId, expiresAt],
+    values: [hashToken(token), userId, expiresAt],
   });
 
-  return results.rows[0]!;
+  return { ...results.rows[0]!, token };
 }
 
 async function findOneByToken(token: string): Promise<Session | null> {
   const results = await database.query<Session>({
     text: `
         SELECT
-          id, token, user_id, expires_at, created_at, updated_at
+          id, user_id, expires_at, created_at, updated_at
         FROM
           sessions
         WHERE
@@ -45,14 +52,14 @@ async function findOneByToken(token: string): Promise<Session | null> {
         LIMIT
           1
         ;`,
-    values: [token],
+    values: [hashToken(token)],
   });
 
   if (!results.rowCount || results.rowCount === 0) {
     return null;
   }
 
-  return results.rows[0]!;
+  return { ...results.rows[0]!, token };
 }
 
 async function deleteByToken(token: string): Promise<void> {
@@ -63,7 +70,7 @@ async function deleteByToken(token: string): Promise<void> {
         WHERE
           token = $1
         ;`,
-    values: [token],
+    values: [hashToken(token)],
   });
 }
 

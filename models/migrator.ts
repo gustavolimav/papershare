@@ -59,17 +59,12 @@ async function listPendingMigrations(): Promise<RunMigration[]> {
 async function runPendingMigrations(): Promise<RunMigration[]> {
   let dbClient;
 
-  console.log("Running pending migrations...");
-
   try {
     dbClient = await database.getNewClient();
 
     const migratedMigrations = await migrate(
       { client: dbClient },
       migrationsDirectory,
-      {
-        logger: (msg: string) => console.log(msg),
-      },
     );
 
     return migratedMigrations.map((migration) => ({

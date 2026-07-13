@@ -1,13 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import controller from "../../../../infra/controller";
+import { migrationsAuthMiddleware } from "../../../../infra/auth";
 import migrator from "../../../../models/migrator";
 import type { RunMigration } from "../../../../types/index";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.get(getHandler);
-router.post(postHandler);
+router.get(migrationsAuthMiddleware, getHandler);
+router.post(migrationsAuthMiddleware, postHandler);
 
 export default router.handler(controller.errorHandlers);
 

@@ -180,6 +180,28 @@ Core authentication infrastructure. All items delivered.
 
 **Goal:** Full UI on top of the existing API. No new backend work in this phase.
 
+### Architecture decision: App Router, not Pages Router
+
+All Phase 6 pages/components below go under `app/`, not `pages/`. Next.js treats
+Pages Router as maintenance-only; starting the one large remaining chunk of
+frontend work on it would mean building a dashboard-heavy UI on a legacy
+foundation from day one. Reasons:
+
+- Server Components can read the `session_id` cookie via `next/headers` and
+  gate protected routes (`/dashboard`, `/documents/[id]`, `/account`) before
+  render — no client-side auth-check flicker, less boilerplate than
+  per-page `getServerSideProps`.
+- SWR still has a role for client-side mutation/revalidation (uploads, editing
+  share links) inside Client Components — it's not either/or with Server
+  Components, it's Server Components for the authenticated initial fetch and
+  SWR for interactive updates.
+- `pages/api/v1/*` (7 route files, fully covered by integration tests) stay
+  exactly as they are. Next.js supports `pages/` and `app/` side by side, so
+  there is no need to rewrite working, tested API routes for zero functional
+  gain. Only `pages/index.tsx` and `pages/status/index.tsx` move to
+  `app/page.tsx` / `app/status/page.tsx` since they're trivial and avoid
+  routing collisions once `app/` exists.
+
 ### Pages
 
 - [ ] `/` — Landing page (marketing)
@@ -264,12 +286,21 @@ These are not tied to a specific phase but should be addressed progressively.
 ### Code Quality
 
 - [ ] Replace `any` types in `DatabaseQuery.values` with proper typing
-- [ ] Add `ForbiddenError` (403) — currently missing from `infra/errors.ts`
+- [x] Add `ForbiddenError` (403) — already in `infra/errors.ts`
 - [ ] Standardize error message language (mix of PT-BR and EN)
-- [ ] Connection pooling in `infra/database.ts` (currently opens/closes per query)
+- [x] Connection pooling in `infra/database.ts` (uses `Pool` from `pg`)
 - [ ] Environment variable validation on startup (fail fast)
 - [ ] API response envelope (`{ data, meta }`) for list endpoints
 - [ ] Pagination helper utility
-- [ ] Move migration endpoint behind an admin auth guard
+- [x] Move migration endpoint behind an admin auth guard — `MIGRATIONS_SECRET` header check via `infra/auth.ts#migrationsAuthMiddleware`
 - [ ] Add `updated_at` trigger function in migrations (currently updated manually)
-- [ ] CI: add TypeScript type-check step to GitHub Actions
+- [x] CI: add TypeScript type-check step to GitHub Actions — `typecheck` job in `.github/workflows/linting.yaml`
+
+### Security hardening (2026-07-12)
+
+- [x] Fixed `UnathorizedError` typo → `UnauthorizedError` (was baked into the API error contract)
+- [x] Hash session tokens before persisting (`models/session.ts`) — DB now stores SHA-256 hash, never the raw bearer token
+- [x] Explicit `sameSite: "lax"` on all session cookies
+- [x] Backstop against the check-then-insert race on unique username/email: unique-violation (`23505`) from Postgres is now caught and mapped to `ValidationError` in `models/user.ts`
+- [ ] Rate limiter (`infra/rate-limit.ts`) uses an in-memory `Map` and is a no-op outside `NODE_ENV=production` — doesn't survive multi-instance/serverless deploys (e.g. Vercel) and isn't exercised by CI. Needs a shared store (e.g. a Postgres-backed counter, consistent with this project's no-extra-infra approach) before relying on it in production.
+- [ ] DB connection pool in `infra/database.ts` is created at module scope — fine for a long-running Docker/Node process, but a serverless deploy target needs a pooled connection strategy (e.g. Neon's pooled connection string or a serverless driver) decided before Phase 3 adds more I/O-heavy endpoints.

@@ -5,7 +5,7 @@ import {
   MethodNotAllowedError,
   NotFoundError,
   TooManyRequestsError,
-  UnathorizedError,
+  UnauthorizedError,
   ValidationError,
 } from "./errors";
 
@@ -34,7 +34,7 @@ function onErrorHandler(
     return;
   }
 
-  if (err instanceof UnathorizedError) {
+  if (err instanceof UnauthorizedError) {
     response.status(err.statusCode).json(err);
     return;
   }

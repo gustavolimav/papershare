@@ -20,7 +20,7 @@ describe("Authentication Middleware", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "UnathorizedError",
+        name: "UnauthorizedError",
         message: "Usuário não autenticado.",
         action: "Faça login para realizar esta operação.",
         status: 401,
@@ -40,7 +40,7 @@ describe("Authentication Middleware", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "UnathorizedError",
+        name: "UnauthorizedError",
         message: "Sessão não encontrada ou inválida.",
         action: "Faça login novamente para continuar.",
         status: 401,
@@ -75,7 +75,7 @@ describe("Authentication Middleware", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "UnathorizedError",
+        name: "UnauthorizedError",
         message: "Sessão expirada.",
         action: "Faça login novamente para continuar.",
         status: 401,
@@ -145,7 +145,7 @@ describe("Authentication Middleware", () => {
 
       const responseBody = await response.json();
 
-      expect(responseBody.name).toBe("UnathorizedError");
+      expect(responseBody.name).toBe("UnauthorizedError");
     });
 
     test("With valid session allows update", async () => {

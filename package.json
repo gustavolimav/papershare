@@ -18,6 +18,7 @@
     "lint:prettier:check": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
     "lint:eslint:check": "next lint --dir .",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky",
     "commit": "cz",
     "sf": "npm run lint:prettier:fix && npm run lint:eslint:check"

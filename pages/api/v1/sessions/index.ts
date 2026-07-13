@@ -37,6 +37,7 @@ async function postHandler(
     maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
+    sameSite: "lax",
   });
 
   response.setHeader("Set-Cookie", cookieOptions);
@@ -55,6 +56,7 @@ async function deleteHandler(
     maxAge: 0,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   });
 
   response.setHeader("Set-Cookie", expiredCookie);
