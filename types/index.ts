@@ -30,6 +30,28 @@ export interface Session {
   updated_at: Date;
 }
 
+export interface Document {
+  id: string;
+  title: string;
+  description: string | null;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export type DocumentResponse = Document;
+
+export interface DocumentListResponse {
+  documents: DocumentResponse[];
+  total: number;
+}
+
 // Input Types
 export interface UserCreateInput {
   username: string;
@@ -46,6 +68,22 @@ export interface UserUpdateInput {
 export interface AuthenticationInput {
   email: string;
   password: string;
+}
+
+export interface DocumentCreateInput {
+  title: string;
+  description?: string;
+  original_filename: string;
+  storage_key: string;
+  mime_type: string;
+  size_bytes: number;
+  page_count: number | null;
+  user_id: string;
+}
+
+export interface DocumentUpdateInput {
+  title?: string;
+  description?: string;
 }
 
 // Database Query Types
@@ -144,6 +182,29 @@ export interface SessionModel {
 
 export interface AuthenticationModel {
   getAuthentication(email: string, password: string): Promise<User>;
+}
+
+export interface DocumentModel {
+  create(input: DocumentCreateInput): Promise<DocumentResponse>;
+  findAllByUserId(
+    userId: string,
+    pagination: { page: number; perPage: number },
+  ): Promise<DocumentListResponse>;
+  findOneById(id: string, userId: string): Promise<DocumentResponse>;
+  updateById(
+    id: string,
+    userId: string,
+    input: DocumentUpdateInput,
+  ): Promise<DocumentResponse>;
+  deleteById(id: string, userId: string): Promise<{ storage_key: string }>;
+}
+
+export interface StorageModel {
+  saveFile(
+    file: Buffer,
+    originalFilename: string,
+  ): Promise<{ key: string; size: number }>;
+  deleteFile(key: string): Promise<void>;
 }
 
 export interface MigratorModel {

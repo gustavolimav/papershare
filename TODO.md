@@ -11,7 +11,7 @@
 | ----- | ---------------------------------- | ---------- |
 | 1     | Foundation                         | ✅ Done    |
 | 2     | Authorization & Account Management | ✅ Done    |
-| 3     | Documents Core                     | ⏳ Planned |
+| 3     | Documents Core                     | ✅ Done    |
 | 4     | Share Links                        | ⏳ Planned |
 | 5     | Analytics & Tracking               | ⏳ Planned |
 | 6     | Frontend                           | ⏳ Planned |
@@ -64,45 +64,50 @@ Core authentication infrastructure. All items delivered.
 
 ---
 
-## Phase 3 — Documents Core ⏳
+## Phase 3 — Documents Core ✅
 
 **Goal:** Users can upload, manage, and retrieve documents. This is the core product.
 
 ### Database
 
-- [ ] Migration: `documents` table
+- [x] Migration: `documents` table (`infra/migrations/005-create-documents.sql`)
   ```sql
   id, title, description, original_filename, storage_key,
   mime_type, size_bytes, page_count, user_id,
   created_at, updated_at, deleted_at
   ```
+  `size_bytes` is `INTEGER`, not `BIGINT` — max upload size is capped well under
+  2GB, and `pg` returns `BIGINT`/`int8` columns as strings (precision safety),
+  which would have leaked into the API response as a string instead of a number.
 
 ### Storage
 
-- [ ] Storage adapter interface (`infra/storage.ts`) with two implementations:
-  - Local filesystem (development)
-  - AWS S3 / Cloudflare R2 (production)
-- [ ] File type validation (PDF, DOCX, PPTX only at first)
-- [ ] File size limit (configurable via env, default 50 MB)
+- [x] Storage adapter (`infra/storage.ts`), S3-compatible (`@aws-sdk/client-s3`)
+      backed by MinIO locally (`infra/compose.yaml`) and AWS S3 / Cloudflare R2 in
+      production — same code path in both, only env vars differ. Local filesystem
+      storage was considered and rejected (see `US-P3-02`): it doesn't survive
+      serverless/ephemeral deploy targets like Vercel Preview Deployments.
+- [x] File type validation (PDF, DOCX, PPTX only) — `infra/schemas.ts#ALLOWED_MIME_TYPES`
+- [x] File size limit (configurable via `MAX_FILE_SIZE_MB`, default 50; set to 2 in `.env.development`)
 
 ### API
 
-- [ ] `POST /api/v1/documents` — Upload document (multipart/form-data)
-- [ ] `GET /api/v1/documents` — List authenticated user's documents (paginated)
-- [ ] `GET /api/v1/documents/[id]` — Get document metadata
-- [ ] `PATCH /api/v1/documents/[id]` — Update title/description
-- [ ] `DELETE /api/v1/documents/[id]` — Soft-delete document
+- [x] `POST /api/v1/documents` — Upload document (multipart/form-data via `formidable`)
+- [x] `GET /api/v1/documents` — List authenticated user's documents (paginated)
+- [x] `GET /api/v1/documents/[id]` — Get document metadata
+- [x] `PATCH /api/v1/documents/[id]` — Update title/description
+- [x] `DELETE /api/v1/documents/[id]` — Soft-delete document + storage cleanup
 
 ### Model
 
-- [ ] `models/document.ts` — CRUD + ownership validation
-- [ ] PDF page count extraction on upload
+- [x] `models/document.ts` — CRUD + ownership validation (`ForbiddenError` on cross-user access)
+- [x] PDF page count extraction on upload (`pdf-parse`'s `PDFParse#getInfo()`; `null` on failure, never throws)
 
 ### Tests
 
-- [ ] Upload, list, get, update, delete flows
-- [ ] Authorization: user cannot manage another user's documents
-- [ ] Invalid file type / size: returns 400
+- [x] Upload, list, get, update, delete flows
+- [x] Authorization: user cannot manage another user's documents (403)
+- [x] Invalid file type / size / missing file or title: returns 400
 
 ---
 

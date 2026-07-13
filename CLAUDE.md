@@ -48,7 +48,7 @@ Use the custom classes from `infra/errors.ts`. Never throw plain `Error` objects
 | Situation                              | Class                       |
 | -------------------------------------- | --------------------------- |
 | Invalid input / missing required field | `ValidationError` (400)     |
-| Not authenticated                      | `UnathorizedError` (401)    |
+| Not authenticated                      | `UnauthorizedError` (401)   |
 | Resource not found                     | `NotFoundError` (404)       |
 | DB / external service down             | `ServiceError` (503)        |
 | Unexpected crash                       | `InternalServerError` (500) |
@@ -122,22 +122,31 @@ If Docker is not running, start it first with `npm run services:up` before runni
 
 ## Environment variables
 
-| Variable            | Purpose                                                                         |
-| ------------------- | ------------------------------------------------------------------------------- |
-| `POSTGRES_HOST`     | DB host                                                                         |
-| `POSTGRES_PORT`     | DB port                                                                         |
-| `POSTGRES_USER`     | DB user                                                                         |
-| `POSTGRES_DB`       | DB name                                                                         |
-| `POSTGRES_PASSWORD` | DB password                                                                     |
-| `DATABASE_URL`      | Full connection string                                                          |
-| `PEPPER`            | Password hashing pepper (never change in prod)                                  |
-| `NODE_ENV`          | `development` / `production` / `test`                                           |
-| `MIGRATIONS_SECRET` | Shared secret required via `x-migrations-secret` header on `/api/v1/migrations` |
+| Variable                    | Purpose                                                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_HOST`             | DB host                                                                                                                                     |
+| `POSTGRES_PORT`             | DB port                                                                                                                                     |
+| `POSTGRES_USER`             | DB user                                                                                                                                     |
+| `POSTGRES_DB`               | DB name                                                                                                                                     |
+| `POSTGRES_PASSWORD`         | DB password                                                                                                                                 |
+| `DATABASE_URL`              | Full connection string                                                                                                                      |
+| `PEPPER`                    | Password hashing pepper (never change in prod)                                                                                              |
+| `NODE_ENV`                  | `development` / `production` / `test`                                                                                                       |
+| `MIGRATIONS_SECRET`         | Shared secret required via `x-migrations-secret` header on `/api/v1/migrations`                                                             |
+| `STORAGE_ENDPOINT`          | S3-compatible endpoint (MinIO locally; unset for real AWS S3, R2 endpoint in prod)                                                          |
+| `STORAGE_REGION`            | S3 region (dummy value accepted by MinIO)                                                                                                   |
+| `STORAGE_ACCESS_KEY_ID`     | S3-compatible access key                                                                                                                    |
+| `STORAGE_SECRET_ACCESS_KEY` | S3-compatible secret key                                                                                                                    |
+| `STORAGE_BUCKET`            | Bucket used for document uploads                                                                                                            |
+| `STORAGE_FORCE_PATH_STYLE`  | `true` for MinIO (path-style addressing); unset/`false` for AWS S3                                                                          |
+| `MAX_FILE_SIZE_MB`          | Max upload size in MB (set to `2` in `.env.development` for fast oversized-file tests; production should set its own higher value, e.g. 50) |
 
 ---
 
-## Current state (as of 2026-03-30)
+## Current state (as of 2026-07-12)
 
-Completed: user registration, login, session auth middleware, profile get/update.
-Next up: logout endpoint, authorization guard (own-resource check), documents upload.
-See `TODO.md` for the full phased roadmap.
+Completed: user registration, login, session auth middleware, profile get/update,
+logout, authorization guards, soft-delete accounts, rate limiting, pre-Phase-3
+security hardening, and Phase 3 (documents: S3/MinIO-backed upload, validation,
+CRUD API).
+Next up: Phase 4 (share links). See `TODO.md` for the full phased roadmap.
