@@ -1,4 +1,5 @@
 {
+  "root": true,
   "extends": [
     "next/core-web-vitals",
     "plugin:jest/recommended",
@@ -6,7 +7,7 @@
     "prettier",
     "plugin:jsonc/base"
   ],
-  "plugins": ["no-secrets"],
+  "plugins": ["no-secrets", "@typescript-eslint"],
   "rules": {
     "no-secrets/no-secrets": [
       "error",
@@ -22,6 +23,14 @@
       "files": ["package-lock.json", ".eslintrc.json"],
       "rules": {
         "no-secrets/no-secrets": "off"
+      }
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "no-undef": "off",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error"
       }
     }
   ]
