@@ -4,10 +4,11 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   CreateBucketCommand,
   HeadBucketCommand,
 } from "@aws-sdk/client-s3";
-import { ServiceError } from "./errors";
+import { NotFoundError, ServiceError } from "./errors";
 import type { StorageModel } from "../types/index";
 
 const bucket = process.env.STORAGE_BUCKET ?? "";
@@ -102,9 +103,44 @@ async function deleteFile(key: string): Promise<void> {
   }
 }
 
+async function getFile(
+  key: string,
+): Promise<{ body: Buffer; contentType: string }> {
+  let result;
+
+  try {
+    result = await client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    );
+  } catch (error) {
+    const errorName = (error as { name?: string }).name;
+
+    if (errorName === "NoSuchKey") {
+      throw new NotFoundError({
+        cause: error as Error,
+        message: "O arquivo solicitado não foi encontrado.",
+        action: "Verifique se o link está correto.",
+      });
+    }
+
+    throw new ServiceError({
+      cause: error as Error,
+      message: "Não foi possível obter o arquivo.",
+    });
+  }
+
+  const bodyBytes = await result.Body!.transformToByteArray();
+
+  return {
+    body: Buffer.from(bodyBytes),
+    contentType: result.ContentType ?? "application/octet-stream",
+  };
+}
+
 const storage: StorageModel = {
   saveFile,
   deleteFile,
+  getFile,
 };
 
 export default storage;

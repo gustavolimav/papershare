@@ -328,6 +328,10 @@ export interface ShareLinkModel {
   ): Promise<ShareLinkResponse>;
   revokeById(id: string, documentId: string): Promise<ShareLinkResponse>;
   getByToken(token: string, password?: string): Promise<ShareLinkWithDocument>;
+  getFileByToken(
+    token: string,
+    password?: string,
+  ): Promise<{ storage_key: string; mime_type: string }>;
   validateToken(token: string): Promise<{ id: string }>;
 }
 
@@ -345,6 +349,7 @@ export interface StorageModel {
     originalFilename: string,
   ): Promise<{ key: string; size: number }>;
   deleteFile(key: string): Promise<void>;
+  getFile(key: string): Promise<{ body: Buffer; contentType: string }>;
 }
 
 export interface MigratorModel {

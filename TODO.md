@@ -203,7 +203,7 @@ into the parts of this feature that don't conflict with that requirement:
 
 ---
 
-## Phase 6 — Frontend ⏳
+## Phase 6 — Frontend ✅
 
 **Goal:** Full UI on top of the existing API. No new backend work in this phase.
 
@@ -255,20 +255,33 @@ foundation from day one. Reasons:
       shared Header/Footer + landing page (US-07). Tailwind v4 + shadcn/ui
       set up. `pages/index.tsx`/`pages/status/index.tsx` migrated to
       `app/page.tsx`/`app/status/page.tsx`; `pages/api/v1/*` untouched.
-- [ ] **Block 2** — Registration & login forms (US-08)
-- [ ] **Block 3** — Dashboard: document list + upload (US-09)
-- [ ] **Block 4** — Document detail page + share link manager (US-10)
-- [ ] **Block 5** — Public PDF viewer (US-11). Needs a new
-      `infra/storage.ts#getFile()` method (S3 `GetObjectCommand`) and a new
-      `GET /api/v1/share/[token]/file` proxy route — neither exists yet;
-      the original spec assumed a local `/uploads/` path that was never
-      built (Phase 3 went S3/MinIO-only, see `US-P3-02`).
-- [ ] **Block 6** — Analytics visualization (US-12) + Account settings (US-13)
+- [x] **Block 2** — Registration & login forms (US-08)
+- [x] **Block 3** — Dashboard: document list + upload (US-09)
+- [x] **Block 4** — Document detail page + share link manager (US-10)
+- [x] **Block 5** — Public PDF viewer (US-11). Added
+      `infra/storage.ts#getFile()` (S3 `GetObjectCommand`) and
+      `GET /api/v1/share/[token]/file` (public, rate-limited proxy route) —
+      neither existed yet; the original spec assumed a local `/uploads/`
+      path that was never built (Phase 3 went S3/MinIO-only, see `US-P3-02`).
+      **Gotcha:** `pdfjs-dist`'s bundled `.mjs` gets corrupted by Next's
+      webpack (`TypeError: Object.defineProperty called on non-object`,
+      thrown from inside the library's own module code) — fixed by loading
+      both the library and its worker as native ES modules from the jsdelivr
+      CDN (`import(/* webpackIgnore: true */ ...)`) instead of importing the
+      npm package directly. See `components/viewer/PDFViewer.tsx`.
+- [x] **Block 6** — Analytics visualization (US-12) + Account settings (US-13)
 
 ### Infrastructure
 
 - [ ] Deploy to Vercel (connect GitHub repo, configure env vars)
 - [ ] Set up webapp-testing skill (`anthropics/skills`) for automated UI regression tests
+
+### Known test flakiness
+
+- [ ] `tests/orchestrator.ts#createUser()` generates a test username via
+      `faker.internet.username()`, which occasionally exceeds the
+      `username varchar(30)` column limit and fails the insert
+      intermittently. Bound/truncate the generated value to fit the schema.
 
 ---
 

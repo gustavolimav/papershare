@@ -31,6 +31,7 @@ interface ShareLinkTokenRow {
   mime_type: string;
   size_bytes: number;
   page_count: number | null;
+  storage_key: string;
   document_deleted_at: Date | null;
 }
 
@@ -224,10 +225,10 @@ async function revokeById(
   return toResponse(results.rows[0]!);
 }
 
-async function getByToken(
+async function fetchAndValidateTokenRow(
   token: string,
   providedPassword?: string,
-): Promise<ShareLinkWithDocument> {
+): Promise<ShareLinkTokenRow> {
   const results = await database.query<ShareLinkTokenRow>({
     text: `
         SELECT
@@ -245,6 +246,7 @@ async function getByToken(
           d.mime_type,
           d.size_bytes,
           d.page_count,
+          d.storage_key,
           d.deleted_at AS document_deleted_at
         FROM
           share_links sl
@@ -289,6 +291,15 @@ async function getByToken(
     });
   }
 
+  return row;
+}
+
+async function getByToken(
+  token: string,
+  providedPassword?: string,
+): Promise<ShareLinkWithDocument> {
+  const row = await fetchAndValidateTokenRow(token, providedPassword);
+
   return {
     id: row.link_id,
     token: row.token,
@@ -307,6 +318,17 @@ async function getByToken(
       page_count: row.page_count,
     },
   };
+}
+
+// Used only by the internal file-proxy route — storage_key is deliberately
+// excluded from ShareLinkWithDocument (the public response shape above).
+async function getFileByToken(
+  token: string,
+  providedPassword?: string,
+): Promise<{ storage_key: string; mime_type: string }> {
+  const row = await fetchAndValidateTokenRow(token, providedPassword);
+
+  return { storage_key: row.storage_key, mime_type: row.mime_type };
 }
 
 // Skips the password check: used by view-event recording, which happens
@@ -351,6 +373,7 @@ const shareLink: ShareLinkModel = {
   updateById,
   revokeById,
   getByToken,
+  getFileByToken,
   validateToken,
 };
 
