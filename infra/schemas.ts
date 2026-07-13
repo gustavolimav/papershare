@@ -138,6 +138,23 @@ export const shareLinkUpdateSchema = z
     message: "Pelo menos um campo deve ser fornecido para atualização.",
   });
 
+export const linkViewCreateSchema = z.object({
+  viewer_fingerprint: z
+    .string()
+    .max(64, "O 'viewer_fingerprint' deve ter no máximo 64 caracteres.")
+    .optional(),
+  time_on_page: z
+    .number()
+    .int()
+    .min(0, "O 'time_on_page' não pode ser negativo.")
+    .optional(),
+  pages_viewed: z
+    .number()
+    .int()
+    .min(0, "O 'pages_viewed' não pode ser negativo.")
+    .optional(),
+});
+
 export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
 

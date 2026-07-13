@@ -163,6 +163,46 @@ async function expireShareLink(linkId: string): Promise<void> {
   });
 }
 
+async function recordView(
+  token: string,
+  body?: {
+    viewer_fingerprint?: string;
+    time_on_page?: number;
+    pages_viewed?: number;
+  },
+  // returns `any` because the endpoint can respond with either a LinkView or an ErrorResponse
+): Promise<any> {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/share/${token}/view`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+    },
+  );
+
+  return response.json();
+}
+
+async function pushBackLinkViewCreatedAt(
+  viewId: string,
+  minutesAgo: number,
+): Promise<void> {
+  await database.query({
+    text: "UPDATE link_views SET created_at = $1 WHERE id = $2",
+    values: [new Date(Date.now() - minutesAgo * 60 * 1000), viewId],
+  });
+}
+
+async function countLinkViews(shareLinkId: string): Promise<number> {
+  const result = await database.query<{ count: string }>({
+    text: "SELECT COUNT(*)::text AS count FROM link_views WHERE share_link_id = $1",
+    values: [shareLinkId],
+  });
+
+  return Number(result.rows[0]!.count);
+}
+
 interface Orchestrator {
   waitForAllServices(): Promise<void>;
   cleanDatabase(): Promise<void>;
@@ -205,6 +245,24 @@ interface Orchestrator {
   ): Promise<any>;
   // eslint-disable-next-line no-unused-vars
   expireShareLink(linkId: string): Promise<void>;
+  recordView(
+    // eslint-disable-next-line no-unused-vars
+    token: string,
+    // eslint-disable-next-line no-unused-vars
+    body?: {
+      viewer_fingerprint?: string;
+      time_on_page?: number;
+      pages_viewed?: number;
+    },
+  ): Promise<any>;
+  pushBackLinkViewCreatedAt(
+    // eslint-disable-next-line no-unused-vars
+    viewId: string,
+    // eslint-disable-next-line no-unused-vars
+    minutesAgo: number,
+  ): Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  countLinkViews(shareLinkId: string): Promise<number>;
 }
 
 const orchestrator: Orchestrator = {
@@ -218,6 +276,9 @@ const orchestrator: Orchestrator = {
   uploadDocument,
   createShareLink,
   expireShareLink,
+  recordView,
+  pushBackLinkViewCreatedAt,
+  countLinkViews,
 };
 
 export default orchestrator;

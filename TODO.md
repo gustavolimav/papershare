@@ -13,7 +13,7 @@
 | 2     | Authorization & Account Management | ✅ Done    |
 | 3     | Documents Core                     | ✅ Done    |
 | 4     | Share Links                        | ✅ Done    |
-| 5     | Analytics & Tracking               | ⏳ Planned |
+| 5     | Analytics & Tracking               | ✅ Done    |
 | 6     | Frontend                           | ⏳ Planned |
 | 7     | AI Features                        | ⏳ Future  |
 | 8     | Monetization                       | ⏳ Future  |
@@ -175,35 +175,31 @@ into the parts of this feature that don't conflict with that requirement:
 
 ---
 
-## Phase 5 — Analytics & Tracking ⏳
+## Phase 5 — Analytics & Tracking ✅
 
 **Goal:** Document owners see engagement data for each share link.
 
 ### Database
 
-- [ ] Migration: `link_views` table
-  ```sql
-  id, link_id, viewer_fingerprint, ip_address,
-  country_code, user_agent, time_on_page_seconds,
-  pages_viewed, created_at
-  ```
+- [x] Migration `007-create-link-views.sql`: `link_views` table (`share_link_id` FK `ON DELETE CASCADE`, `updated_at` for dedup, indexed on `share_link_id`/`created_at`/dedup composite)
 
 ### API
 
-- [ ] `POST /api/v1/share/[token]/view` — Record view event (called by viewer frontend)
-- [ ] `GET /api/v1/documents/[id]/links/[linkId]/analytics` — Analytics summary per link
-  - Total views, unique viewers, avg time on page, page heatmap
-- [ ] `GET /api/v1/documents/[id]/analytics` — Aggregated analytics across all links
+- [x] `POST /api/v1/share/[token]/view` — Record view event (public, no password required — the viewer page already gated on the password via the public GET endpoint)
+- [x] `GET /api/v1/documents/[id]/links/[linkId]/analytics` — Analytics summary per link (total views, unique viewers, avg time on page, avg pages viewed, first/last viewed, 30-day zero-filled `views_by_day`)
+- [x] `GET /api/v1/documents/[id]/analytics` — Aggregated analytics across all links, plus `top_links` (top 5 by view count)
+- [ ] Page-level heatmap — deferred; `pages_viewed` is recorded per view but not yet broken down by individual page number
 
 ### Model
 
-- [ ] `models/analytics.ts` — Aggregation queries (no ORM, raw SQL with GROUP BY)
+- [x] `models/linkView.ts` — `recordView`, `getAnalyticsByLinkId`, `getAnalyticsByDocumentId` (raw SQL, `::int`/`::float` casts so aggregates come back as numbers, not the strings `pg` returns for `bigint`/`numeric` by default — same lesson as `documents.size_bytes` in Phase 3)
+- [x] `models/shareLink.ts#validateToken()` — existence/active/expiry check without the password gate, reused by view recording
 
 ### Tests
 
-- [ ] View event recorded correctly
-- [ ] Duplicate fingerprint within 30 min counts as one unique view
-- [ ] Analytics endpoint returns correct aggregations
+- [x] View event recorded correctly (full body, empty body, 404/403 on invalid/expired/revoked link)
+- [x] Duplicate fingerprint within 30 min updates the existing row instead of inserting a new one (`SELECT ... FOR UPDATE` in a transaction on a dedicated client, not the shared pool, to close the race window)
+- [x] Analytics endpoints return correct aggregations, including zero/null on no-data and `top_links` ordering/limit
 
 ---
 
