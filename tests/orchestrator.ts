@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import fs from "fs/promises";
 import retry from "async-retry";
 import { faker } from "@faker-js/faker";
 
@@ -94,6 +95,44 @@ async function createUserSession(
   return { user: createdUser, cookie };
 }
 
+async function uploadDocument(
+  cookie: string,
+  overrides?: {
+    title?: string;
+    description?: string;
+    filename?: string;
+    mimeType?: string;
+    buffer?: Buffer;
+  },
+  // returns `any` because the endpoint can respond with either a DocumentResponse or an ErrorResponse
+): Promise<any> {
+  const buffer =
+    overrides?.buffer ?? (await fs.readFile("tests/fixtures/sample.pdf"));
+  const filename = overrides?.filename ?? "sample.pdf";
+  const mimeType = overrides?.mimeType ?? "application/pdf";
+
+  const formData = new FormData();
+  formData.append("title", overrides?.title ?? faker.lorem.words(3));
+
+  if (overrides?.description) {
+    formData.append("description", overrides.description);
+  }
+
+  formData.append(
+    "file",
+    new Blob([Uint8Array.from(buffer)], { type: mimeType }),
+    filename,
+  );
+
+  const response = await fetch("http://localhost:3000/api/v1/documents", {
+    method: "POST",
+    headers: { Cookie: cookie },
+    body: formData,
+  });
+
+  return response.json();
+}
+
 interface Orchestrator {
   waitForAllServices(): Promise<void>;
   cleanDatabase(): Promise<void>;
@@ -109,6 +148,18 @@ interface Orchestrator {
   createExpiredSession(userId: string): Promise<string>;
   // eslint-disable-next-line no-unused-vars
   sessionExists(token: string): Promise<boolean>;
+  uploadDocument(
+    // eslint-disable-next-line no-unused-vars
+    cookie: string,
+    // eslint-disable-next-line no-unused-vars
+    overrides?: {
+      title?: string;
+      description?: string;
+      filename?: string;
+      mimeType?: string;
+      buffer?: Buffer;
+    },
+  ): Promise<any>;
 }
 
 const orchestrator: Orchestrator = {
@@ -119,6 +170,7 @@ const orchestrator: Orchestrator = {
   createUserSession,
   createExpiredSession,
   sessionExists,
+  uploadDocument,
 };
 
 export default orchestrator;

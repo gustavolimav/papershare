@@ -11,6 +11,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 3 — Documents Core:
+  - Migration `005-create-documents.sql` — `documents` table (soft-delete, `user_id` FK, indexed)
+  - `infra/storage.ts` — S3-compatible storage adapter (`@aws-sdk/client-s3`); MinIO locally via `infra/compose.yaml`, AWS S3/Cloudflare R2 in production; no-op in `NODE_ENV=test`
+  - `POST /api/v1/documents` — multipart upload (`formidable`), Zod-validated title/description, MIME allowlist (PDF/DOCX/PPTX), size limit via `MAX_FILE_SIZE_MB`, PDF page-count extraction via `pdf-parse`
+  - `GET /api/v1/documents` — paginated list of the authenticated user's documents (`page`/`per_page` query params)
+  - `GET`/`PATCH`/`DELETE /api/v1/documents/[id]` — ownership-checked read, partial update, and soft-delete (with storage cleanup) of a single document
+  - `models/document.ts` — `create`, `findAllByUserId`, `findOneById`, `updateById`, `deleteById`; ownership enforcement returns `ForbiddenError` (403) vs `NotFoundError` (404)
+  - `tests/fixtures/sample.pdf` and `orchestrator.uploadDocument()` test helper
+  - `services:up`/`services:down`/`services:stop` now pass `--env-file .env.development` to `docker compose` so the new `storage` (MinIO) service's env var substitution resolves correctly
 - Pre-Phase-3 hardening sprint:
   - `infra/auth.ts#migrationsAuthMiddleware` — `GET`/`POST /api/v1/migrations` now require a matching `x-migrations-secret` header (`MIGRATIONS_SECRET` env var); previously unauthenticated and able to run migrations against the live database
   - `models/session.ts` — session tokens are now stored as a SHA-256 hash; the raw bearer token is never persisted

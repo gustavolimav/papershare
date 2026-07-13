@@ -18,7 +18,7 @@
   - `original_filename VARCHAR(255) NOT NULL` — the user's original file name
   - `storage_key VARCHAR(512) NOT NULL UNIQUE` — the key used to retrieve the file from storage
   - `mime_type VARCHAR(100) NOT NULL`
-  - `size_bytes BIGINT NOT NULL`
+  - `size_bytes INTEGER NOT NULL` — `INTEGER` rather than `BIGINT`: max ~2GB comfortably covers `MAX_FILE_SIZE_MB`, and `pg` returns `BIGINT`/`int8` columns as strings (precision safety), which would leak into the API response as a string instead of a number
   - `page_count INTEGER` — nullable; extracted from PDF on upload
   - `user_id UUID NOT NULL REFERENCES users(id)`
   - `created_at TIMESTAMPTZ DEFAULT timezone('utc', now())`
