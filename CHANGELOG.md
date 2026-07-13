@@ -12,16 +12,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - CI (`Jest Ubuntu`) was failing on every document-upload-dependent test with "Unexpected token < in JSON": `@aws-sdk/client-s3` requires Node `>=20.0.0` and `pdf-parse`/`pdfjs-dist` require Node `>=20.16.0`, but CI and `.nvmrc` were pinned to `lts/hydrogen` (Node 18) — confirmed via `npm warn EBADENGINE` in the CI log. Bumped `.nvmrc` and both GitHub Actions workflows to `lts/iron` (Node 20), and added an `engines` field to `package.json` so this fails fast with a clear message instead of an obscure runtime crash next time.
+- Public PDF viewer (`components/viewer/PDFViewer.tsx`) threw `TypeError: Object.defineProperty called on non-object` on every load, from inside `pdfjs-dist`'s own bundled module code. Confirmed via a native `<script type="module">` test that the unmodified `pdf.mjs` works fine in the same browser — the crash only happens when Next's webpack re-bundles the package's already-webpack-bundled `.mjs`, corrupting its internal export wiring. Fixed by loading both the library and its worker as real native ES modules straight from the jsdelivr CDN (`import(/* webpackIgnore: true */ ...)`), instead of importing the npm package.
 
 ### Added
 
-- Phase 6 — Frontend (Block 1 of 6, in progress):
-  - `GET /api/v1/sessions` — thin authenticated handler returning the current user, backing the new frontend auth context
-  - `models/user.ts#findOneById()` — used by the new Server Component auth helper
-  - App Router foundation: Tailwind CSS v4 + shadcn/ui (Radix base), `context/AuthContext.tsx` + `lib/fetcher.ts` + `app/providers.tsx` (SWR-backed `useAuth()`), `lib/auth-server.ts#getServerUser()` for server-side auth gating with no client-side flicker
-  - Shared `Header`/`Footer` + landing page (`app/page.tsx`) with hero, feature cards, and a server-side redirect to `/dashboard` for already-authenticated visitors
-  - `pages/index.tsx` and `pages/status/index.tsx` migrated to `app/page.tsx`/`app/status/page.tsx`; `pages/api/v1/*` untouched
-  - Remaining blocks (auth forms, dashboard, document detail/share links, PDF viewer, analytics + settings) tracked in `TODO.md`; each corresponding user story in `user-stories/phase-6-frontend/` has an alignment note reconciling its original Pages-Router-era spec with the App Router / shadcn decisions made in Block 1
+- Phase 6 — Frontend (all 6 blocks complete):
+  - Block 1 — Foundation: `GET /api/v1/sessions` (thin authenticated handler backing the frontend auth context), `models/user.ts#findOneById()`, App Router foundation (Tailwind CSS v4 + shadcn/ui on a Radix base), `context/AuthContext.tsx` + `lib/fetcher.ts` + `app/providers.tsx` (SWR-backed `useAuth()`), `lib/auth-server.ts#getServerUser()` for server-side auth gating with no client-side flicker, shared `Header`/`Footer` + landing page (`app/page.tsx`); `pages/index.tsx`/`pages/status/index.tsx` migrated to `app/page.tsx`/`app/status/page.tsx` (`pages/api/v1/*` untouched)
+  - Block 2 (US-08) — `app/register/page.tsx`/`app/login/page.tsx` (Server Component gates, redirect to `/dashboard` if already authenticated) with `components/forms/RegisterForm.tsx`/`LoginForm.tsx`
+  - Block 3 (US-09) — `app/dashboard/page.tsx`; `components/documents/UploadZone.tsx` (drag-and-drop + XHR upload with progress), `DocumentCard.tsx`, `DocumentList.tsx` (paginated, SWR); `lib/formatters.ts`
+  - Block 4 (US-10) — `app/documents/[id]/page.tsx`; `components/documents/DocumentDetailView.tsx`/`EditDocumentForm.tsx`/`DocumentMeta.tsx`; `components/share-links/CreateShareLinkModal.tsx`/`EditShareLinkModal.tsx`/`ShareLinkCard.tsx`/`ShareLinkList.tsx`
+  - Block 5 (US-11) — `app/view/[token]/page.tsx` (public, client-rendered); `components/viewer/ViewerPage.tsx` (fetches share metadata + file bytes with the `X-Share-Password` header, records views via `POST .../view` on load and `navigator.sendBeacon` on unload), `PDFViewer.tsx` (canvas rendering via pdfjs-dist), `ViewerControls.tsx`, `PasswordGate.tsx`; `lib/fingerprint.ts`
+    - New backend support: `infra/storage.ts#getFile()`, `models/shareLink.ts#getFileByToken()` (shares the existing token/password/expiry validation helper with `getByToken()` but additionally returns `storage_key`), `GET /api/v1/share/[token]/file` — public, rate-limited file-proxy route so the viewer can fetch file bytes with a password header (a direct `<img>`/browser navigation can't attach custom headers)
+  - Block 6 (US-12, US-13) — `app/documents/[id]/analytics/page.tsx`; `components/analytics/AnalyticsView.tsx`/`StatCard.tsx`/`ViewsChart.tsx` (recharts)/`TopLinksTable.tsx`/`LinkAnalyticsDrawer.tsx`; `app/settings/page.tsx`; `components/settings/ProfileForm.tsx`/`DangerZone.tsx` (logout, soft-delete account)
+  - Each corresponding user story in `user-stories/phase-6-frontend/` has an alignment note reconciling its original Pages-Router-era spec with the App Router / shadcn decisions made in Block 1
 - Phase 5 — Analytics & Tracking:
   - Migration `007-create-link-views.sql` — `link_views` table, cascades on share link deletion
   - `POST /api/v1/share/[token]/view` — public view-recording endpoint; extracts `ip_address`/`user_agent` from headers, does not require the link password (already gated by the public GET)
