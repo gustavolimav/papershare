@@ -11,6 +11,7 @@
 **Acceptance Criteria:**
 
 **Password protection:**
+
 - [ ] When creating a share link with a `password` field, the password is hashed using bcrypt via `models/password.ts → hash()` before being stored in `password_hash`
 - [ ] The plaintext password is never logged or stored
 - [ ] When updating a link with a new `password`, the old hash is replaced with the new hash
@@ -18,17 +19,20 @@
 - [ ] The `has_password` field in `ShareLinkResponse` is derived as `password_hash IS NOT NULL`
 
 **Expiry enforcement:**
+
 - [ ] When creating or updating a share link with `expires_at`, the value must be a future timestamp; passing a past date returns `400 ValidationError`: "A data de expiração deve ser futura."
 - [ ] The public endpoint (`GET /api/v1/share/[token]`) compares `expires_at` against `NOW()` at request time — not at link creation time
 - [ ] Expired links return `403` (not `404`) so owners can diagnose expiry issues
 - [ ] To remove expiry, passing `expires_at: null` in a PATCH sets the column to NULL (link never expires)
 
 **Download flag:**
+
 - [ ] `allow_download` defaults to `TRUE` on creation
 - [ ] Can be set to `FALSE` via create or update body
 - [ ] The public endpoint returns `allow_download` in the response; the frontend uses this to suppress the download button
 
 **Integration tests:**
+
 - [ ] Test: create link with password → access without password → 403
 - [ ] Test: create link with password → access with correct password → 200
 - [ ] Test: create link with password → access with wrong password → 403
@@ -41,9 +45,9 @@
 **Technical Context:**
 
 - Relevant files:
-  - `models/shareLink.ts` *(`create()` and `updateById()` — password hashing logic)*
-  - `infra/schemas.ts` *(add future-date validation to `shareLinkCreateSchema` and `shareLinkUpdateSchema`)*
-  - `models/password.ts` *(existing — `hash()` and `compare()` already implemented)*
+  - `models/shareLink.ts` _(`create()` and `updateById()` — password hashing logic)_
+  - `infra/schemas.ts` _(add future-date validation to `shareLinkCreateSchema` and `shareLinkUpdateSchema`)_
+  - `models/password.ts` _(existing — `hash()` and `compare()` already implemented)_
   - `tests/integration/api/v1/documents/[id]/links/[linkId]/index.test.ts`
   - `tests/integration/api/v1/share/[token].test.ts`
 - Future-date validation in Zod: `expires_at: z.string().datetime().refine(v => new Date(v) > new Date(), { message: "A data de expiração deve ser futura." }).optional()`

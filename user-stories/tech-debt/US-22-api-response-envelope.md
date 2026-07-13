@@ -27,14 +27,19 @@
 **Technical Context:**
 
 - Relevant files:
-  - `types/index.ts` *(update `ApiResponse<T>`, add `PaginatedApiResponse<T>`)*
-  - All `pages/api/v1/**/*.ts` files *(wrap `res.json(result)` with `res.json({ data: result })`)*
-  - All `tests/integration/**/*.test.ts` files *(update assertions)*
+  - `types/index.ts` _(update `ApiResponse<T>`, add `PaginatedApiResponse<T>`)_
+  - All `pages/api/v1/**/*.ts` files _(wrap `res.json(result)` with `res.json({ data: result })`)_
+  - All `tests/integration/**/*.test.ts` files _(update assertions)_
 - This is a breaking change for any existing API consumers — document this prominently in `CHANGELOG.md` as a breaking change if the API is considered public
 - Helper function to avoid repetition in every route handler:
   ```ts
   // infra/response.ts
-  export function ok<T>(res: NextApiResponse, data: T, meta?: object, status = 200) {
+  export function ok<T>(
+    res: NextApiResponse,
+    data: T,
+    meta?: object,
+    status = 200,
+  ) {
     res.status(status).json({ data, meta });
   }
   ```

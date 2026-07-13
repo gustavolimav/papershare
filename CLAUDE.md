@@ -147,6 +147,7 @@ If Docker is not running, start it first with `npm run services:up` before runni
 
 Completed: user registration, login, session auth middleware, profile get/update,
 logout, authorization guards, soft-delete accounts, rate limiting, pre-Phase-3
-security hardening, and Phase 3 (documents: S3/MinIO-backed upload, validation,
-CRUD API).
-Next up: Phase 4 (share links). See `TODO.md` for the full phased roadmap.
+security hardening, Phase 3 (documents: S3/MinIO-backed upload, validation,
+CRUD API), and Phase 4 (share links: CRUD, password/expiry/revocation, public
+share endpoint).
+Next up: Phase 5 (analytics & tracking). See `TODO.md` for the full phased roadmap.

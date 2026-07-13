@@ -35,8 +35,8 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/migrations/005-create-documents.sql` *(create)*
-  - `types/index.ts` *(add Document interfaces)*
+  - `infra/migrations/005-create-documents.sql` _(create)_
+  - `types/index.ts` _(add Document interfaces)_
 - The `id` column intentionally does NOT use `DEFAULT gen_random_uuid()` because the application generates the UUID first and uses it as the basis for the `storage_key` filename (e.g., `<uuid>.pdf`)
 - Soft-delete pattern: all queries must filter `WHERE deleted_at IS NULL` — never hard-delete rows
 - Dependencies / considerations:

@@ -20,11 +20,18 @@
 **Technical Context:**
 
 - Relevant files:
-  - `types/index.ts` *(update `DatabaseQuery` interface — `values` field)*
-  - `infra/database.ts` *(update `query<T>()` function signature if the type is defined inline)*
+  - `types/index.ts` _(update `DatabaseQuery` interface — `values` field)_
+  - `infra/database.ts` _(update `query<T>()` function signature if the type is defined inline)_
 - Current state: the `values` field in `DatabaseQuery` is typed as `any[]` (noted in the tech debt backlog). The fix is to define a type alias:
   ```ts
-  export type QueryParam = string | number | boolean | Date | Buffer | null | undefined;
+  export type QueryParam =
+    | string
+    | number
+    | boolean
+    | Date
+    | Buffer
+    | null
+    | undefined;
   ```
   and replace `any[]` with `QueryParam[]`.
 - After changing, run `tsc --noEmit` to identify any call sites that were accidentally passing unsupported types. Fix those call sites rather than widening the type back to `any`.

@@ -27,9 +27,9 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/documents/index.ts` *(POST handler)*
-  - `infra/schemas.ts` *(add `ALLOWED_MIME_TYPES`, `MAX_FILE_SIZE_BYTES`, `documentCreateSchema`)*
-  - `models/document.ts` *(`create()` method)*
+  - `pages/api/v1/documents/index.ts` _(POST handler)_
+  - `infra/schemas.ts` _(add `ALLOWED_MIME_TYPES`, `MAX_FILE_SIZE_BYTES`, `documentCreateSchema`)_
+  - `models/document.ts` _(`create()` method)_
   - `tests/integration/api/v1/documents/index.test.ts`
 - `formidable` config: `{ maxFileSize: MAX_FILE_SIZE_BYTES, filter: ({ mimetype }) => ALLOWED_MIME_TYPES.includes(mimetype) }`
 - MIME type from `formidable` may differ from browser-reported type — always validate the parsed `file.mimetype` from formidable, not the `Content-Type` header

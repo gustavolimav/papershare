@@ -11,6 +11,7 @@
 **Acceptance Criteria:**
 
 **Document Detail:**
+
 - [ ] A document detail page exists at `pages/documents/[id].tsx`
 - [ ] The page fetches document metadata via `GET /api/v1/documents/[id]`
 - [ ] Displays: title, description, file type, file size, page count, upload date
@@ -20,6 +21,7 @@
 - [ ] Non-owners who try to access a document ID they don't own see a 403 error page
 
 **Share Link Manager:**
+
 - [ ] A "Share Links" section on the document detail page lists all existing share links via `GET /api/v1/documents/[id]/links`
 - [ ] Each share link entry shows: label (or "Sem rótulo" if null), token URL (copyable), expiry (or "Sem expiração"), download allowed status, active/revoked status
 - [ ] A "Copy Link" button copies the full public URL (`https://{host}/view/{token}`) to clipboard with visual feedback
@@ -36,13 +38,13 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/documents/[id].tsx` *(create)*
-  - `components/documents/DocumentMeta.tsx` *(create)*
-  - `components/documents/EditDocumentForm.tsx` *(create)*
-  - `components/share-links/ShareLinkList.tsx` *(create)*
-  - `components/share-links/ShareLinkCard.tsx` *(create)*
-  - `components/share-links/CreateShareLinkModal.tsx` *(create)*
-  - `components/share-links/EditShareLinkModal.tsx` *(create)*
+  - `pages/documents/[id].tsx` _(create)_
+  - `components/documents/DocumentMeta.tsx` _(create)_
+  - `components/documents/EditDocumentForm.tsx` _(create)_
+  - `components/share-links/ShareLinkList.tsx` _(create)_
+  - `components/share-links/ShareLinkCard.tsx` _(create)_
+  - `components/share-links/CreateShareLinkModal.tsx` _(create)_
+  - `components/share-links/EditShareLinkModal.tsx` _(create)_
 - Use `useSWR('/api/v1/documents/[id]/links', fetcher)` for the link list; call `mutate()` after create/edit/revoke
 - The public link URL format should be `/view/[token]` — this matches the public viewer page (US-12)
 - The `expires_at` field in the create form should be sent as an ISO 8601 string; use a native `<input type="date">` and convert the value before sending

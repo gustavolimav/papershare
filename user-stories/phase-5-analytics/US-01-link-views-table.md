@@ -33,8 +33,8 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/migrations/007-create-link-views.sql` *(create)*
-  - `types/index.ts` *(add `LinkView`, `LinkViewCreateInput`, `LinkViewAnalytics`)*
+  - `infra/migrations/007-create-link-views.sql` _(create)_
+  - `types/index.ts` _(add `LinkView`, `LinkViewCreateInput`, `LinkViewAnalytics`)_
 - Migration naming convention: `NNN-description.sql` — use `007-create-link-views.sql`
 - Follow the same pattern as `005-create-documents.sql` and `006-create-share-links.sql` for column defaults and timezone handling (`timezone('utc', now())`)
 - The `share_links` table already exists (migration 006). `share_link_id` must reference it with `ON DELETE CASCADE` so that revoking a link also cleans up its view history

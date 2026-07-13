@@ -24,11 +24,11 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/documents/[id]/analytics.tsx` *(create)*
-  - `components/analytics/ViewsChart.tsx` *(create — line chart for views_by_day)*
-  - `components/analytics/StatCard.tsx` *(create — single metric display card)*
-  - `components/analytics/TopLinksTable.tsx` *(create)*
-  - `components/analytics/LinkAnalyticsDrawer.tsx` *(create — slide-in or modal for per-link stats)*
+  - `pages/documents/[id]/analytics.tsx` _(create)_
+  - `components/analytics/ViewsChart.tsx` _(create — line chart for views_by_day)_
+  - `components/analytics/StatCard.tsx` _(create — single metric display card)_
+  - `components/analytics/TopLinksTable.tsx` _(create)_
+  - `components/analytics/LinkAnalyticsDrawer.tsx` _(create — slide-in or modal for per-link stats)_
 - For charting, use a lightweight library already evaluable via CDN or npm — consider `recharts` (React-native) or `chart.js` with `react-chartjs-2`. Add the chosen library to `package.json`.
 - The `views_by_day` data from the API is an array of `{ date, count }` — map this directly to the chart's data format. The API guarantees all 30 days are present (with zero counts) so no date-filling is needed on the frontend.
 - Format `avg_time_on_page` (seconds integer) as "Xm Ys" using a utility function in `lib/formatters.ts`

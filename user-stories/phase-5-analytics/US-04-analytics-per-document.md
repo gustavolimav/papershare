@@ -35,10 +35,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/documents/[id]/analytics.ts` *(create)*
-  - `models/linkView.ts` *(add `getAnalyticsByDocumentId()`)*
-  - `types/index.ts` *(add `DocumentAnalyticsResponse` interface)*
-  - `tests/integration/api/v1/documents/[id]/analytics/get.test.ts` *(create)*
+  - `pages/api/v1/documents/[id]/analytics.ts` _(create)_
+  - `models/linkView.ts` _(add `getAnalyticsByDocumentId()`)_
+  - `types/index.ts` _(add `DocumentAnalyticsResponse` interface)_
+  - `tests/integration/api/v1/documents/[id]/analytics/get.test.ts` _(create)_
 - The join path for ownership: `link_views → share_links → documents` — filter where `documents.id = $documentId AND documents.user_id = $userId AND documents.deleted_at IS NULL`
 - SQL approach for `top_links`: subquery or CTE that groups `link_views` by `share_link_id`, orders by count DESC, and limits to 5; join to `share_links` to fetch `label`
 - `views_by_day` logic is the same as US-03 but JOINed across all links for the document

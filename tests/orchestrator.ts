@@ -133,6 +133,36 @@ async function uploadDocument(
   return response.json();
 }
 
+async function createShareLink(
+  cookie: string,
+  documentId: string,
+  overrides?: {
+    label?: string;
+    password?: string;
+    expires_at?: string;
+    allow_download?: boolean;
+  },
+  // returns `any` because the endpoint can respond with either a ShareLinkResponse or an ErrorResponse
+): Promise<any> {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/documents/${documentId}/links`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie },
+      body: JSON.stringify(overrides ?? {}),
+    },
+  );
+
+  return response.json();
+}
+
+async function expireShareLink(linkId: string): Promise<void> {
+  await database.query({
+    text: "UPDATE share_links SET expires_at = $1 WHERE id = $2",
+    values: [new Date(Date.now() - 1000), linkId],
+  });
+}
+
 interface Orchestrator {
   waitForAllServices(): Promise<void>;
   cleanDatabase(): Promise<void>;
@@ -160,6 +190,21 @@ interface Orchestrator {
       buffer?: Buffer;
     },
   ): Promise<any>;
+  createShareLink(
+    // eslint-disable-next-line no-unused-vars
+    cookie: string,
+    // eslint-disable-next-line no-unused-vars
+    documentId: string,
+    // eslint-disable-next-line no-unused-vars
+    overrides?: {
+      label?: string;
+      password?: string;
+      expires_at?: string;
+      allow_download?: boolean;
+    },
+  ): Promise<any>;
+  // eslint-disable-next-line no-unused-vars
+  expireShareLink(linkId: string): Promise<void>;
 }
 
 const orchestrator: Orchestrator = {
@@ -171,6 +216,8 @@ const orchestrator: Orchestrator = {
   createExpiredSession,
   sessionExists,
   uploadDocument,
+  createShareLink,
+  expireShareLink,
 };
 
 export default orchestrator;

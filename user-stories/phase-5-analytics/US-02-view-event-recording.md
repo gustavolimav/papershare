@@ -30,11 +30,11 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/share/[token]/view.ts` *(create)* — thin route handler
-  - `models/linkView.ts` *(create)* — `recordView(token, input)` business logic
-  - `types/index.ts` *(already updated in US-01 with `LinkViewCreateInput`)*
-  - `infra/schemas.ts` *(add `linkViewCreateSchema` for optional body fields)*
-  - `tests/integration/api/v1/share/[token]/view/post.test.ts` *(create)*
+  - `pages/api/v1/share/[token]/view.ts` _(create)_ — thin route handler
+  - `models/linkView.ts` _(create)_ — `recordView(token, input)` business logic
+  - `types/index.ts` _(already updated in US-01 with `LinkViewCreateInput`)_
+  - `infra/schemas.ts` _(add `linkViewCreateSchema` for optional body fields)_
+  - `tests/integration/api/v1/share/[token]/view/post.test.ts` _(create)_
 - The token validation logic already exists in `models/shareLink.ts → getByToken()` — reuse it here, but note that `getByToken()` currently also checks the password. The view recording should NOT require a password (it is recorded after the viewer has already authenticated with the password on the viewer page). Consider adding a separate `validateToken()` helper that only checks existence/active/expiry, or pass a flag to `getByToken()`.
 - Architecture rule: business logic (IP extraction, token validation, DB insert) belongs in `models/linkView.ts`, not in the page handler
 - Country code resolution (from IP) is out of scope for this story — leave the `country_code` column as `NULL` for now

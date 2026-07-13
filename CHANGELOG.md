@@ -11,6 +11,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 4 — Share Links:
+  - Migration `006-create-share-links.sql` — `share_links` table (plaintext UUID `token`, bcrypt `password_hash`, `expires_at`, `allow_download`, `is_active` for soft-revoke)
+  - `models/shareLink.ts` — `create`, `findAllByDocumentId`, `findOneById`, `updateById`, `revokeById`, `getByToken` (validates active/expiry/password/document-deleted, in that order)
+  - `POST`/`GET /api/v1/documents/[id]/links` — create and list share links, ownership enforced via `models/document.ts#findOneById`
+  - `PATCH`/`DELETE /api/v1/documents/[id]/links/[linkId]` — update link config (label/password/expiry/allow_download/is_active, `null` clears password or expiry) and soft-revoke
+  - `GET /api/v1/share/[token]` — public, unauthenticated endpoint; rate-limited (20 req/min); accepts the optional link password only via `X-Share-Password` header, never a query param
+  - `infra/schemas.ts` — `shareLinkCreateSchema`/`shareLinkUpdateSchema`, `expires_at` must be a future ISO datetime
+  - Share link tokens are intentionally **not** hashed at rest (unlike session tokens) — see the `TODO.md` Phase 4 note for why, and what was hardened instead (header-only password, rate limiting, narrow public response shape)
 - Phase 3 — Documents Core:
   - Migration `005-create-documents.sql` — `documents` table (soft-delete, `user_id` FK, indexed)
   - `infra/storage.ts` — S3-compatible storage adapter (`@aws-sdk/client-s3`); MinIO locally via `infra/compose.yaml`, AWS S3/Cloudflare R2 in production; no-op in `NODE_ENV=test`

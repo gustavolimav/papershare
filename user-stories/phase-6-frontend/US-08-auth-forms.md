@@ -11,6 +11,7 @@
 **Acceptance Criteria:**
 
 **Registration (`/register`):**
+
 - [ ] A registration page exists at `pages/register.tsx`
 - [ ] The form collects: username, email, password (with a confirmation field)
 - [ ] Client-side validation mirrors backend rules: username 3–30 chars alphanumeric, email valid format, password 8+ chars, passwords match
@@ -21,6 +22,7 @@
 - [ ] A link to `/login` is shown for users who already have an account
 
 **Login (`/login`):**
+
 - [ ] A login page exists at `pages/login.tsx`
 - [ ] The form collects: email, password
 - [ ] On submit, the form calls `POST /api/v1/sessions`
@@ -32,6 +34,7 @@
 - [ ] Password field has a show/hide toggle
 
 **Both forms:**
+
 - [ ] Loading state (spinner or disabled button) while the request is in flight
 - [ ] Forms are accessible: labels associated with inputs, ARIA attributes on error messages
 - [ ] Forms are responsive
@@ -39,12 +42,12 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/register.tsx` *(create)*
-  - `pages/login.tsx` *(create)*
-  - `components/forms/RegisterForm.tsx` *(create)*
-  - `components/forms/LoginForm.tsx` *(create)*
-  - `components/ui/Button.tsx` *(create — reusable button component)*
-  - `components/ui/Input.tsx` *(create — reusable input with label + error state)*
+  - `pages/register.tsx` _(create)_
+  - `pages/login.tsx` _(create)_
+  - `components/forms/RegisterForm.tsx` _(create)_
+  - `components/forms/LoginForm.tsx` _(create)_
+  - `components/ui/Button.tsx` _(create — reusable button component)_
+  - `components/ui/Input.tsx` _(create — reusable input with label + error state)_
 - Use React `useState` for form state (no external form library required for this scope)
 - The `AuthContext.mutateUser()` method from US-06 should be called after a successful login so SWR re-fetches the session
 - Error message language: user-facing messages in Portuguese (pt-BR) per project convention

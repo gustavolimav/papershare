@@ -24,12 +24,12 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/migrations/008-add-ai-summary.sql` *(create)*
-  - `models/document.ts` *(add `updateSummary(id, summary)` method)*
-  - `models/summarizer.ts` *(create — text extraction + Claude API call)*
-  - `pages/api/v1/documents/index.ts` *(update POST handler to trigger summarization job)*
-  - `types/index.ts` *(add `ai_summary` to `Document` and `DocumentResponse`)*
-  - `.env.example` *(add `ANTHROPIC_API_KEY`)*
+  - `infra/migrations/008-add-ai-summary.sql` _(create)_
+  - `models/document.ts` _(add `updateSummary(id, summary)` method)_
+  - `models/summarizer.ts` _(create — text extraction + Claude API call)_
+  - `pages/api/v1/documents/index.ts` _(update POST handler to trigger summarization job)_
+  - `types/index.ts` _(add `ai_summary` to `Document` and `DocumentResponse`)_
+  - `.env.example` _(add `ANTHROPIC_API_KEY`)_
 - Recommended approach for the async job: since Next.js API routes are synchronous, use Node's `setImmediate()` or `process.nextTick()` to schedule the summarization after the response is sent. For production scale, a proper job queue (BullMQ, etc.) would be better — note this in a code comment.
 - Claude API integration: use `@anthropic-ai/sdk` npm package. Model: `claude-haiku-4-5-20251001` (cheapest, fastest — appropriate for summarization). Prompt: `"Summarize the following document in 2-5 sentences:\n\n{extracted_text}"`. Truncate extracted text to ~10,000 tokens if the document is very long.
 - Text extraction: `pdf-parse` is already a dependency. For DOCX, `mammoth` can extract plain text (add to dependencies). For PPTX, text extraction is complex — skip for now with a fallback to title-based summary.

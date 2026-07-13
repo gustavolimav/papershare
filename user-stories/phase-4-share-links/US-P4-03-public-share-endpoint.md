@@ -28,10 +28,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/api/v1/share/[token].ts` *(create — public route, no authMiddleware)*
-  - `models/shareLink.ts` *(add `getByToken(token, password?)` method)*
-  - `types/index.ts` *(add `ShareLinkWithDocument` interface)*
-  - `tests/integration/api/v1/share/[token].test.ts` *(create)*
+  - `pages/api/v1/share/[token].ts` _(create — public route, no authMiddleware)_
+  - `models/shareLink.ts` _(add `getByToken(token, password?)` method)_
+  - `types/index.ts` _(add `ShareLinkWithDocument` interface)_
+  - `tests/integration/api/v1/share/[token].test.ts` _(create)_
 - The `getByToken()` model method performs all validation in order:
   1. Query by token (JOIN documents) — throw `NotFoundError` if not found
   2. Check `is_active` — throw `ForbiddenError` if false

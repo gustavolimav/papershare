@@ -12,7 +12,7 @@
 | 1     | Foundation                         | ✅ Done    |
 | 2     | Authorization & Account Management | ✅ Done    |
 | 3     | Documents Core                     | ✅ Done    |
-| 4     | Share Links                        | ⏳ Planned |
+| 4     | Share Links                        | ✅ Done    |
 | 5     | Analytics & Tracking               | ⏳ Planned |
 | 6     | Frontend                           | ⏳ Planned |
 | 7     | AI Features                        | ⏳ Future  |
@@ -111,13 +111,37 @@ Core authentication infrastructure. All items delivered.
 
 ---
 
-## Phase 4 — Share Links ⏳
+## Phase 4 — Share Links ✅
 
 **Goal:** Users can generate configurable sharing links for documents.
 
+### Security decision: share link tokens are not hashed at rest
+
+Session tokens (hardening sprint, pre-Phase-3) are hashed before storage because
+the server never needs to show one back to its owner — the browser already
+holds it. Share link tokens are different: `GET /api/v1/documents/[id]/links`
+must keep returning the full shareable URL every time an owner lists their
+links, potentially long after creation, so it can be re-copied and re-shared.
+Hashing the token would make that impossible to fulfill (a hash can't be
+reversed back into the original URL). So the token stays a plaintext UUID
+(122 bits of entropy, matching how most products — Dropbox, Google Drive,
+Notion — implement "share link" URLs), and the security budget went instead
+into the parts of this feature that don't conflict with that requirement:
+
+- `GET /api/v1/share/[token]` only accepts the optional password via the
+  `X-Share-Password` header, never a query param — query strings end up in
+  server/proxy access logs, browser history, and `Referer` headers
+- The same endpoint is rate-limited (`infra/rate-limit.ts`, 20 req/min) since
+  it's the only unauthenticated route that accepts a secret and would
+  otherwise be brute-forceable
+- Passwords are still bcrypt-hashed (`password_hash`), expiry and revocation
+  (`is_active`) are enforced server-side, and the public response is a
+  deliberately narrow shape that never includes `password_hash`,
+  `storage_key`, or the document owner's `user_id`
+
 ### Database
 
-- [ ] Migration: `share_links` table
+- [x] Migration `006-create-share-links.sql`: `share_links` table
   ```sql
   id, token (UUID), document_id, user_id,
   label, password_hash, expires_at,
@@ -127,25 +151,27 @@ Core authentication infrastructure. All items delivered.
 
 ### API
 
-- [ ] `POST /api/v1/documents/[id]/links` — Create share link
-- [ ] `GET /api/v1/documents/[id]/links` — List links for a document
-- [ ] `PATCH /api/v1/documents/[id]/links/[linkId]` — Update link config
-- [ ] `DELETE /api/v1/documents/[id]/links/[linkId]` — Revoke link
-- [ ] `GET /api/v1/share/[token]` — Public endpoint: validate link and serve document
-  - Checks expiration, active status, password if set
-  - Returns document viewer URL (not raw file for non-downloadable links)
+- [x] `POST /api/v1/documents/[id]/links` — Create share link
+- [x] `GET /api/v1/documents/[id]/links` — List links for a document
+- [x] `PATCH /api/v1/documents/[id]/links/[linkId]` — Update link config
+- [x] `DELETE /api/v1/documents/[id]/links/[linkId]` — Revoke link (soft: `is_active = FALSE`)
+- [x] `GET /api/v1/share/[token]` — Public endpoint: validates expiration, active
+      status, password, and document soft-delete state; returns share link +
+      document metadata. Does not yet return a viewer URL or stream file
+      bytes — that's Phase 6 (frontend viewer) territory; `allow_download` is
+      returned as a flag for the viewer to respect, not enforced by the API.
 
 ### Model
 
-- [ ] `models/shareLink.ts`
-- [ ] Password-protected links: hash on create, verify on access
+- [x] `models/shareLink.ts`
+- [x] Password-protected links: hash on create/update, verify on access
 
 ### Tests
 
-- [ ] Link creation with/without password and expiration
-- [ ] Expired link returns 403
-- [ ] Revoked link returns 403
-- [ ] Download-disabled link: file bytes not served
+- [x] Link creation with/without password and expiration
+- [x] Expired link returns 403
+- [x] Revoked link returns 403
+- [x] `allow_download: false` is reflected in the public response (enforcement is a viewer-level concern, see above)
 
 ---
 

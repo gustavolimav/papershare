@@ -26,13 +26,13 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/dashboard.tsx` *(create)*
-  - `components/documents/DocumentList.tsx` *(create)*
-  - `components/documents/DocumentCard.tsx` *(create)*
-  - `components/documents/UploadZone.tsx` *(create — drag-and-drop + file picker)*
-  - `components/ui/ConfirmDialog.tsx` *(create — reusable confirm modal)*
-  - `components/ui/Skeleton.tsx` *(create — loading placeholder)*
-  - `lib/formatters.ts` *(create — `formatFileSize(bytes)`, `formatDate(iso)` helpers)*
+  - `pages/dashboard.tsx` _(create)_
+  - `components/documents/DocumentList.tsx` _(create)_
+  - `components/documents/DocumentCard.tsx` _(create)_
+  - `components/documents/UploadZone.tsx` _(create — drag-and-drop + file picker)_
+  - `components/ui/ConfirmDialog.tsx` _(create — reusable confirm modal)_
+  - `components/ui/Skeleton.tsx` _(create — loading placeholder)_
+  - `lib/formatters.ts` _(create — `formatFileSize(bytes)`, `formatDate(iso)` helpers)_
 - The upload form needs `encType="multipart/form-data"` and should submit `file` (the file binary) and `title` (string) as form fields — matching what the existing `POST /api/v1/documents` handler expects via `formidable`
 - SWR key for document list: `'/api/v1/documents?page=1&per_page=10'`; use `useSWR` with `mutate` for post-upload revalidation
 - The `GET /api/v1/documents` response already includes `{ documents: [], total: number }` — use `total` and `per_page` to calculate page count

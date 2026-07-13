@@ -27,9 +27,9 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/storage.ts` *(create)*
-  - `infra/compose.yaml` *(add `storage` MinIO service)*
-  - `.env.development` *(add `STORAGE_*` vars)*
+  - `infra/storage.ts` _(create)_
+  - `infra/compose.yaml` _(add `storage` MinIO service)_
+  - `.env.development` \_(add `STORAGE\__` vars)\*
 - The function signature: `saveFile(file: Buffer, originalFilename: string): Promise<{ key: string, size: number }>`
 - The key format: `crypto.randomUUID() + path.extname(originalFilename)` (e.g., `uuid.pdf`)
 - In test mode: return `{ key: \`test-\${crypto.randomUUID()}.pdf\`, size: file.length }` without calling S3

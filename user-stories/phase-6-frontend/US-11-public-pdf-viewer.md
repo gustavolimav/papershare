@@ -27,11 +27,11 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/view/[token].tsx` *(create)*
-  - `components/viewer/PDFViewer.tsx` *(create — wraps PDF.js)*
-  - `components/viewer/PasswordGate.tsx` *(create — password prompt UI)*
-  - `components/viewer/ViewerControls.tsx` *(create — page nav + zoom)*
-  - `lib/fingerprint.ts` *(create — generates a stable viewer fingerprint from browser signals: screen resolution, timezone, language, platform)*
+  - `pages/view/[token].tsx` _(create)_
+  - `components/viewer/PDFViewer.tsx` _(create — wraps PDF.js)_
+  - `components/viewer/PasswordGate.tsx` _(create — password prompt UI)_
+  - `components/viewer/ViewerControls.tsx` _(create — page nav + zoom)_
+  - `lib/fingerprint.ts` _(create — generates a stable viewer fingerprint from browser signals: screen resolution, timezone, language, platform)_
 - PDF.js integration: use `pdfjs-dist` npm package. Set `GlobalWorkerOptions.workerSrc` to the CDN version to avoid bundling the worker. The viewer renders each page onto a `<canvas>` element.
 - To suppress downloads: set `pointer-events: none` on the canvas context and use CSS `user-select: none`. Note that determined users can still bypass this — it is a soft restriction.
 - The `allow_download` flag is returned by `GET /api/v1/share/[token]` in the `ShareLinkWithDocument` response — use this value to conditionally render the download button

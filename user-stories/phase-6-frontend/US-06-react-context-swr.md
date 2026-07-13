@@ -25,10 +25,10 @@
 **Technical Context:**
 
 - Relevant files:
-  - `context/AuthContext.tsx` *(create)*
-  - `lib/fetcher.ts` *(create)*
-  - `pages/_app.tsx` *(create or update to wrap with `AuthProvider`)*
-  - `package.json` *(add `swr`)*
+  - `context/AuthContext.tsx` _(create)_
+  - `lib/fetcher.ts` _(create)_
+  - `pages/_app.tsx` _(create or update to wrap with `AuthProvider`)_
+  - `package.json` _(add `swr`)_
 - The existing API already returns user data from `GET /api/v1/users/[username]`, but a cleaner approach for the auth context is a dedicated `GET /api/v1/sessions` endpoint that returns the current session's user. Check if this endpoint already exists; if not, add it as a thin handler that reads `req.user` via `authMiddleware` and returns the user (without password).
 - Pattern for SWR usage in components: `const { data: user, error, isLoading } = useSWR('/api/v1/sessions/me', fetcher)`
 - Dependencies / considerations:

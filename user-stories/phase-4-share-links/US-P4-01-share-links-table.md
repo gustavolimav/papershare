@@ -36,8 +36,8 @@
 **Technical Context:**
 
 - Relevant files:
-  - `infra/migrations/006-create-share-links.sql` *(create)*
-  - `types/index.ts` *(add ShareLink interfaces)*
+  - `infra/migrations/006-create-share-links.sql` _(create)_
+  - `types/index.ts` _(add ShareLink interfaces)_
 - The `token` is separate from `id` — `id` is used for owner-facing API operations (CRUD), while `token` is used for the public viewer URL (`/view/:token`). This means owners never expose the internal `id` in share URLs.
 - `password_hash` must be omitted from all API responses; replace with a boolean `has_password` indicating whether a password is set
 - Dependencies / considerations:

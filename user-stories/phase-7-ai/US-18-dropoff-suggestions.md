@@ -24,9 +24,9 @@
 **Technical Context:**
 
 - Relevant files:
-  - `models/analyticsInsights.ts` *(update — extend prompt to include drop-off analysis and add `suggestions` to prompt output)*
-  - `types/index.ts` *(add `Suggestion` interface, update `AnalyticsInsightResponse`)*
-  - `components/analytics/SuggestionList.tsx` *(create — display component)*
+  - `models/analyticsInsights.ts` _(update — extend prompt to include drop-off analysis and add `suggestions` to prompt output)_
+  - `types/index.ts` _(add `Suggestion` interface, update `AnalyticsInsightResponse`)_
+  - `components/analytics/SuggestionList.tsx` _(create — display component)_
 - Prompt extension: add to the existing insights prompt: "Additionally, based on the drop-off data (avg_pages_viewed vs page_count), provide up to 3 actionable suggestions to improve viewer engagement. Return your response as valid JSON with the shape: `{ insight: string, suggestions: Array<{ type: string, message: string, page_number: number | null }> }`. Respond to the user in Brazilian Portuguese (pt-BR)."
 - Parse the Claude response as JSON (use `JSON.parse()` on the response text); handle parse errors gracefully by returning `suggestions: []`
 - The `page_number` in a drop-off suggestion should be `Math.round(avg_pages_viewed)` — the model will compute this from the provided analytics data
