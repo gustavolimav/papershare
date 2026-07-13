@@ -1,14 +1,14 @@
-import React from "react";
+"use client";
+
 import useSWR from "swr";
-import type { StatusResponse } from "../../types/index.js";
+import type { StatusResponse } from "@/types/index";
 
 async function fetchStatus(): Promise<StatusResponse> {
   const response = await fetch("/api/v1/status");
-  const responseBody = await response.json();
-  return responseBody;
+  return response.json();
 }
 
-export default function StatusPage(): React.JSX.Element {
+export default function StatusPage() {
   return (
     <>
       <h1>Status</h1>
@@ -18,7 +18,7 @@ export default function StatusPage(): React.JSX.Element {
   );
 }
 
-function UpdatedAt(): React.JSX.Element {
+function UpdatedAt() {
   const { isLoading, data } = useSWR<StatusResponse>("status", fetchStatus, {
     refreshInterval: 2000,
   });
@@ -32,7 +32,7 @@ function UpdatedAt(): React.JSX.Element {
   return <div>Última atualizacao: {updatedAtText}</div>;
 }
 
-function DatabaseStatus(): React.JSX.Element {
+function DatabaseStatus() {
   const { data } = useSWR<StatusResponse>("status", fetchStatus, {
     refreshInterval: 2000,
   });
