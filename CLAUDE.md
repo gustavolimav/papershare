@@ -122,16 +122,17 @@ If Docker is not running, start it first with `npm run services:up` before runni
 
 ## Environment variables
 
-| Variable            | Purpose                                        |
-| ------------------- | ---------------------------------------------- |
-| `POSTGRES_HOST`     | DB host                                        |
-| `POSTGRES_PORT`     | DB port                                        |
-| `POSTGRES_USER`     | DB user                                        |
-| `POSTGRES_DB`       | DB name                                        |
-| `POSTGRES_PASSWORD` | DB password                                    |
-| `DATABASE_URL`      | Full connection string                         |
-| `PEPPER`            | Password hashing pepper (never change in prod) |
-| `NODE_ENV`          | `development` / `production` / `test`          |
+| Variable            | Purpose                                                                         |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `POSTGRES_HOST`     | DB host                                                                         |
+| `POSTGRES_PORT`     | DB port                                                                         |
+| `POSTGRES_USER`     | DB user                                                                         |
+| `POSTGRES_DB`       | DB name                                                                         |
+| `POSTGRES_PASSWORD` | DB password                                                                     |
+| `DATABASE_URL`      | Full connection string                                                          |
+| `PEPPER`            | Password hashing pepper (never change in prod)                                  |
+| `NODE_ENV`          | `development` / `production` / `test`                                           |
+| `MIGRATIONS_SECRET` | Shared secret required via `x-migrations-secret` header on `/api/v1/migrations` |
 
 ---
 

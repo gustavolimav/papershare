@@ -1,5 +1,5 @@
 import database from "../infra/database";
-import { ValidationError, NotFoundError } from "../infra/errors";
+import { ValidationError, NotFoundError, ServiceError } from "../infra/errors";
 import password from "./password";
 import type {
   User,
@@ -164,8 +164,9 @@ async function hashPasswordInObject(userInputValues: {
 }
 
 async function runUpdateQuery(userWithNewValues: User, username: string) {
-  return await database.query<UserPublic>({
-    text: `
+  try {
+    return await database.query<UserPublic>({
+      text: `
         UPDATE
           users
         SET
@@ -178,35 +179,79 @@ async function runUpdateQuery(userWithNewValues: User, username: string) {
         RETURNING
           id, username, email, created_at, updated_at
         ;`,
-    values: [
-      userWithNewValues.username,
-      userWithNewValues.password,
-      userWithNewValues.email,
-      username,
-    ],
-  });
+      values: [
+        userWithNewValues.username,
+        userWithNewValues.password,
+        userWithNewValues.email,
+        username,
+      ],
+    });
+  } catch (error) {
+    throwUniqueViolationAsValidationError(error);
+  }
 }
 
 async function runInsertQuery(
   userInputValues: UserCreateInput & { password: string },
 ): Promise<UserPublic> {
-  const results = await database.query<UserPublic>({
-    text: `
-        INSERT INTO 
-          users (username, password, email) 
-        VALUES 
+  try {
+    const results = await database.query<UserPublic>({
+      text: `
+        INSERT INTO
+          users (username, password, email)
+        VALUES
           ($1, $2, $3)
         RETURNING
           id, username, email, created_at, updated_at
         ;`,
-    values: [
-      userInputValues.username,
-      userInputValues.password,
-      userInputValues.email,
-    ],
-  });
+      values: [
+        userInputValues.username,
+        userInputValues.password,
+        userInputValues.email,
+      ],
+    });
 
-  return results.rows[0]!;
+    return results.rows[0]!;
+  } catch (error) {
+    throwUniqueViolationAsValidationError(error);
+  }
+}
+
+// Backstop for the check-then-insert race in validateUniqueEmail/validateUniqueUserName:
+// two concurrent requests can both pass the SELECT check before either INSERTs.
+// The DB's UNIQUE constraint is the actual source of truth; this just translates
+// its violation into the same ValidationError the pre-check would have thrown.
+function isUniqueViolation(
+  error: unknown,
+): error is ServiceError & { cause: { code: string; constraint?: string } } {
+  return (
+    error instanceof ServiceError &&
+    (error.cause as { code?: string } | undefined)?.code === "23505"
+  );
+}
+
+function throwUniqueViolationAsValidationError(error: unknown): never {
+  if (!isUniqueViolation(error)) {
+    throw error;
+  }
+
+  const constraint = error.cause.constraint;
+
+  if (constraint === "users_email_key") {
+    throw new ValidationError({
+      message: "O email informado já está sendo utilizado.",
+      action: "Utilize outro email para realizar esta operação.",
+    });
+  }
+
+  if (constraint === "users_username_key") {
+    throw new ValidationError({
+      message: "O username informado já está sendo utilizado.",
+      action: "Utilize outro username para realizar esta operação.",
+    });
+  }
+
+  throw error;
 }
 
 async function deleteByUsername(username: string): Promise<void> {

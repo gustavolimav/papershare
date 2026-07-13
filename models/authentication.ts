@@ -1,6 +1,6 @@
 import user from "./user";
 import password from "./password";
-import { NotFoundError, UnathorizedError } from "../infra/errors";
+import { NotFoundError, UnauthorizedError } from "../infra/errors";
 import type { User, AuthenticationModel } from "../types/index";
 
 async function getAuthentication(
@@ -14,8 +14,8 @@ async function getAuthentication(
 
     await validatePassword(providedPassword, storedUser.password);
   } catch (error) {
-    if (error instanceof UnathorizedError) {
-      throw new UnathorizedError({
+    if (error instanceof UnauthorizedError) {
+      throw new UnauthorizedError({
         message: "Email ou senha inválidos.",
         action: "Verifique se o email e a senha estão digitados corretamente.",
       });
@@ -37,7 +37,7 @@ async function validatePassword(
   );
 
   if (!isPasswordValid) {
-    throw new UnathorizedError({
+    throw new UnauthorizedError({
       message: "Senha inválida.",
       action: "Verifique se a senha está digitada corretamente.",
     });
@@ -51,7 +51,7 @@ async function findUserByEmail(providedEmail: string): Promise<User> {
     storedUser = await user.findOneByEmail(providedEmail);
   } catch (error) {
     if (error instanceof NotFoundError) {
-      throw new UnathorizedError({
+      throw new UnauthorizedError({
         message: "Email inválido.",
         action: "Verifique se o email está digitado corretamente.",
       });

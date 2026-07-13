@@ -7,9 +7,20 @@ beforeAll(async () => {
 
 describe("POST /api/v1/migrations", () => {
   describe("Running as anonymous user", () => {
+    test("Without migrations secret", async () => {
+      const response = await fetch("http://localhost:3000/api/v1/migrations", {
+        method: "POST",
+      });
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("With correct migrations secret", () => {
     test("For the first time", async () => {
       const response = await fetch("http://localhost:3000/api/v1/migrations", {
         method: "POST",
+        headers: { "x-migrations-secret": process.env.MIGRATIONS_SECRET! },
       });
 
       expect(response.status).toBe(201);
@@ -31,6 +42,7 @@ describe("POST /api/v1/migrations", () => {
     test("For the second time", async () => {
       const response = await fetch("http://localhost:3000/api/v1/migrations", {
         method: "POST",
+        headers: { "x-migrations-secret": process.env.MIGRATIONS_SECRET! },
       });
 
       expect(response.status).toBe(200);

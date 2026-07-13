@@ -32,7 +32,7 @@ describe("POST /api/v1/sessions", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "UnathorizedError",
+        name: "UnauthorizedError",
         message: "Email ou senha inválidos.",
         action: "Verifique se o email e a senha estão digitados corretamente.",
         status: 401,
@@ -61,7 +61,7 @@ describe("POST /api/v1/sessions", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "UnathorizedError",
+        name: "UnauthorizedError",
         message: "Email ou senha inválidos.",
         action: "Verifique se o email e a senha estão digitados corretamente.",
         status: 401,
@@ -90,7 +90,7 @@ describe("POST /api/v1/sessions", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "UnathorizedError",
+        name: "UnauthorizedError",
         message: "Email ou senha inválidos.",
         action: "Verifique se o email e a senha estão digitados corretamente.",
         status: 401,
@@ -145,7 +145,7 @@ describe("POST /api/v1/sessions", () => {
 
       expect(expiresAt.getTime()).toBe(expectedExpiresAt.getTime());
 
-      const parsedSetCookie = setCookieParser(response, {
+      const parsedSetCookie = setCookieParser(response.headers.getSetCookie(), {
         map: true,
       });
 
@@ -155,6 +155,7 @@ describe("POST /api/v1/sessions", () => {
         maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
         path: "/",
         httpOnly: true,
+        sameSite: "Lax",
       });
     });
   });

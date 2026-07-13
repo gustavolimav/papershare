@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import retry from "async-retry";
 import { faker } from "@faker-js/faker";
 
@@ -44,8 +45,11 @@ async function createUser(
   });
 }
 
+function hashSessionToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 async function createExpiredSession(userId: string): Promise<string> {
-  const crypto = await import("crypto");
   const token = crypto.randomBytes(48).toString("hex");
   const expiredAt = new Date(Date.now() - 1000);
 
@@ -56,7 +60,7 @@ async function createExpiredSession(userId: string): Promise<string> {
         VALUES
           ($1, $2, $3)
         ;`,
-    values: [token, userId, expiredAt],
+    values: [hashSessionToken(token), userId, expiredAt],
   });
 
   return token;
@@ -65,7 +69,7 @@ async function createExpiredSession(userId: string): Promise<string> {
 async function sessionExists(token: string): Promise<boolean> {
   const result = await database.query<{ count: string }>({
     text: "SELECT COUNT(*)::text as count FROM sessions WHERE token = $1",
-    values: [token],
+    values: [hashSessionToken(token)],
   });
 
   return result.rows[0]!.count !== "0";

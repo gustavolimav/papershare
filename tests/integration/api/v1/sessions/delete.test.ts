@@ -17,7 +17,7 @@ describe("DELETE /api/v1/sessions", () => {
     const responseBody = await response.json();
 
     expect(responseBody).toEqual({
-      name: "UnathorizedError",
+      name: "UnauthorizedError",
       message: "Usuário não autenticado.",
       action: "Faça login para realizar esta operação.",
       status: 401,
@@ -35,7 +35,7 @@ describe("DELETE /api/v1/sessions", () => {
     const responseBody = await response.json();
 
     expect(responseBody).toEqual({
-      name: "UnathorizedError",
+      name: "UnauthorizedError",
       message: "Sessão não encontrada ou inválida.",
       action: "Faça login novamente para continuar.",
       status: 401,

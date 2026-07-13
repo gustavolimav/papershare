@@ -11,6 +11,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Pre-Phase-3 hardening sprint:
+  - `infra/auth.ts#migrationsAuthMiddleware` — `GET`/`POST /api/v1/migrations` now require a matching `x-migrations-secret` header (`MIGRATIONS_SECRET` env var); previously unauthenticated and able to run migrations against the live database
+  - `models/session.ts` — session tokens are now stored as a SHA-256 hash; the raw bearer token is never persisted
+  - `models/user.ts` — Postgres unique-violation (`23505`) on insert/update is now caught and mapped to `ValidationError`, closing the check-then-insert race in `validateUniqueEmail`/`validateUniqueUserName`
+  - `typecheck` job (`npx tsc --noEmit`) added to `.github/workflows/linting.yaml`; required adding `baseUrl: "."` to `tsconfig.json` so `tsc` resolves the root-style imports (`tests/orchestrator`, `models/session`, …) some test files already used, matching jest's `moduleDirectories` resolution
 - Rate limiting middleware (`infra/rate-limit.ts`) — in-memory sliding window; 5 req/min on `POST /api/v1/sessions`, 10 req/min on `POST /api/v1/users`; returns `TooManyRequestsError` (429)
 - `TooManyRequestsError` (429) error class in `infra/errors.ts`
 - Zod input validation (`infra/schemas.ts`) on `POST /api/v1/users`, `PATCH /api/v1/users/[username]`, `POST /api/v1/sessions` — invalid input returns 400 `ValidationError`
@@ -29,6 +34,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `GET /api/v1/users/[username]` and `PATCH /api/v1/users/[username]` now require a valid session
 - Integration tests for all authentication middleware scenarios (no cookie, invalid token, expired session, valid session)
 - Test helpers `orchestrator.createExpiredSession(userId)` and `orchestrator.sessionExists(token)`
+
+### Fixed
+
+- Renamed `UnathorizedError` → `UnauthorizedError` (typo was part of the API error contract's `name` field)
+- Session cookies (`session_id`) now set `SameSite=Lax` explicitly instead of relying on the browser default
+- Removed `console.log` calls from `models/migrator.ts` (violated the "no console.log in production code" convention)
 
 ---
 

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import * as cookie from "cookie";
 import session from "../models/session";
 import database from "./database";
-import { UnathorizedError } from "./errors";
+import { UnauthorizedError } from "./errors";
 import type { AuthenticatedNextApiRequest, User } from "../types/index";
 
 export async function authMiddleware(
@@ -14,7 +14,7 @@ export async function authMiddleware(
   const sessionToken = cookies.session_id;
 
   if (!sessionToken) {
-    throw new UnathorizedError({
+    throw new UnauthorizedError({
       message: "Usuário não autenticado.",
       action: "Faça login para realizar esta operação.",
     });
@@ -24,7 +24,7 @@ export async function authMiddleware(
 
   if (!existingSession) {
     clearSessionCookie(response);
-    throw new UnathorizedError({
+    throw new UnauthorizedError({
       message: "Sessão não encontrada ou inválida.",
       action: "Faça login novamente para continuar.",
     });
@@ -35,7 +35,7 @@ export async function authMiddleware(
   if (isExpired) {
     await session.deleteByToken(sessionToken);
     clearSessionCookie(response);
-    throw new UnathorizedError({
+    throw new UnauthorizedError({
       message: "Sessão expirada.",
       action: "Faça login novamente para continuar.",
     });
@@ -65,7 +65,7 @@ async function findUserById(userId: string): Promise<User> {
   });
 
   if (!results.rowCount || results.rowCount === 0) {
-    throw new UnathorizedError({
+    throw new UnauthorizedError({
       message: "Usuário da sessão não encontrado.",
       action: "Faça login novamente para continuar.",
     });
@@ -80,7 +80,26 @@ function clearSessionCookie(response: NextApiResponse): void {
     maxAge: 0,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   });
 
   response.setHeader("Set-Cookie", expiredCookie);
+}
+
+export function migrationsAuthMiddleware(
+  request: NextApiRequest,
+  _response: NextApiResponse,
+  next: () => void | Promise<void>,
+): void | Promise<void> {
+  const providedSecret = request.headers["x-migrations-secret"];
+  const expectedSecret = process.env.MIGRATIONS_SECRET;
+
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    throw new UnauthorizedError({
+      message: "Acesso não autorizado às migrações.",
+      action: "Forneça o cabeçalho 'x-migrations-secret' correto.",
+    });
+  }
+
+  return next();
 }

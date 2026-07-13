@@ -146,8 +146,8 @@ export class ForbiddenError extends Error {
   }
 }
 
-export class UnathorizedError extends Error {
-  public readonly name = "UnathorizedError";
+export class UnauthorizedError extends Error {
+  public readonly name = "UnauthorizedError";
   public readonly action: string;
   public readonly statusCode = 401;
 
