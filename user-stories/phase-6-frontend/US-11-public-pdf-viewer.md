@@ -8,9 +8,22 @@
 **I want to** view a shared document in my browser through a clean, secure viewer,
 **So that** I can read the content without needing a Papershare account, and without being able to download it if the owner disabled downloads.
 
+> **Alignment note (2026-07-13):** App Router: route is
+> `app/view/[token]/page.tsx`, public (no auth gate, no
+> `getServerUser()` call needed). More importantly, the "Technical
+> Context" note below about serving files from local `/uploads/[key]`
+> is **stale** — Phase 3 deliberately went S3/MinIO-only for storage
+> (see `US-P3-02`), local filesystem storage was never implemented.
+> `infra/storage.ts` currently only exports `saveFile`/`deleteFile` —
+> there is no read/proxy method yet. This story needs to add one
+> (e.g. `storage.getFile(key): Promise<{ body: Readable; contentType:
+string }>` via S3 `GetObjectCommand`) plus the
+> `GET /api/v1/share/[token]/file` route below, which re-validates the
+> token (reuse `shareLink.getByToken`) before streaming.
+
 **Acceptance Criteria:**
 
-- [ ] A public viewer page exists at `pages/view/[token].tsx` (no authentication required)
+- [ ] A public viewer page exists at `app/view/[token]/page.tsx` (no authentication required)
 - [ ] On load, the page calls `GET /api/v1/share/[token]` to validate the link
 - [ ] If the link requires a password, a password entry form is shown before the document is rendered; the password is sent as a query param or header in subsequent requests
 - [ ] If the link is expired (403) or revoked (403), a clear error page is shown: "Este link expirou." / "Este link foi revogado."
@@ -27,16 +40,17 @@
 **Technical Context:**
 
 - Relevant files:
-  - `pages/view/[token].tsx` _(create)_
+  - `app/view/[token]/page.tsx` _(create)_
   - `components/viewer/PDFViewer.tsx` _(create — wraps PDF.js)_
   - `components/viewer/PasswordGate.tsx` _(create — password prompt UI)_
   - `components/viewer/ViewerControls.tsx` _(create — page nav + zoom)_
   - `lib/fingerprint.ts` _(create — generates a stable viewer fingerprint from browser signals: screen resolution, timezone, language, platform)_
-- PDF.js integration: use `pdfjs-dist` npm package. Set `GlobalWorkerOptions.workerSrc` to the CDN version to avoid bundling the worker. The viewer renders each page onto a `<canvas>` element.
+  - `infra/storage.ts` _(extend — add a `getFile(key)` method using `GetObjectCommand`, alongside the existing `saveFile`/`deleteFile`)_
+  - `pages/api/v1/share/[token]/file/index.ts` _(create — proxies the file; re-validates via `shareLink.getByToken(token, password)`, then streams `storage.getFile(document.storage_key)` with the right `Content-Type`)_
+- PDF.js integration: use `pdfjs-dist` npm package (already a dependency, added in Phase 3 for server-side page-count extraction — confirm the browser/client entry point works the same way, it's the same package but a different usage than the Node-side `PDFParse` class already in use). Set `GlobalWorkerOptions.workerSrc` to the CDN version to avoid bundling the worker. The viewer renders each page onto a `<canvas>` element.
 - To suppress downloads: set `pointer-events: none` on the canvas context and use CSS `user-select: none`. Note that determined users can still bypass this — it is a soft restriction.
 - The `allow_download` flag is returned by `GET /api/v1/share/[token]` in the `ShareLinkWithDocument` response — use this value to conditionally render the download button
-- The file content itself is served from the storage layer (local `/uploads/[key]` in dev). An API endpoint may be needed to proxy the file: `GET /api/v1/share/[token]/file` — check if it exists; if not, add it as part of this story. This endpoint must re-validate the token and stream the file with appropriate headers.
 - Dependencies / considerations:
   - Requires US-01/02 for view recording (can be skipped if analytics not yet done — just omit the recording call)
-  - Requires `pdfjs-dist` added to `package.json`
+  - Requires `pdfjs-dist` added to `package.json` — already present
   - DOCX/PPTX rendering is out of scope — show a "Preview not available. Download to view." message for non-PDF files

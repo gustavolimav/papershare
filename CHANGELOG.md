@@ -15,6 +15,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 6 — Frontend (Block 1 of 6, in progress):
+  - `GET /api/v1/sessions` — thin authenticated handler returning the current user, backing the new frontend auth context
+  - `models/user.ts#findOneById()` — used by the new Server Component auth helper
+  - App Router foundation: Tailwind CSS v4 + shadcn/ui (Radix base), `context/AuthContext.tsx` + `lib/fetcher.ts` + `app/providers.tsx` (SWR-backed `useAuth()`), `lib/auth-server.ts#getServerUser()` for server-side auth gating with no client-side flicker
+  - Shared `Header`/`Footer` + landing page (`app/page.tsx`) with hero, feature cards, and a server-side redirect to `/dashboard` for already-authenticated visitors
+  - `pages/index.tsx` and `pages/status/index.tsx` migrated to `app/page.tsx`/`app/status/page.tsx`; `pages/api/v1/*` untouched
+  - Remaining blocks (auth forms, dashboard, document detail/share links, PDF viewer, analytics + settings) tracked in `TODO.md`; each corresponding user story in `user-stories/phase-6-frontend/` has an alignment note reconciling its original Pages-Router-era spec with the App Router / shadcn decisions made in Block 1
 - Phase 5 — Analytics & Tracking:
   - Migration `007-create-link-views.sql` — `link_views` table, cascades on share link deletion
   - `POST /api/v1/share/[token]/view` — public view-recording endpoint; extracts `ip_address`/`user_agent` from headers, does not require the link password (already gated by the public GET)
