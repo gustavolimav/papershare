@@ -102,6 +102,46 @@ export interface ShareLinkWithDocument {
   };
 }
 
+export interface LinkView {
+  id: string;
+  share_link_id: string;
+  viewer_fingerprint: string | null;
+  ip_address: string | null;
+  country_code: string | null;
+  user_agent: string | null;
+  time_on_page: number | null;
+  pages_viewed: number | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ViewsByDay {
+  date: string;
+  count: number;
+}
+
+export interface LinkViewAnalytics {
+  total_views: number;
+  unique_viewers: number;
+  avg_time_on_page: number | null;
+  avg_pages_viewed: number | null;
+  first_viewed_at: Date | null;
+  last_viewed_at: Date | null;
+  views_by_day: ViewsByDay[];
+}
+
+export type LinkAnalyticsResponse = LinkViewAnalytics;
+
+export interface TopLink {
+  link_id: string;
+  label: string | null;
+  total_views: number;
+}
+
+export interface DocumentAnalyticsResponse extends LinkViewAnalytics {
+  top_links: TopLink[];
+}
+
 // Input Types
 export interface UserCreateInput {
   username: string;
@@ -149,6 +189,14 @@ export interface ShareLinkUpdateInput {
   expires_at?: string | null;
   allow_download?: boolean;
   is_active?: boolean;
+}
+
+export interface LinkViewCreateInput {
+  viewer_fingerprint?: string;
+  ip_address?: string;
+  user_agent?: string;
+  time_on_page?: number;
+  pages_viewed?: number;
 }
 
 // Database Query Types
@@ -279,6 +327,15 @@ export interface ShareLinkModel {
   ): Promise<ShareLinkResponse>;
   revokeById(id: string, documentId: string): Promise<ShareLinkResponse>;
   getByToken(token: string, password?: string): Promise<ShareLinkWithDocument>;
+  validateToken(token: string): Promise<{ id: string }>;
+}
+
+export interface LinkViewModel {
+  recordView(token: string, input: LinkViewCreateInput): Promise<LinkView>;
+  getAnalyticsByLinkId(linkId: string): Promise<LinkAnalyticsResponse>;
+  getAnalyticsByDocumentId(
+    documentId: string,
+  ): Promise<DocumentAnalyticsResponse>;
 }
 
 export interface StorageModel {

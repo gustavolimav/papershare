@@ -11,6 +11,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 5 — Analytics & Tracking:
+  - Migration `007-create-link-views.sql` — `link_views` table, cascades on share link deletion
+  - `POST /api/v1/share/[token]/view` — public view-recording endpoint; extracts `ip_address`/`user_agent` from headers, does not require the link password (already gated by the public GET)
+  - `models/shareLink.ts#validateToken()` — existence/active/expiry check without the password gate, so view recording doesn't need the viewer to re-supply the password
+  - `models/linkView.ts#recordView()` — deduplicates repeat views from the same `viewer_fingerprint` within a 30-minute window (updates `time_on_page`/`pages_viewed` on the existing row instead of inserting a new one), using a transaction + `SELECT ... FOR UPDATE` on a dedicated client to avoid a race between the check and the write
+  - `GET /api/v1/documents/[id]/links/[linkId]/analytics` and `GET /api/v1/documents/[id]/analytics` — aggregated view stats (total/unique/avg time/avg pages/first-last viewed) plus a 30-day zero-filled `views_by_day` series; the per-document endpoint also returns `top_links` (top 5 by views)
+  - All aggregate SQL casts `COUNT`/`AVG` results to `::int`/`::float` — `pg` returns `bigint`/`numeric` as strings by default, which would otherwise leak into the API response as strings instead of numbers
 - Phase 4 — Share Links:
   - Migration `006-create-share-links.sql` — `share_links` table (plaintext UUID `token`, bcrypt `password_hash`, `expires_at`, `allow_download`, `is_active` for soft-revoke)
   - `models/shareLink.ts` — `create`, `findAllByDocumentId`, `findOneById`, `updateById`, `revokeById`, `getByToken` (validates active/expiry/password/document-deleted, in that order)

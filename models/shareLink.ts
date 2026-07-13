@@ -39,6 +39,25 @@ function toResponse(link: ShareLink): ShareLinkResponse {
   return { ...rest, has_password: password_hash !== null };
 }
 
+function assertLinkIsActiveAndNotExpired(row: {
+  is_active: boolean;
+  expires_at: Date | null;
+}): void {
+  if (!row.is_active) {
+    throw new ForbiddenError({
+      message: "Este link foi revogado.",
+      action: "Solicite um novo link ao proprietário do documento.",
+    });
+  }
+
+  if (row.expires_at && new Date(row.expires_at) < new Date()) {
+    throw new ForbiddenError({
+      message: "Este link expirou.",
+      action: "Solicite um novo link ao proprietário do documento.",
+    });
+  }
+}
+
 async function create(
   documentId: string,
   userId: string,
@@ -248,19 +267,7 @@ async function getByToken(
 
   const row = results.rows[0]!;
 
-  if (!row.is_active) {
-    throw new ForbiddenError({
-      message: "Este link foi revogado.",
-      action: "Solicite um novo link ao proprietário do documento.",
-    });
-  }
-
-  if (row.expires_at && new Date(row.expires_at) < new Date()) {
-    throw new ForbiddenError({
-      message: "Este link expirou.",
-      action: "Solicite um novo link ao proprietário do documento.",
-    });
-  }
+  assertLinkIsActiveAndNotExpired(row);
 
   if (row.password_hash) {
     const isPasswordValid =
@@ -302,6 +309,41 @@ async function getByToken(
   };
 }
 
+// Skips the password check: used by view-event recording, which happens
+// after the viewer has already passed the password gate on the viewer page.
+async function validateToken(token: string): Promise<{ id: string }> {
+  const results = await database.query<{
+    id: string;
+    is_active: boolean;
+    expires_at: Date | null;
+  }>({
+    text: `
+        SELECT
+          id, is_active, expires_at
+        FROM
+          share_links
+        WHERE
+          token = $1
+        LIMIT
+          1
+        ;`,
+    values: [token],
+  });
+
+  if (!results.rowCount) {
+    throw new NotFoundError({
+      message: "O link de compartilhamento informado não foi encontrado.",
+      action: "Verifique se o link está correto.",
+    });
+  }
+
+  const row = results.rows[0]!;
+
+  assertLinkIsActiveAndNotExpired(row);
+
+  return { id: row.id };
+}
+
 const shareLink: ShareLinkModel = {
   create,
   findAllByDocumentId,
@@ -309,6 +351,7 @@ const shareLink: ShareLinkModel = {
   updateById,
   revokeById,
   getByToken,
+  validateToken,
 };
 
 export default shareLink;
