@@ -2,7 +2,6 @@ import fs from "fs/promises";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import { formidable, errors as formidableErrors } from "formidable";
-import { PDFParse } from "pdf-parse";
 import controller from "../../../../infra/controller";
 import { authMiddleware } from "../../../../infra/auth";
 import { ValidationError } from "../../../../infra/errors";
@@ -131,14 +130,22 @@ async function extractPageCount(
     return null;
   }
 
-  const parser = new PDFParse({ data: fileBuffer });
-
+  // Imported lazily, only for actual PDF uploads: pdf-parse pulls in
+  // pdfjs-dist's legacy build, which references browser canvas globals
+  // (DOMMatrix) at module-evaluation time. A top-level import would crash
+  // every request through this route (GET included) on runtimes where the
+  // native canvas binary isn't available, like Vercel's Linux functions.
   try {
-    const info = await parser.getInfo();
-    return info.total;
+    const { PDFParse } = await import("pdf-parse");
+    const parser = new PDFParse({ data: fileBuffer });
+
+    try {
+      const info = await parser.getInfo();
+      return info.total;
+    } finally {
+      await parser.destroy();
+    }
   } catch {
     return null;
-  } finally {
-    await parser.destroy();
   }
 }
