@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import type { ShareLinkResponse } from "@/types/index";
 
 interface CreateShareLinkModalProps {
@@ -29,6 +30,7 @@ export function CreateShareLinkModal({
   const [password, setPassword] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [allowDownload, setAllowDownload] = useState(true);
+  const [notifyOnView, setNotifyOnView] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,6 +39,7 @@ export function CreateShareLinkModal({
     setPassword("");
     setExpiresAt("");
     setAllowDownload(true);
+    setNotifyOnView(true);
     setError(null);
   }
 
@@ -46,7 +49,10 @@ export function CreateShareLinkModal({
     setIsSubmitting(true);
 
     try {
-      const body: Record<string, unknown> = { allow_download: allowDownload };
+      const body: Record<string, unknown> = {
+        allow_download: allowDownload,
+        notify_on_view: notifyOnView,
+      };
 
       if (label) {
         body.label = label;
@@ -128,6 +134,17 @@ export function CreateShareLinkModal({
               onCheckedChange={(checked) => setAllowDownload(checked === true)}
             />
             <Label htmlFor="allowDownload">Permitir download</Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="notifyOnView"
+              checked={notifyOnView}
+              onCheckedChange={setNotifyOnView}
+            />
+            <Label htmlFor="notifyOnView">
+              Notificar por e-mail ao ser visualizado
+            </Label>
           </div>
 
           {error && (

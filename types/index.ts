@@ -64,6 +64,7 @@ export interface ShareLink {
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
+  notify_on_view: boolean;
 }
 
 export interface ShareLinkResponse {
@@ -78,6 +79,7 @@ export interface ShareLinkResponse {
   created_at: Date;
   updated_at: Date;
   has_password: boolean;
+  notify_on_view: boolean;
 }
 
 // Deliberately narrower than ShareLinkResponse: this is what the public,
@@ -124,6 +126,7 @@ export interface ShareLinkNotificationInfo {
   document_id: string;
   document_title: string;
   link_label: string | null;
+  notify_on_view: boolean;
 }
 
 export interface ViewsByDay {
@@ -192,6 +195,7 @@ export interface ShareLinkCreateInput {
   password?: string;
   expires_at?: string;
   allow_download?: boolean;
+  notify_on_view?: boolean;
 }
 
 export interface ShareLinkUpdateInput {
@@ -200,6 +204,7 @@ export interface ShareLinkUpdateInput {
   expires_at?: string | null;
   allow_download?: boolean;
   is_active?: boolean;
+  notify_on_view?: boolean;
 }
 
 export interface LinkViewCreateInput {

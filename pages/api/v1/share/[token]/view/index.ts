@@ -69,7 +69,7 @@ async function notifyOwnerOfNewViewer(
 ): Promise<void> {
   const info = await shareLink.getNotificationInfo(shareLinkId);
 
-  if (!info) {
+  if (!info || !info.notify_on_view) {
     return;
   }
 

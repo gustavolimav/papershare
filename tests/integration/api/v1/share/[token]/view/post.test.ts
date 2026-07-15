@@ -72,6 +72,23 @@ describe("POST /api/v1/share/[token]/view", () => {
     });
   });
 
+  test("With notify_on_view disabled on the link, recording still succeeds", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      notify_on_view: false,
+    });
+
+    const responseBody = await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "muted-link-viewer",
+    });
+
+    // notify_on_view only gates the fire-and-forget email, never the view
+    // recording itself or the is_new_viewer signal.
+    expect(responseBody.share_link_id).toBe(link.id);
+    expect(responseBody.is_new_viewer).toBe(true);
+  });
+
   test("With an empty body (no password required, even on a protected link)", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);

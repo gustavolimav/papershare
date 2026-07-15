@@ -14,7 +14,8 @@ import type {
 
 const SHARE_LINK_COLUMNS = `
   id, token, document_id, user_id, label, password_hash,
-  expires_at, allow_download, is_active, created_at, updated_at
+  expires_at, allow_download, is_active, created_at, updated_at,
+  notify_on_view
 `;
 
 interface ShareLinkTokenRow {
@@ -75,10 +76,10 @@ async function create(
         INSERT INTO
           share_links (
             id, document_id, user_id, label, password_hash,
-            expires_at, allow_download
+            expires_at, allow_download, notify_on_view
           )
         VALUES
-          ($1, $2, $3, $4, $5, $6, $7)
+          ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING
           ${SHARE_LINK_COLUMNS}
         ;`,
@@ -90,6 +91,7 @@ async function create(
       passwordHash,
       input.expires_at ?? null,
       input.allow_download ?? true,
+      input.notify_on_view ?? true,
     ],
   });
 
@@ -180,6 +182,11 @@ async function updateById(
   if (input.is_active !== undefined) {
     values.push(input.is_active);
     setClauses.push(`is_active = $${values.length}`);
+  }
+
+  if (input.notify_on_view !== undefined) {
+    values.push(input.notify_on_view);
+    setClauses.push(`notify_on_view = $${values.length}`);
   }
 
   setClauses.push("updated_at = NOW()");
@@ -377,7 +384,8 @@ async function getNotificationInfo(
           u.email AS owner_email,
           d.id AS document_id,
           d.title AS document_title,
-          sl.label AS link_label
+          sl.label AS link_label,
+          sl.notify_on_view
         FROM
           share_links sl
         JOIN

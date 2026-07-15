@@ -1,0 +1,4 @@
+ALTER TABLE
+  share_links
+ADD COLUMN
+  notify_on_view BOOLEAN NOT NULL DEFAULT TRUE;
