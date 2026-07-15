@@ -52,4 +52,34 @@ describe("POST /api/v1/migrations", () => {
       expect(responseBody.length).toBe(0);
     });
   });
+
+  describe("Logged in as an admin", () => {
+    test("Running without the secret header", async () => {
+      const { cookie } = await orchestrator.createAdminUserSession();
+
+      const response = await fetch("http://localhost:3000/api/v1/migrations", {
+        method: "POST",
+        headers: { Cookie: cookie },
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(Array.isArray(responseBody)).toBe(true);
+    });
+  });
+
+  describe("Logged in, but not an admin", () => {
+    test("Running without the secret header", async () => {
+      const { cookie } = await orchestrator.createUserSession();
+
+      const response = await fetch("http://localhost:3000/api/v1/migrations", {
+        method: "POST",
+        headers: { Cookie: cookie },
+      });
+
+      expect(response.status).toBe(401);
+    });
+  });
 });

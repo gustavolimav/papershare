@@ -53,7 +53,7 @@ async function findUserById(userId: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, password, created_at, updated_at
+          id, username, email, password, created_at, updated_at, is_admin
         FROM
           users
         WHERE
@@ -86,20 +86,62 @@ function clearSessionCookie(response: NextApiResponse): void {
   response.setHeader("Set-Cookie", expiredCookie);
 }
 
-export function migrationsAuthMiddleware(
+// Accepts either the shared secret header (scripts/CI) or a logged-in
+// admin session (the /admin/migrations UI) — whichever is present.
+export async function migrationsAuthMiddleware(
   request: NextApiRequest,
   _response: NextApiResponse,
   next: () => void | Promise<void>,
-): void | Promise<void> {
+): Promise<void> {
   const providedSecret = request.headers["x-migrations-secret"];
   const expectedSecret = process.env.MIGRATIONS_SECRET;
 
-  if (!expectedSecret || providedSecret !== expectedSecret) {
-    throw new UnauthorizedError({
-      message: "Acesso não autorizado às migrações.",
-      action: "Forneça o cabeçalho 'x-migrations-secret' correto.",
-    });
+  if (expectedSecret && providedSecret === expectedSecret) {
+    await next();
+    return;
   }
 
-  return next();
+  if (await isAuthenticatedAsAdmin(request)) {
+    await next();
+    return;
+  }
+
+  throw new UnauthorizedError({
+    message: "Acesso não autorizado às migrações.",
+    action:
+      "Forneça o cabeçalho 'x-migrations-secret' correto ou acesse com uma conta de administrador.",
+  });
+}
+
+async function isAuthenticatedAsAdmin(
+  request: NextApiRequest,
+): Promise<boolean> {
+  const cookies = cookie.parse(request.headers.cookie ?? "");
+  const sessionToken = cookies.session_id;
+
+  if (!sessionToken) {
+    return false;
+  }
+
+  const existingSession = await session.findOneByToken(sessionToken);
+
+  if (!existingSession || new Date(existingSession.expires_at) < new Date()) {
+    return false;
+  }
+
+  const results = await database.query<{ is_admin: boolean }>({
+    text: `
+        SELECT
+          is_admin
+        FROM
+          users
+        WHERE
+          id = $1
+        LIMIT
+          1
+        ;`,
+    values: [existingSession.user_id],
+  });
+
+  return results.rows[0]?.is_admin === true;
 }

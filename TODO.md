@@ -463,6 +463,7 @@ These are not tied to a specific phase but should be addressed progressively.
 - [ ] API response envelope (`{ data, meta }`) for list endpoints
 - [ ] Pagination helper utility
 - [x] Move migration endpoint behind an admin auth guard — `MIGRATIONS_SECRET` header check via `infra/auth.ts#migrationsAuthMiddleware`
+  - [x] Extended (2026-07-15): `users.is_admin` column + `/admin/migrations` page, so a logged-in admin session works as an alternative to the secret header. No API/UI grants admin — promotion is a manual SQL `UPDATE`, documented in `CLAUDE.md`, to keep real emails out of this public repo's committed code.
 - [ ] Add `updated_at` trigger function in migrations (currently updated manually)
 - [x] CI: add TypeScript type-check step to GitHub Actions — `typecheck` job in `.github/workflows/linting.yaml`
 

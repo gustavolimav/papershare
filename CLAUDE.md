@@ -41,6 +41,21 @@ tests/          → Integration tests only (hit the live server + real DB)
 
 ---
 
+## Admin access
+
+- `users.is_admin` (boolean, default `false`) gates the `/admin/*` pages and
+  lets a logged-in session run migrations without the `MIGRATIONS_SECRET`
+  header (see `infra/auth.ts#migrationsAuthMiddleware`).
+- There is **no API or UI to grant admin** — by design, so no one's email
+  ends up hardcoded in a migration file in this public repo. To promote an
+  account, run this once directly against the database (local `psql`, or
+  your hosting provider's SQL console in prod):
+  ```sql
+  UPDATE users SET is_admin = true WHERE email = 'you@example.com';
+  ```
+
+---
+
 ## Error handling
 
 Use the custom classes from `infra/errors.ts`. Never throw plain `Error` objects.
