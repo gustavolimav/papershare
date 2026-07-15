@@ -109,6 +109,7 @@ export const shareLinkCreateSchema = z.object({
     })
     .optional(),
   allow_download: z.boolean().optional(),
+  notify_on_view: z.boolean().optional(),
 });
 
 export const shareLinkUpdateSchema = z
@@ -133,6 +134,7 @@ export const shareLinkUpdateSchema = z
       .optional(),
     allow_download: z.boolean().optional(),
     is_active: z.boolean().optional(),
+    notify_on_view: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser fornecido para atualização.",

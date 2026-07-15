@@ -312,7 +312,13 @@ engagement scoring via cirrusinsight.com).
       owner/document/link for the email. Fire-and-forget from the route
       handler so a mailer failure never affects the response to the
       anonymous viewer.
-- [ ] Per-link toggle to mute notifications (not every link is high-stakes)
+- [x] Per-link toggle to mute notifications (not every link is high-stakes).
+      Migration `008-add-notify-on-view-to-share-links.sql` adds
+      `notify_on_view BOOLEAN NOT NULL DEFAULT TRUE`; exposed on
+      create/update (`ShareLinkCreateInput`/`ShareLinkUpdateInput`) and
+      checked in the view-recording route before the fire-and-forget
+      email. `Switch` in both `CreateShareLinkModal.tsx` and
+      `EditShareLinkModal.tsx`, matching the existing `is_active` pattern.
 - [ ] Per-page time-on-page tracking (not just an aggregate per view) —
       requires the viewer to report page-dwell increments as the reader
       flips pages, a new `link_view_pages` table, and an aggregation

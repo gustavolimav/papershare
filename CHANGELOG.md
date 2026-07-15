@@ -22,6 +22,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 7 (Engagement, Trust & Growth) — Per-link toggle to mute view notifications: migration `008-add-notify-on-view-to-share-links.sql` adds `notify_on_view BOOLEAN NOT NULL DEFAULT TRUE`; exposed on create/update via `ShareLinkCreateInput`/`ShareLinkUpdateInput`, checked in the view-recording route before firing the notification email, and editable via a `Switch` in both `CreateShareLinkModal.tsx` and `EditShareLinkModal.tsx` (same pattern as the existing `is_active` toggle).
 - Phase 7 (Engagement, Trust & Growth) — Email notification when a share link gets a new viewer:
   - `infra/mailer.ts` — Resend-backed mailer, following the same environment-gated no-op pattern as `infra/storage.ts` (no-op in `NODE_ENV=test` and when `RESEND_API_KEY` is unset, so this never requires a real API key locally or in CI)
   - `models/linkView.ts#recordView()` now distinguishes a genuinely new viewer (no prior row for that fingerprint on this link, at any time) from a returning one outside the existing 30-minute dedup window, and returns `is_new_viewer` on the `POST /api/v1/share/[token]/view` response

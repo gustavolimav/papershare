@@ -36,6 +36,7 @@ export function EditShareLinkModal({
   );
   const [allowDownload, setAllowDownload] = useState(link.allow_download);
   const [isActive, setIsActive] = useState(link.is_active);
+  const [notifyOnView, setNotifyOnView] = useState(link.notify_on_view);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,6 +50,7 @@ export function EditShareLinkModal({
         label: label || null,
         allow_download: allowDownload,
         is_active: isActive,
+        notify_on_view: notifyOnView,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
 
@@ -151,6 +153,17 @@ export function EditShareLinkModal({
               onCheckedChange={setIsActive}
             />
             <Label htmlFor="edit-isActive">Link ativo</Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="edit-notifyOnView"
+              checked={notifyOnView}
+              onCheckedChange={setNotifyOnView}
+            />
+            <Label htmlFor="edit-notifyOnView">
+              Notificar por e-mail ao ser visualizado
+            </Label>
           </div>
 
           {error && (

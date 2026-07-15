@@ -115,6 +115,28 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
     expect(responseBody.has_password).toBe(false);
   });
 
+  test("Toggling notify_on_view off", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.notify_on_view).toBe(true);
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ notify_on_view: false }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+    expect(responseBody.notify_on_view).toBe(false);
+  });
+
   test("Clearing expires_at with null", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);
