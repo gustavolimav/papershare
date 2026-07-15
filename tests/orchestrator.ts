@@ -97,18 +97,18 @@ async function createUserSession(
 
 // Mirrors the real promotion path (a manual SQL UPDATE — see CLAUDE.md),
 // just automated for test setup instead of a human running it once.
-async function promoteToAdmin(userId: string): Promise<void> {
+async function promoteToSuperadmin(userId: string): Promise<void> {
   await database.query({
-    text: "UPDATE users SET is_admin = TRUE WHERE id = $1",
+    text: "UPDATE users SET is_superadmin = TRUE WHERE id = $1",
     values: [userId],
   });
 }
 
-async function createAdminUserSession(
+async function createSuperadminUserSession(
   userObject?: Partial<UserCreateInput>,
 ): Promise<{ user: UserPublic; cookie: string }> {
   const result = await createUserSession(userObject);
-  await promoteToAdmin(result.user.id);
+  await promoteToSuperadmin(result.user.id);
   return result;
 }
 
@@ -234,7 +234,7 @@ interface Orchestrator {
     cookie: string;
   }>;
   // eslint-disable-next-line no-unused-vars
-  createAdminUserSession(userObject?: Partial<UserCreateInput>): Promise<{
+  createSuperadminUserSession(userObject?: Partial<UserCreateInput>): Promise<{
     user: UserPublic;
     cookie: string;
   }>;
@@ -297,7 +297,7 @@ const orchestrator: Orchestrator = {
   runPendingMigrations,
   createUser,
   createUserSession,
-  createAdminUserSession,
+  createSuperadminUserSession,
   createExpiredSession,
   sessionExists,
   uploadDocument,

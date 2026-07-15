@@ -23,9 +23,9 @@ export function Header() {
               <Button variant="ghost" asChild>
                 <Link href="/settings">Configurações</Link>
               </Button>
-              {user.is_admin && (
+              {user.is_superadmin && (
                 <Button variant="ghost" asChild>
-                  <Link href="/admin/migrations">Admin</Link>
+                  <Link href="/superadmin/migrations">Superadmin</Link>
                 </Button>
               )}
             </>

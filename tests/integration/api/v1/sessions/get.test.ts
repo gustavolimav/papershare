@@ -30,7 +30,7 @@ describe("GET /api/v1/sessions", () => {
       email: user.email,
       created_at: responseBody.created_at,
       updated_at: responseBody.updated_at,
-      is_admin: user.is_admin,
+      is_superadmin: user.is_superadmin,
     });
     expect(responseBody.password).toBeUndefined();
   });

@@ -47,9 +47,10 @@
   - If US-21 is merged first, validate `MIGRATIONS_SECRET` presence in `infra/env.ts` as an optional variable
 
 **2026-07-15 addendum:** extended beyond the original scope above —
-`migrationsAuthMiddleware` now also accepts a logged-in admin session
-(`users.is_admin`) as an alternative to the secret header, backing a new
-`/admin/migrations` page so the header never has to be typed by hand in a
-browser. The secret-header path is unchanged (still required for
-scripts/CI). See the "Admin access" section in `CLAUDE.md` for how an
-account gets promoted to admin.
+`migrationsAuthMiddleware` now also accepts a logged-in superadmin session
+(`users.is_superadmin`) as an alternative to the secret header, backing a
+new `/superadmin/migrations` page so the header never has to be typed by
+hand in a browser. Named "superadmin" (not "admin") to stay unambiguous if
+a customer-facing admin role is ever added later. The secret-header path is
+unchanged (still required for scripts/CI). See the "Superadmin access"
+section in `CLAUDE.md` for how an account gets promoted.

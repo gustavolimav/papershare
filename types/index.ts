@@ -11,7 +11,7 @@ export interface User {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-  is_admin: boolean;
+  is_superadmin: boolean;
 }
 
 export interface UserPublic {
@@ -20,7 +20,7 @@ export interface UserPublic {
   email: string;
   created_at: Date;
   updated_at: Date;
-  is_admin: boolean;
+  is_superadmin: boolean;
 }
 
 export interface Session {

@@ -53,9 +53,9 @@ describe("POST /api/v1/migrations", () => {
     });
   });
 
-  describe("Logged in as an admin", () => {
+  describe("Logged in as a superadmin", () => {
     test("Running without the secret header", async () => {
-      const { cookie } = await orchestrator.createAdminUserSession();
+      const { cookie } = await orchestrator.createSuperadminUserSession();
 
       const response = await fetch("http://localhost:3000/api/v1/migrations", {
         method: "POST",
@@ -70,7 +70,7 @@ describe("POST /api/v1/migrations", () => {
     });
   });
 
-  describe("Logged in, but not an admin", () => {
+  describe("Logged in, but not a superadmin", () => {
     test("Running without the secret header", async () => {
       const { cookie } = await orchestrator.createUserSession();
 
