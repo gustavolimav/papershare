@@ -10,14 +10,14 @@ const PDFJS_CDN_BASE = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}
 interface PDFViewerProps {
   fileData: ArrayBuffer;
   allowDownload: boolean;
-  downloadUrl: string;
+  onDownload: () => void;
   onPageChange?: (page: number) => void;
 }
 
 export function PDFViewer({
   fileData,
   allowDownload,
-  downloadUrl,
+  onDownload,
   onPageChange,
 }: PDFViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -122,7 +122,7 @@ export function PDFViewer({
         onZoomIn={() => setScale((value) => Math.min(3, value + 0.2))}
         onZoomOut={() => setScale((value) => Math.max(0.4, value - 0.2))}
         allowDownload={allowDownload}
-        onDownload={() => window.open(downloadUrl, "_blank")}
+        onDownload={onDownload}
       />
       <div
         className="flex flex-1 items-start justify-center overflow-auto bg-muted/30 p-4"
