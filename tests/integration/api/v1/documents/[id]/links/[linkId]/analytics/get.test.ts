@@ -69,6 +69,7 @@ describe("GET /api/v1/documents/[id]/links/[linkId]/analytics", () => {
         0,
       ),
     ).toBe(0);
+    expect(analytics.page_breakdown).toEqual([]);
   });
 
   test("With correct totals after seeding known view rows", async () => {
@@ -114,5 +115,61 @@ describe("GET /api/v1/documents/[id]/links/[linkId]/analytics", () => {
         0,
       ),
     ).toBe(3);
+  });
+
+  test("With page_times, aggregates average time per page across viewers", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "page-viewer-1",
+      page_times: [
+        { page: 1, seconds: 10 },
+        { page: 2, seconds: 30 },
+      ],
+    });
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "page-viewer-2",
+      page_times: [{ page: 1, seconds: 20 }],
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}/analytics`,
+      { headers: { Cookie: cookie } },
+    );
+
+    const analytics = await response.json();
+
+    expect(analytics.page_breakdown).toEqual([
+      { page_number: 1, avg_time_seconds: 15, view_count: 2 },
+      { page_number: 2, avg_time_seconds: 30, view_count: 1 },
+    ]);
+  });
+
+  test("Reporting page_times again for the same view accumulates instead of overwriting", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "accumulate-viewer",
+      page_times: [{ page: 1, seconds: 10 }],
+    });
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "accumulate-viewer",
+      page_times: [{ page: 1, seconds: 5 }],
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}/analytics`,
+      { headers: { Cookie: cookie } },
+    );
+
+    const analytics = await response.json();
+
+    expect(analytics.page_breakdown).toEqual([
+      { page_number: 1, avg_time_seconds: 15, view_count: 1 },
+    ]);
   });
 });

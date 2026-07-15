@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { StatCard } from "@/components/analytics/StatCard";
 import { ViewsChart } from "@/components/analytics/ViewsChart";
+import { PageHeatmapChart } from "@/components/analytics/PageHeatmapChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration } from "@/lib/formatters";
 import type { LinkAnalyticsResponse } from "@/types/index";
@@ -56,6 +57,14 @@ export function LinkAnalyticsDrawer({
               />
             </div>
             <ViewsChart data={data.views_by_day} />
+            {data.page_breakdown.length > 0 && (
+              <div>
+                <h3 className="mb-3 text-sm font-semibold">
+                  Tempo médio por página
+                </h3>
+                <PageHeatmapChart data={data.page_breakdown} />
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

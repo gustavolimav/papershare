@@ -144,7 +144,17 @@ export interface LinkViewAnalytics {
   views_by_day: ViewsByDay[];
 }
 
-export type LinkAnalyticsResponse = LinkViewAnalytics;
+export interface PageBreakdown {
+  page_number: number;
+  avg_time_seconds: number;
+  view_count: number;
+}
+
+// Only on the per-link response: a page-by-page breakdown only makes sense
+// in the context of one link, not aggregated across a document's links.
+export interface LinkAnalyticsResponse extends LinkViewAnalytics {
+  page_breakdown: PageBreakdown[];
+}
 
 export interface TopLink {
   link_id: string;
@@ -207,12 +217,18 @@ export interface ShareLinkUpdateInput {
   notify_on_view?: boolean;
 }
 
+export interface PageTimeInput {
+  page: number;
+  seconds: number;
+}
+
 export interface LinkViewCreateInput {
   viewer_fingerprint?: string;
   ip_address?: string;
   user_agent?: string;
   time_on_page?: number;
   pages_viewed?: number;
+  page_times?: PageTimeInput[];
 }
 
 export interface ViewNotificationInput {

@@ -8,8 +8,37 @@ import type {
   DocumentAnalyticsResponse,
   ViewsByDay,
   TopLink,
+  PageBreakdown,
+  PageTimeInput,
   LinkViewModel,
 } from "../types/index";
+
+interface Queryable {
+  query: (query: { text: string; values: unknown[] }) => Promise<unknown>;
+}
+
+async function persistPageTimes(
+  queryable: Queryable,
+  linkViewId: string,
+  pageTimes: PageTimeInput[],
+): Promise<void> {
+  for (const { page, seconds } of pageTimes) {
+    await queryable.query({
+      text: `
+          INSERT INTO
+            link_view_pages (link_view_id, page_number, time_on_page_seconds)
+          VALUES
+            ($1, $2, $3)
+          ON CONFLICT
+            (link_view_id, page_number)
+          DO UPDATE SET
+            time_on_page_seconds = link_view_pages.time_on_page_seconds + EXCLUDED.time_on_page_seconds,
+            updated_at = NOW()
+          ;`,
+      values: [linkViewId, page, seconds],
+    });
+  }
+}
 
 const LINK_VIEW_COLUMNS = `
   id, share_link_id, viewer_fingerprint, ip_address, country_code,
@@ -62,7 +91,13 @@ async function insertView(
     ],
   });
 
-  return results.rows[0]!;
+  const view = results.rows[0]!;
+
+  if (input.page_times?.length) {
+    await persistPageTimes(database, view.id, input.page_times);
+  }
+
+  return view;
 }
 
 // Uses a dedicated client + transaction (not the shared pool) so the
@@ -164,9 +199,15 @@ async function upsertViewWithDedup(
       });
     }
 
+    const view = result.rows[0] as LinkView;
+
+    if (input.page_times?.length) {
+      await persistPageTimes(client, view.id, input.page_times);
+    }
+
     await client.query("COMMIT");
 
-    return { ...(result.rows[0] as LinkView), is_new_viewer: isNewViewer };
+    return { ...view, is_new_viewer: isNewViewer };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
@@ -203,10 +244,34 @@ async function getViewsByDay(
   return results.rows;
 }
 
+async function getPageBreakdown(linkId: string): Promise<PageBreakdown[]> {
+  const results = await database.query<PageBreakdown>({
+    text: `
+        SELECT
+          lvp.page_number,
+          AVG(lvp.time_on_page_seconds)::float AS avg_time_seconds,
+          COUNT(DISTINCT lvp.link_view_id)::int AS view_count
+        FROM
+          link_view_pages lvp
+        JOIN
+          link_views lv ON lv.id = lvp.link_view_id
+        WHERE
+          lv.share_link_id = $1
+        GROUP BY
+          lvp.page_number
+        ORDER BY
+          lvp.page_number
+        ;`,
+    values: [linkId],
+  });
+
+  return results.rows;
+}
+
 async function getAnalyticsByLinkId(
   linkId: string,
 ): Promise<LinkAnalyticsResponse> {
-  const [statsResult, viewsByDay] = await Promise.all([
+  const [statsResult, viewsByDay, pageBreakdown] = await Promise.all([
     database.query<{
       total_views: number;
       unique_viewers: number;
@@ -234,9 +299,14 @@ async function getAnalyticsByLinkId(
       "link_views lv ON DATE(lv.created_at) = gs.day AND lv.share_link_id = $1",
       linkId,
     ),
+    getPageBreakdown(linkId),
   ]);
 
-  return { ...statsResult.rows[0]!, views_by_day: viewsByDay };
+  return {
+    ...statsResult.rows[0]!,
+    views_by_day: viewsByDay,
+    page_breakdown: pageBreakdown,
+  };
 }
 
 async function getAnalyticsByDocumentId(

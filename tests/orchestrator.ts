@@ -170,6 +170,7 @@ async function recordView(
     viewer_fingerprint?: string;
     time_on_page?: number;
     pages_viewed?: number;
+    page_times?: { page: number; seconds: number }[];
   },
   // returns `any` because the endpoint can respond with either a LinkView or an ErrorResponse
 ): Promise<any> {
@@ -255,6 +256,7 @@ interface Orchestrator {
       viewer_fingerprint?: string;
       time_on_page?: number;
       pages_viewed?: number;
+      page_times?: { page: number; seconds: number }[];
     },
   ): Promise<any>;
   pushBackLinkViewCreatedAt(
