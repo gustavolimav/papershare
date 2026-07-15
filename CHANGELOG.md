@@ -22,6 +22,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 7 (Engagement, Trust & Growth) — Per-page analytics heatmap (DocSend's headline differentiator in this category):
+  - Migration `009-create-link-view-pages.sql` — `link_view_pages` table, one row per `(link_view_id, page_number)`; repeat reports for the same view+page accumulate time via `ON CONFLICT ... DO UPDATE` instead of overwriting
+  - `components/viewer/ViewerPage.tsx` tracks per-page dwell time client-side and includes it as `page_times` in the same `sendBeacon` payload already used for the aggregate `time_on_page`/`pages_viewed` on unload
+  - `models/linkView.ts` persists `page_times` (in the same transaction as the existing dedup upsert) and exposes a new `page_breakdown` (avg time + view count per page) on `GET /api/v1/documents/[id]/links/[linkId]/analytics` — per-link only, since a page-by-page breakdown doesn't aggregate meaningfully across a document's different links
+  - `components/analytics/PageHeatmapChart.tsx` — new bar chart (recharts, reusing the existing `--color-primary` token) rendered in `LinkAnalyticsDrawer.tsx`
 - Phase 7 (Engagement, Trust & Growth) — Per-link toggle to mute view notifications: migration `008-add-notify-on-view-to-share-links.sql` adds `notify_on_view BOOLEAN NOT NULL DEFAULT TRUE`; exposed on create/update via `ShareLinkCreateInput`/`ShareLinkUpdateInput`, checked in the view-recording route before firing the notification email, and editable via a `Switch` in both `CreateShareLinkModal.tsx` and `EditShareLinkModal.tsx` (same pattern as the existing `is_active` toggle).
 - Phase 7 (Engagement, Trust & Growth) — Email notification when a share link gets a new viewer:
   - `infra/mailer.ts` — Resend-backed mailer, following the same environment-gated no-op pattern as `infra/storage.ts` (no-op in `NODE_ENV=test` and when `RESEND_API_KEY` is unset, so this never requires a real API key locally or in CI)

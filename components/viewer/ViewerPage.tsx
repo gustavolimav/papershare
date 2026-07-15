@@ -40,6 +40,30 @@ export function ViewerPage({ token }: ViewerPageProps) {
   const startTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef(1);
   const passwordRef = useRef<string | undefined>(undefined);
+  // Accumulated dwell time per page number, in seconds.
+  const pageTimesRef = useRef<Map<number, number>>(new Map());
+  const currentPageTrackRef = useRef<{
+    page: number;
+    startedAt: number;
+  } | null>(null);
+
+  // Closes out the dwell time for whichever page was being tracked, then
+  // (if given a new page) starts tracking it. Called both on navigation
+  // and, with no argument, right before the final beacon on unload.
+  const trackPageChange = useCallback((nextPage?: number) => {
+    const current = currentPageTrackRef.current;
+
+    if (current) {
+      const elapsed = Math.round((Date.now() - current.startedAt) / 1000);
+      pageTimesRef.current.set(
+        current.page,
+        (pageTimesRef.current.get(current.page) ?? 0) + elapsed,
+      );
+    }
+
+    currentPageTrackRef.current =
+      nextPage !== undefined ? { page: nextPage, startedAt: Date.now() } : null;
+  }, []);
 
   useEffect(() => {
     fingerprintRef.current = getViewerFingerprint();
@@ -167,6 +191,11 @@ export function ViewerPage({ token }: ViewerPageProps) {
 
       const timeOnPage = Math.round((Date.now() - startTimeRef.current) / 1000);
 
+      trackPageChange();
+      const pageTimes = Array.from(pageTimesRef.current.entries()).map(
+        ([page, seconds]) => ({ page, seconds }),
+      );
+
       navigator.sendBeacon(
         `/api/v1/share/${token}/view`,
         new Blob(
@@ -175,6 +204,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
               viewer_fingerprint: fingerprintRef.current,
               time_on_page: timeOnPage,
               pages_viewed: pagesViewedRef.current,
+              ...(pageTimes.length > 0 && { page_times: pageTimes }),
             }),
           ],
           { type: "application/json" },
@@ -184,7 +214,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
 
     window.addEventListener("beforeunload", recordExit);
     return () => window.removeEventListener("beforeunload", recordExit);
-  }, [token]);
+  }, [token, trackPageChange]);
 
   if (state.status === "loading") {
     return (
@@ -244,6 +274,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
       onDownload={handleDownload}
       onPageChange={(page) => {
         pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
+        trackPageChange(page);
       }}
     />
   );

@@ -319,16 +319,32 @@ engagement scoring via cirrusinsight.com).
       checked in the view-recording route before the fire-and-forget
       email. `Switch` in both `CreateShareLinkModal.tsx` and
       `EditShareLinkModal.tsx`, matching the existing `is_active` pattern.
-- [ ] Per-page time-on-page tracking (not just an aggregate per view) —
-      requires the viewer to report page-dwell increments as the reader
-      flips pages, a new `link_view_pages` table, and an aggregation
-      endpoint update. This is literally DocSend's headline differentiator
-      ("page-level heatmaps remain the gold standard" for this category)
+- [x] Per-page time-on-page tracking (not just an aggregate per view) —
+      literally DocSend's headline differentiator ("page-level heatmaps
+      remain the gold standard" for this category). Migration
+      `009-create-link-view-pages.sql` adds `link_view_pages`
+      (`link_view_id`, `page_number`, `time_on_page_seconds`, unique on
+      `(link_view_id, page_number)` — repeat reports for the same
+      view+page accumulate via `ON CONFLICT ... DO UPDATE`, never
+      overwrite). `ViewerPage.tsx` tracks per-page dwell time client-side
+      (closes out the previous page's timer on every `onPageChange`, plus
+      once more on `beforeunload`) and includes it as `page_times` in the
+      same `sendBeacon` payload already used for the aggregate
+      `time_on_page`. `GET /api/v1/documents/[id]/links/[linkId]/analytics`
+      now returns `page_breakdown` (avg time + view count per page number),
+      rendered as a bar chart (`PageHeatmapChart.tsx`, recharts) in
+      `LinkAnalyticsDrawer.tsx` — per-link only, since a page-by-page
+      breakdown doesn't aggregate meaningfully across a document's
+      different links. Verified end-to-end in-browser with a 3-page PDF
+      (real per-page times matched the chart and tooltip exactly), plus
+      130/130 integration tests passing.
 - [ ] Composite engagement score per viewer (weighted blend of time on
       page, % of pages viewed, return visits, download) surfaced in the
       analytics dashboard — 2026 market trend is scoring viewer interest
       as a single signal instead of raw time-on-page, so sales/investor
-      relations teams know who to follow up with first
+      relations teams know who to follow up with first. Deferred: needs a
+      per-viewer list UI that doesn't exist yet (today's analytics are
+      aggregate-only) — bigger scope than this pass.
 
 ### Trust & access control (needed to compete for data-room / high-stakes use cases)
 

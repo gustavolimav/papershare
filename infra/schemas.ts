@@ -155,6 +155,15 @@ export const linkViewCreateSchema = z.object({
     .int()
     .min(0, "O 'pages_viewed' não pode ser negativo.")
     .optional(),
+  page_times: z
+    .array(
+      z.object({
+        page: z.number().int().positive("A 'page' deve ser positiva."),
+        seconds: z.number().min(0, "O 'seconds' não pode ser negativo."),
+      }),
+    )
+    .max(2000, "O 'page_times' excede o número máximo de páginas permitido.")
+    .optional(),
 });
 
 export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
