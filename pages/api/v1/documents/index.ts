@@ -131,10 +131,21 @@ async function extractPageCount(
   }
 
   // Imported lazily, only for actual PDF uploads: pdf-parse pulls in
-  // pdfjs-dist's legacy build, which references browser canvas globals
-  // (DOMMatrix) at module-evaluation time. A top-level import would crash
-  // every request through this route (GET included) on runtimes where the
-  // native canvas binary isn't available, like Vercel's Linux functions.
+  // pdfjs-dist's legacy build, which needs the native @napi-rs/canvas
+  // binary to polyfill browser canvas globals (DOMMatrix, etc.). When that
+  // binary isn't available for the current runtime (observed on Vercel's
+  // Linux functions), pdfjs-dist's internal geometry code throws in a way
+  // that isn't reliably catchable here (it isn't tied to the promise this
+  // function awaits) and crashes the whole request. So probe for the
+  // canvas binary first — that failure mode *is* a normal, catchable
+  // module-resolution error — and skip page-count extraction entirely
+  // rather than risk calling into pdf-parse without it.
+  try {
+    await import("@napi-rs/canvas");
+  } catch {
+    return null;
+  }
+
   try {
     const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: fileBuffer });
