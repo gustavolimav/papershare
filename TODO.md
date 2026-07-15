@@ -273,7 +273,8 @@ foundation from day one. Reasons:
 
 ### Infrastructure
 
-- [ ] Deploy to Vercel (connect GitHub repo, configure env vars)
+- [x] Deploy to Vercel (connect GitHub repo, configure env vars) — live at
+      papershare.com.br as of 2026-07-15
 - [ ] Set up webapp-testing skill (`anthropics/skills`) for automated UI regression tests
 
 ### Known test flakiness
@@ -285,7 +286,60 @@ foundation from day one. Reasons:
 
 ---
 
-## Phase 7 — AI Features ⏳
+## Phase 7 — Engagement, Trust & Growth ⏳
+
+**Goal:** Close the feature gap against the direct competitive set (DocSend,
+Papermark, PandaDoc) with the specific capabilities that come up as their
+headline differentiators, before investing further in AI or monetization —
+these are comparatively low-effort, high-signal wins that also make the
+later phases more valuable (better data for AI insights, more to gate
+behind a paid plan). Researched 2026-07-15; sources: DocSend/PandaDoc/Papermark
+comparisons on papermark.com and digify.com, and 2026 sales-enablement/
+e-signature trend coverage (Gartner DSR prediction via heyiris.ai, AI
+engagement scoring via cirrusinsight.com).
+
+### Real-time engagement (the single biggest gap vs. the competitive set)
+
+- [ ] Email notification to the document owner when a share link is opened
+      by a new viewer, mirroring Papermark's "new document notifications" —
+      currently owners only find out by checking the dashboard
+- [ ] Per-link toggle to mute notifications (not every link is high-stakes)
+- [ ] Per-page time-on-page tracking (not just an aggregate per view) —
+      requires the viewer to report page-dwell increments as the reader
+      flips pages, a new `link_view_pages` table, and an aggregation
+      endpoint update. This is literally DocSend's headline differentiator
+      ("page-level heatmaps remain the gold standard" for this category)
+- [ ] Composite engagement score per viewer (weighted blend of time on
+      page, % of pages viewed, return visits, download) surfaced in the
+      analytics dashboard — 2026 market trend is scoring viewer interest
+      as a single signal instead of raw time-on-page, so sales/investor
+      relations teams know who to follow up with first
+
+### Trust & access control (needed to compete for data-room / high-stakes use cases)
+
+- [ ] Optional NDA/consent gate per share link — viewer must accept a
+      custom NDA text and provide name + email before the document loads
+- [ ] Optional "require email" per share link (today viewing is anonymous
+      by fingerprint only) — also what makes the notification feature above
+      actually name the viewer
+- [ ] Dynamic watermark overlay (viewer email + timestamp burned into the
+      PDF canvas render) — deters leaking a "confidential" document,
+      standard in every data-room competitor
+- [ ] Email allow-list per share link — only pre-approved addresses can
+      unlock it, even with the correct password
+
+### Growth / perceived polish
+
+- [ ] Open Graph meta tags on public share/view pages so links render as
+      a proper preview card in Slack/iMessage/Twitter instead of a bare URL
+- [ ] "Duplicate settings" when creating a new share link from an existing
+      one (password/expiry/branding), reducing friction for repeat senders
+- [ ] Custom branding per share link (logo, accent color, welcome message)
+      — cheap to build now, becomes a paid-tier hook in Phase 10
+
+---
+
+## Phase 8 — AI Features ⏳
 
 **Goal:** Add AI-powered value on top of existing data.
 
@@ -296,14 +350,39 @@ foundation from day one. Reasons:
 - [ ] "Ask about this document" chat interface on the viewer page (RAG)
 - [ ] Analytics insights: natural language summary of engagement ("Most viewers drop off at page 4")
 - [ ] Improvement suggestions based on engagement drop-off data
+- [ ] AI-drafted follow-up email suggestion for the document owner, based on
+      a viewer's engagement score and the page they dropped off at (depends
+      on Phase 7's per-page tracking + engagement score) — matches the 2026
+      "content intelligence" trend: knowing what to say next, not just what
+      was viewed
 
 ---
 
+## Phase 9 — Team Workspaces & Data Rooms ⏳
+
+**Goal:** Move beyond single-user accounts toward the collaborative,
+multi-document product shape that DocSend/Papermark call a "data room" —
+the recognized format for M&A, fundraising, and due-diligence sharing
+(a growing, high-willingness-to-pay niche). This is a bigger structural
+change than Phase 7/8 (touches the ownership model throughout the app), so
+it's sequenced after the lower-effort wins above.
+
+- [ ] Multi-user workspaces: invite teammates, shared document library,
+      role-based permissions (owner/editor/viewer of the workspace itself)
+- [ ] Data rooms: group multiple documents into one named collection with
+      a single shareable link, with per-document and per-recipient
+      permission overrides (e.g. recipient A can download the term sheet
+      but only view the cap table)
+- [ ] Custom domain per workspace (e.g. `docs.yourcompany.com`) for
+      white-labeled sharing — pairs with Phase 7's custom branding
+
 ---
 
-## Phase 8 — Monetization ⏳
+## Phase 10 — Monetization ⏳
 
-**Goal:** Gate premium features behind a paid plan.
+**Goal:** Gate premium features behind a paid plan. Tier boundaries below
+are a first pass based on how the rest of this competitive set (DocSend,
+Papermark, PandaDoc) segments free vs. paid — refine before building.
 
 > **Tools:** Stripe for subscriptions and one-time payments. Open SaaS (wasp-lang) has a ready integration as reference.
 
@@ -313,9 +392,13 @@ foundation from day one. Reasons:
 - [ ] Migration: `subscriptions` table (`user_id`, `stripe_customer_id`, `plan`, `status`, `current_period_end`)
 - [ ] Stripe webhook handler (`POST /api/v1/webhooks/stripe`) — update subscription status on events
 
-### Plans (TBD)
+### Plans (first-pass draft, refine before building)
 
-- [ ] Define plan tiers (e.g. Free / Pro) and which features are gated
+- [ ] **Free** — current feature set, capped documents/active links,
+      Papershare branding on the viewer
+- [ ] **Pro** — watermarking, NDA gate, email allow-list, custom branding,
+      engagement scoring, unlimited share links
+- [ ] **Business** — team workspaces, data rooms, custom domain
 - [ ] Enforce plan limits in relevant model functions (e.g. max documents, max share links)
 
 ### API
