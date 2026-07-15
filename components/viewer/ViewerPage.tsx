@@ -16,12 +16,30 @@ type LoadState =
   | { status: "error"; message: string }
   | { status: "ready"; link: ShareLinkWithDocument; fileData: ArrayBuffer };
 
+const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
+  "application/pdf": ".pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    ".docx",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    ".pptx",
+};
+
+function triggerBlobDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export function ViewerPage({ token }: ViewerPageProps) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
   const fingerprintRef = useRef<string>("");
   const startTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef(1);
+  const passwordRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     fingerprintRef.current = getViewerFingerprint();
@@ -68,6 +86,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
       }
 
       const link: ShareLinkWithDocument = await linkResponse.json();
+      passwordRef.current = password;
 
       if (link.document.mime_type !== "application/pdf") {
         setState({ status: "ready", link, fileData: new ArrayBuffer(0) });
@@ -102,6 +121,43 @@ export function ViewerPage({ token }: ViewerPageProps) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Navigating (or opening in a new tab) straight to the file URL can't
+  // attach the X-Share-Password header, so a password-protected link would
+  // always 403 here even with the correct password already unlocked above.
+  // Reuse the already-fetched bytes for PDFs; fetch with the header for
+  // other file types, then hand the browser a blob URL to download instead.
+  const handleDownload = useCallback(async () => {
+    if (state.status !== "ready") {
+      return;
+    }
+
+    const { link, fileData } = state;
+    const filename = `${link.document.title}${EXTENSION_BY_MIME_TYPE[link.document.mime_type] ?? ""}`;
+
+    if (
+      link.document.mime_type === "application/pdf" &&
+      fileData.byteLength > 0
+    ) {
+      triggerBlobDownload(
+        new Blob([fileData], { type: link.document.mime_type }),
+        filename,
+      );
+      return;
+    }
+
+    const headers: HeadersInit = passwordRef.current
+      ? { "X-Share-Password": passwordRef.current }
+      : {};
+
+    const response = await fetch(`/api/v1/share/${token}/file`, { headers });
+
+    if (!response.ok) {
+      return;
+    }
+
+    triggerBlobDownload(await response.blob(), filename);
+  }, [state, token]);
 
   useEffect(() => {
     function recordExit() {
@@ -169,12 +225,13 @@ export function ViewerPage({ token }: ViewerPageProps) {
           Pré-visualização não disponível para este tipo de arquivo.
         </p>
         {link.allow_download && (
-          <a
-            href={`/api/v1/share/${token}/file`}
+          <button
+            type="button"
+            onClick={handleDownload}
             className="text-primary underline-offset-4 hover:underline"
           >
             Baixar arquivo
-          </a>
+          </button>
         )}
       </div>
     );
@@ -184,7 +241,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
     <PDFViewer
       fileData={fileData}
       allowDownload={link.allow_download}
-      downloadUrl={`/api/v1/share/${token}/file`}
+      onDownload={handleDownload}
       onPageChange={(page) => {
         pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
       }}
