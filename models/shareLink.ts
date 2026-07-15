@@ -8,6 +8,7 @@ import type {
   ShareLinkCreateInput,
   ShareLinkUpdateInput,
   ShareLinkWithDocument,
+  ShareLinkNotificationInfo,
   ShareLinkModel,
 } from "../types/index";
 
@@ -366,6 +367,34 @@ async function validateToken(token: string): Promise<{ id: string }> {
   return { id: row.id };
 }
 
+// Used to notify the document owner when a share link gets a new viewer.
+async function getNotificationInfo(
+  shareLinkId: string,
+): Promise<ShareLinkNotificationInfo | null> {
+  const results = await database.query<ShareLinkNotificationInfo>({
+    text: `
+        SELECT
+          u.email AS owner_email,
+          d.id AS document_id,
+          d.title AS document_title,
+          sl.label AS link_label
+        FROM
+          share_links sl
+        JOIN
+          documents d ON d.id = sl.document_id
+        JOIN
+          users u ON u.id = d.user_id
+        WHERE
+          sl.id = $1
+        LIMIT
+          1
+        ;`,
+    values: [shareLinkId],
+  });
+
+  return results.rows[0] ?? null;
+}
+
 const shareLink: ShareLinkModel = {
   create,
   findAllByDocumentId,
@@ -375,6 +404,7 @@ const shareLink: ShareLinkModel = {
   getByToken,
   getFileByToken,
   validateToken,
+  getNotificationInfo,
 };
 
 export default shareLink;

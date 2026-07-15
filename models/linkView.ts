@@ -2,6 +2,7 @@ import database from "../infra/database";
 import shareLink from "./shareLink";
 import type {
   LinkView,
+  RecordedLinkView,
   LinkViewCreateInput,
   LinkAnalyticsResponse,
   DocumentAnalyticsResponse,
@@ -22,11 +23,14 @@ const DEDUP_WINDOW_MINUTES = 30;
 async function recordView(
   token: string,
   input: LinkViewCreateInput,
-): Promise<LinkView> {
+): Promise<RecordedLinkView> {
   const { id: shareLinkId } = await shareLink.validateToken(token);
 
   if (!input.viewer_fingerprint) {
-    return await insertView(shareLinkId, input);
+    const view = await insertView(shareLinkId, input);
+    // No fingerprint means we have no way to tell a new viewer from a
+    // returning one, so this never triggers the owner notification.
+    return { ...view, is_new_viewer: false };
   }
 
   return await upsertViewWithDedup(shareLinkId, input);
@@ -62,12 +66,12 @@ async function insertView(
 }
 
 // Uses a dedicated client + transaction (not the shared pool) so the
-// SELECT ... FOR UPDATE lock and the following INSERT/UPDATE happen on the
-// same connection, closing the race window between the two statements.
+// SELECT ... FOR UPDATE lock and the following queries happen on the same
+// connection, closing the race window between them.
 async function upsertViewWithDedup(
   shareLinkId: string,
   input: LinkViewCreateInput,
-): Promise<LinkView> {
+): Promise<RecordedLinkView> {
   const client = await database.getNewClient();
 
   try {
@@ -93,6 +97,7 @@ async function upsertViewWithDedup(
     });
 
     let result;
+    let isNewViewer = false;
 
     if (existing.rowCount) {
       result = await client.query({
@@ -115,6 +120,27 @@ async function upsertViewWithDedup(
         ],
       });
     } else {
+      // Distinct from the dedup check above, which only looks at the last
+      // 30 minutes: this looks across all time, so a viewer returning
+      // after the dedup window still isn't counted as "new" for the
+      // owner-notification feature.
+      const priorAnyTime = await client.query({
+        text: `
+            SELECT
+              1
+            FROM
+              link_views
+            WHERE
+              share_link_id = $1
+              AND viewer_fingerprint = $2
+            LIMIT
+              1
+            ;`,
+        values: [shareLinkId, input.viewer_fingerprint],
+      });
+
+      isNewViewer = priorAnyTime.rowCount === 0;
+
       result = await client.query({
         text: `
             INSERT INTO
@@ -140,7 +166,7 @@ async function upsertViewWithDedup(
 
     await client.query("COMMIT");
 
-    return result.rows[0] as LinkView;
+    return { ...(result.rows[0] as LinkView), is_new_viewer: isNewViewer };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;

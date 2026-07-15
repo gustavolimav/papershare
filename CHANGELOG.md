@@ -20,6 +20,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 7 (Engagement, Trust & Growth) — Email notification when a share link gets a new viewer:
+  - `infra/mailer.ts` — Resend-backed mailer, following the same environment-gated no-op pattern as `infra/storage.ts` (no-op in `NODE_ENV=test` and when `RESEND_API_KEY` is unset, so this never requires a real API key locally or in CI)
+  - `models/linkView.ts#recordView()` now distinguishes a genuinely new viewer (no prior row for that fingerprint on this link, at any time) from a returning one outside the existing 30-minute dedup window, and returns `is_new_viewer` on the `POST /api/v1/share/[token]/view` response
+  - `models/shareLink.ts#getNotificationInfo()` — looks up the document owner's email, document title, and link label for a given share link
+  - The view-recording route fires the notification fire-and-forget, so a mailer failure (missing key, Resend outage, deleted owner) never affects the response to the anonymous viewer; the analytics-page link in the email is built from the request's own `Host`/`X-Forwarded-Proto` headers rather than a new env var, so it works unmodified across local/preview/production
 - Phase 6 — Frontend (all 6 blocks complete):
   - Block 1 — Foundation: `GET /api/v1/sessions` (thin authenticated handler backing the frontend auth context), `models/user.ts#findOneById()`, App Router foundation (Tailwind CSS v4 + shadcn/ui on a Radix base), `context/AuthContext.tsx` + `lib/fetcher.ts` + `app/providers.tsx` (SWR-backed `useAuth()`), `lib/auth-server.ts#getServerUser()` for server-side auth gating with no client-side flicker, shared `Header`/`Footer` + landing page (`app/page.tsx`); `pages/index.tsx`/`pages/status/index.tsx` migrated to `app/page.tsx`/`app/status/page.tsx` (`pages/api/v1/*` untouched)
   - Block 2 (US-08) — `app/register/page.tsx`/`app/login/page.tsx` (Server Component gates, redirect to `/dashboard` if already authenticated) with `components/forms/RegisterForm.tsx`/`LoginForm.tsx`

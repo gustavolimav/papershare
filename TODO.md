@@ -300,9 +300,17 @@ engagement scoring via cirrusinsight.com).
 
 ### Real-time engagement (the single biggest gap vs. the competitive set)
 
-- [ ] Email notification to the document owner when a share link is opened
-      by a new viewer, mirroring Papermark's "new document notifications" —
-      currently owners only find out by checking the dashboard
+- [x] Email notification to the document owner when a share link is opened
+      by a new viewer, mirroring Papermark's "new document notifications".
+      `infra/mailer.ts` (Resend, no-op without `RESEND_API_KEY` or in
+      `NODE_ENV=test`, matching `infra/storage.ts`'s existing pattern);
+      `models/linkView.ts#recordView()` now detects a genuinely new viewer
+      (no prior row for that fingerprint on this link, at any time — not
+      just outside the 30-min dedup window) and returns `is_new_viewer` on
+      the `POST /api/v1/share/[token]/view` response; `models/shareLink.ts
+  #getNotificationInfo()` looks up the owner/document/link for the
+      email. Fire-and-forget from the route handler so a mailer failure
+      never affects the response to the anonymous viewer.
 - [ ] Per-link toggle to mute notifications (not every link is high-stakes)
 - [ ] Per-page time-on-page tracking (not just an aggregate per view) —
       requires the viewer to report page-dwell increments as the reader

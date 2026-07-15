@@ -68,6 +68,7 @@ describe("POST /api/v1/share/[token]/view", () => {
       pages_viewed: 3,
       created_at: responseBody.created_at,
       updated_at: responseBody.updated_at,
+      is_new_viewer: true,
     });
   });
 
@@ -84,6 +85,7 @@ describe("POST /api/v1/share/[token]/view", () => {
     expect(responseBody.viewer_fingerprint).toBeNull();
     expect(responseBody.time_on_page).toBeNull();
     expect(responseBody.pages_viewed).toBeNull();
+    expect(responseBody.is_new_viewer).toBe(false);
   });
 });
 
@@ -105,12 +107,14 @@ describe("Unique viewer deduplication (30-min window)", () => {
 
     expect(secondView.id).toBe(firstView.id);
     expect(secondView.time_on_page).toBe(55);
+    expect(firstView.is_new_viewer).toBe(true);
+    expect(secondView.is_new_viewer).toBe(false);
 
     const count = await orchestrator.countLinkViews(link.id);
     expect(count).toBe(1);
   });
 
-  test("Same fingerprint more than 30 minutes apart creates a new row", async () => {
+  test("Same fingerprint more than 30 minutes apart creates a new row, but is not a new viewer", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
@@ -126,34 +130,42 @@ describe("Unique viewer deduplication (30-min window)", () => {
     });
 
     expect(secondView.id).not.toBe(firstView.id);
+    expect(firstView.is_new_viewer).toBe(true);
+    expect(secondView.is_new_viewer).toBe(false);
 
     const count = await orchestrator.countLinkViews(link.id);
     expect(count).toBe(2);
   });
 
-  test("Without a fingerprint, always creates a new row", async () => {
+  test("Without a fingerprint, always creates a new row and is never a new viewer", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
-    await orchestrator.recordView(link.token);
-    await orchestrator.recordView(link.token);
+    const firstView = await orchestrator.recordView(link.token);
+    const secondView = await orchestrator.recordView(link.token);
+
+    expect(firstView.is_new_viewer).toBe(false);
+    expect(secondView.is_new_viewer).toBe(false);
 
     const count = await orchestrator.countLinkViews(link.id);
     expect(count).toBe(2);
   });
 
-  test("Different fingerprints create separate rows", async () => {
+  test("Different fingerprints create separate rows and are each a new viewer", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
-    await orchestrator.recordView(link.token, {
+    const viewA = await orchestrator.recordView(link.token, {
       viewer_fingerprint: "viewer-a",
     });
-    await orchestrator.recordView(link.token, {
+    const viewB = await orchestrator.recordView(link.token, {
       viewer_fingerprint: "viewer-b",
     });
+
+    expect(viewA.is_new_viewer).toBe(true);
+    expect(viewB.is_new_viewer).toBe(true);
 
     const count = await orchestrator.countLinkViews(link.id);
     expect(count).toBe(2);
