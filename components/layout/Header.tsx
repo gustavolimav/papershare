@@ -23,6 +23,11 @@ export function Header() {
               <Button variant="ghost" asChild>
                 <Link href="/settings">Configurações</Link>
               </Button>
+              {user.is_admin && (
+                <Button variant="ghost" asChild>
+                  <Link href="/admin/migrations">Admin</Link>
+                </Button>
+              )}
             </>
           ) : (
             <>

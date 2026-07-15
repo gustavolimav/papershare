@@ -22,6 +22,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Admin role + `/admin/migrations` page: migration `010-add-is-admin-to-users.sql` adds `users.is_admin` (default `false`). `infra/auth.ts#migrationsAuthMiddleware` now accepts either the existing `x-migrations-secret` header (unchanged, for scripts/CI) or a logged-in admin session, so an admin can view/run pending migrations from the browser without ever handling the raw secret. The "Admin" nav link (`components/layout/Header.tsx`) only renders for `is_admin` users, and `/admin/migrations` (Server Component, `components/admin/MigrationsPanel.tsx`) redirects non-admins to `/dashboard`. There's deliberately no API/UI to grant admin — promoting an account is a one-time manual `UPDATE users SET is_admin = true WHERE email = '...'`, documented in `CLAUDE.md`, so no one's email ends up hardcoded in a migration committed to this public repo.
 - Phase 7 (Engagement, Trust & Growth) — Per-page analytics heatmap (DocSend's headline differentiator in this category):
   - Migration `009-create-link-view-pages.sql` — `link_view_pages` table, one row per `(link_view_id, page_number)`; repeat reports for the same view+page accumulate time via `ON CONFLICT ... DO UPDATE` instead of overwriting
   - `components/viewer/ViewerPage.tsx` tracks per-page dwell time client-side and includes it as `page_times` in the same `sendBeacon` payload already used for the aggregate `time_on_page`/`pages_viewed` on unload

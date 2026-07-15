@@ -54,7 +54,7 @@ async function findOneById(id: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, password, created_at, updated_at, deleted_at
+          id, username, email, password, created_at, updated_at, deleted_at, is_admin
         FROM
           users
         WHERE
@@ -80,7 +80,7 @@ async function findOneByUsername(username: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, created_at, updated_at, deleted_at, password
+          id, username, email, created_at, updated_at, deleted_at, password, is_admin
         FROM
           users
         WHERE
@@ -203,7 +203,7 @@ async function runUpdateQuery(userWithNewValues: User, username: string) {
         WHERE
           LOWER(username) = LOWER($4)
         RETURNING
-          id, username, email, created_at, updated_at
+          id, username, email, created_at, updated_at, is_admin
         ;`,
       values: [
         userWithNewValues.username,
@@ -228,7 +228,7 @@ async function runInsertQuery(
         VALUES
           ($1, $2, $3)
         RETURNING
-          id, username, email, created_at, updated_at
+          id, username, email, created_at, updated_at, is_admin
         ;`,
       values: [
         userInputValues.username,
