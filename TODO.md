@@ -307,10 +307,11 @@ engagement scoring via cirrusinsight.com).
       `models/linkView.ts#recordView()` now detects a genuinely new viewer
       (no prior row for that fingerprint on this link, at any time — not
       just outside the 30-min dedup window) and returns `is_new_viewer` on
-      the `POST /api/v1/share/[token]/view` response; `models/shareLink.ts
-  #getNotificationInfo()` looks up the owner/document/link for the
-      email. Fire-and-forget from the route handler so a mailer failure
-      never affects the response to the anonymous viewer.
+      the `POST /api/v1/share/[token]/view` response;
+      `models/shareLink.ts#getNotificationInfo()` looks up the
+      owner/document/link for the email. Fire-and-forget from the route
+      handler so a mailer failure never affects the response to the
+      anonymous viewer.
 - [ ] Per-link toggle to mute notifications (not every link is high-stakes)
 - [ ] Per-page time-on-page tracking (not just an aggregate per view) —
       requires the viewer to report page-dwell increments as the reader
