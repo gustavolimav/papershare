@@ -1,13 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import controller from "../../../../../../infra/controller";
+import mailer from "../../../../../../infra/mailer";
 import {
   validate,
   linkViewCreateSchema,
 } from "../../../../../../infra/schemas";
 import linkView from "../../../../../../models/linkView";
+import shareLink from "../../../../../../models/shareLink";
 import type {
-  LinkView,
+  RecordedLinkView,
   LinkViewCreateInput,
 } from "../../../../../../types/index";
 
@@ -25,7 +27,7 @@ export default router.handler(controller.errorHandlers);
 
 async function postHandler(
   request: ViewRequest,
-  response: NextApiResponse<LinkView>,
+  response: NextApiResponse<RecordedLinkView>,
 ) {
   const token = request.query.token as string;
 
@@ -49,7 +51,41 @@ async function postHandler(
 
   const newView = await linkView.recordView(token, input);
 
+  if (newView.is_new_viewer) {
+    notifyOwnerOfNewViewer(newView.share_link_id, request).catch(
+      () => undefined,
+    );
+  }
+
   return response.status(201).json(newView);
+}
+
+// Fire-and-forget: a notification failure (missing API key, Resend outage,
+// deleted owner, ...) must never affect the response to the anonymous
+// viewer whose request triggered it.
+async function notifyOwnerOfNewViewer(
+  shareLinkId: string,
+  request: NextApiRequest,
+): Promise<void> {
+  const info = await shareLink.getNotificationInfo(shareLinkId);
+
+  if (!info) {
+    return;
+  }
+
+  await mailer.sendViewNotification({
+    to: info.owner_email,
+    documentTitle: info.document_title,
+    documentId: info.document_id,
+    linkLabel: info.link_label,
+    analyticsUrl: `${getBaseUrl(request)}/documents/${info.document_id}/analytics`,
+  });
+}
+
+function getBaseUrl(request: NextApiRequest): string {
+  const host = request.headers["x-forwarded-host"] ?? request.headers.host;
+  const protocol = request.headers["x-forwarded-proto"] ?? "https";
+  return `${protocol}://${host}`;
 }
 
 function extractIpAddress(request: NextApiRequest): string | undefined {

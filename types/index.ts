@@ -115,6 +115,17 @@ export interface LinkView {
   updated_at: Date;
 }
 
+export interface RecordedLinkView extends LinkView {
+  is_new_viewer: boolean;
+}
+
+export interface ShareLinkNotificationInfo {
+  owner_email: string;
+  document_id: string;
+  document_title: string;
+  link_label: string | null;
+}
+
 export interface ViewsByDay {
   date: string;
   count: number;
@@ -197,6 +208,14 @@ export interface LinkViewCreateInput {
   user_agent?: string;
   time_on_page?: number;
   pages_viewed?: number;
+}
+
+export interface ViewNotificationInput {
+  to: string;
+  documentTitle: string;
+  documentId: string;
+  linkLabel: string | null;
+  analyticsUrl: string;
 }
 
 // Database Query Types
@@ -333,10 +352,16 @@ export interface ShareLinkModel {
     password?: string,
   ): Promise<{ storage_key: string; mime_type: string }>;
   validateToken(token: string): Promise<{ id: string }>;
+  getNotificationInfo(
+    shareLinkId: string,
+  ): Promise<ShareLinkNotificationInfo | null>;
 }
 
 export interface LinkViewModel {
-  recordView(token: string, input: LinkViewCreateInput): Promise<LinkView>;
+  recordView(
+    token: string,
+    input: LinkViewCreateInput,
+  ): Promise<RecordedLinkView>;
   getAnalyticsByLinkId(linkId: string): Promise<LinkAnalyticsResponse>;
   getAnalyticsByDocumentId(
     documentId: string,
@@ -350,6 +375,10 @@ export interface StorageModel {
   ): Promise<{ key: string; size: number }>;
   deleteFile(key: string): Promise<void>;
   getFile(key: string): Promise<{ body: Buffer; contentType: string }>;
+}
+
+export interface MailerModel {
+  sendViewNotification(input: ViewNotificationInput): Promise<void>;
 }
 
 export interface MigratorModel {

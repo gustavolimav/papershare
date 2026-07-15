@@ -140,6 +140,8 @@ If Docker is not running, start it first with `npm run services:up` before runni
 | `STORAGE_BUCKET`            | Bucket used for document uploads                                                                                                            |
 | `STORAGE_FORCE_PATH_STYLE`  | `true` for MinIO (path-style addressing); unset/`false` for AWS S3                                                                          |
 | `MAX_FILE_SIZE_MB`          | Max upload size in MB (set to `2` in `.env.development` for fast oversized-file tests; production should set its own higher value, e.g. 50) |
+| `RESEND_API_KEY`            | Resend API key for transactional email (view notifications); unset makes the mailer a silent no-op                                          |
+| `MAIL_FROM_ADDRESS`         | Sender address for outgoing email; unset falls back to Resend's shared test domain (`onboarding@resend.dev`)                                |
 
 ---
 
