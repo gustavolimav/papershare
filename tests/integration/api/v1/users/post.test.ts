@@ -34,7 +34,7 @@ describe("POST /api/v1/users", () => {
         email: "email@gmail.com",
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
-        is_admin: false,
+        is_superadmin: false,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);

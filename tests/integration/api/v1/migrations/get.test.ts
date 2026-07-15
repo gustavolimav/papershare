@@ -4,8 +4,8 @@ beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.cleanDatabase();
   // The secret-header tests below don't care whether the schema exists yet,
-  // but the new session-based admin tests need the users/sessions tables to
-  // create a test user against.
+  // but the new session-based superadmin tests need the users/sessions
+  // tables to create a test user against.
   await orchestrator.runPendingMigrations();
 });
 
@@ -22,7 +22,7 @@ describe("GET /api/v1/migrations", () => {
         name: "UnauthorizedError",
         message: "Acesso não autorizado às migrações.",
         action:
-          "Forneça o cabeçalho 'x-migrations-secret' correto ou acesse com uma conta de administrador.",
+          "Forneça o cabeçalho 'x-migrations-secret' correto ou acesse com uma conta de superadmin.",
         status: 401,
       });
     });
@@ -35,7 +35,7 @@ describe("GET /api/v1/migrations", () => {
       expect(response.status).toBe(401);
     });
 
-    test("Logged in, but not an admin", async () => {
+    test("Logged in, but not a superadmin", async () => {
       const { cookie } = await orchestrator.createUserSession();
 
       const response = await fetch("http://localhost:3000/api/v1/migrations", {
@@ -60,9 +60,9 @@ describe("GET /api/v1/migrations", () => {
     });
   });
 
-  describe("Logged in as an admin", () => {
+  describe("Logged in as a superadmin", () => {
     test("Retrieving pending migrations without the secret header", async () => {
-      const { cookie } = await orchestrator.createAdminUserSession();
+      const { cookie } = await orchestrator.createSuperadminUserSession();
 
       const response = await fetch("http://localhost:3000/api/v1/migrations", {
         headers: { Cookie: cookie },

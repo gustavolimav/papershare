@@ -53,7 +53,7 @@ async function findUserById(userId: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, password, created_at, updated_at, is_admin
+          id, username, email, password, created_at, updated_at, is_superadmin
         FROM
           users
         WHERE
@@ -87,7 +87,7 @@ function clearSessionCookie(response: NextApiResponse): void {
 }
 
 // Accepts either the shared secret header (scripts/CI) or a logged-in
-// admin session (the /admin/migrations UI) — whichever is present.
+// superadmin session (the /superadmin/migrations UI) — whichever is present.
 export async function migrationsAuthMiddleware(
   request: NextApiRequest,
   _response: NextApiResponse,
@@ -101,7 +101,7 @@ export async function migrationsAuthMiddleware(
     return;
   }
 
-  if (await isAuthenticatedAsAdmin(request)) {
+  if (await isAuthenticatedAsSuperadmin(request)) {
     await next();
     return;
   }
@@ -109,11 +109,11 @@ export async function migrationsAuthMiddleware(
   throw new UnauthorizedError({
     message: "Acesso não autorizado às migrações.",
     action:
-      "Forneça o cabeçalho 'x-migrations-secret' correto ou acesse com uma conta de administrador.",
+      "Forneça o cabeçalho 'x-migrations-secret' correto ou acesse com uma conta de superadmin.",
   });
 }
 
-async function isAuthenticatedAsAdmin(
+async function isAuthenticatedAsSuperadmin(
   request: NextApiRequest,
 ): Promise<boolean> {
   const cookies = cookie.parse(request.headers.cookie ?? "");
@@ -129,10 +129,10 @@ async function isAuthenticatedAsAdmin(
     return false;
   }
 
-  const results = await database.query<{ is_admin: boolean }>({
+  const results = await database.query<{ is_superadmin: boolean }>({
     text: `
         SELECT
-          is_admin
+          is_superadmin
         FROM
           users
         WHERE
@@ -143,5 +143,5 @@ async function isAuthenticatedAsAdmin(
     values: [existingSession.user_id],
   });
 
-  return results.rows[0]?.is_admin === true;
+  return results.rows[0]?.is_superadmin === true;
 }

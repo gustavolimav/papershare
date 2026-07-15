@@ -26,6 +26,6 @@ async function postHandler(
     email: newUser.email,
     created_at: newUser.created_at,
     updated_at: newUser.updated_at,
-    is_admin: newUser.is_admin,
+    is_superadmin: newUser.is_superadmin,
   });
 }

@@ -2,16 +2,16 @@ import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { MigrationsPanel } from "@/components/admin/MigrationsPanel";
+import { MigrationsPanel } from "@/components/superadmin/MigrationsPanel";
 
-export default async function AdminMigrationsPage() {
+export default async function SuperadminMigrationsPage() {
   const user = await getServerUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  if (!user.is_admin) {
+  if (!user.is_superadmin) {
     redirect("/dashboard");
   }
 

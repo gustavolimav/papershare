@@ -41,7 +41,7 @@ async function getHandler(
     email: user.email,
     created_at: user.created_at,
     updated_at: user.updated_at,
-    is_admin: user.is_admin,
+    is_superadmin: user.is_superadmin,
   });
 }
 
@@ -71,7 +71,7 @@ async function patchHandler(
     email: updatedUser.email,
     created_at: updatedUser.created_at,
     updated_at: updatedUser.updated_at,
-    is_admin: updatedUser.is_admin,
+    is_superadmin: updatedUser.is_superadmin,
   });
 }
 
