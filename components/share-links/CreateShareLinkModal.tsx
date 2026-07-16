@@ -21,21 +21,54 @@ import type { ShareLinkResponse } from "@/types/index";
 interface CreateShareLinkModalProps {
   documentId: string;
   onCreated: (link: ShareLinkResponse) => void;
+  // When set, the form is seeded from an existing link's settings instead
+  // of blank defaults (the "Duplicate settings" flow) — everything except
+  // the password, which can't be carried over since only its hash is ever
+  // available. When open/onOpenChange are provided, the dialog's visibility
+  // is externally controlled and the default trigger button is hidden —
+  // used by ShareLinkList, which drives this from a link's own "Duplicar"
+  // button instead.
+  prefill?: ShareLinkResponse | undefined;
+  open?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
 }
 
 export function CreateShareLinkModal({
   documentId,
   onCreated,
+  prefill,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
 }: CreateShareLinkModalProps) {
-  const [open, setOpen] = useState(false);
-  const [label, setLabel] = useState("");
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = isControlled ? setControlledOpen! : setUncontrolledOpen;
+
+  const [label, setLabel] = useState(
+    prefill?.label ? `${prefill.label} (cópia)` : "",
+  );
   const [password, setPassword] = useState("");
-  const [expiresAt, setExpiresAt] = useState("");
-  const [allowDownload, setAllowDownload] = useState(true);
-  const [notifyOnView, setNotifyOnView] = useState(true);
-  const [requireEmail, setRequireEmail] = useState(false);
-  const [allowedEmailsText, setAllowedEmailsText] = useState("");
-  const [watermarkEnabled, setWatermarkEnabled] = useState(false);
+  const [expiresAt, setExpiresAt] = useState(
+    prefill?.expires_at
+      ? new Date(prefill.expires_at).toISOString().slice(0, 10)
+      : "",
+  );
+  const [allowDownload, setAllowDownload] = useState(
+    prefill?.allow_download ?? true,
+  );
+  const [notifyOnView, setNotifyOnView] = useState(
+    prefill?.notify_on_view ?? true,
+  );
+  const [requireEmail, setRequireEmail] = useState(
+    prefill?.require_email ?? false,
+  );
+  const [allowedEmailsText, setAllowedEmailsText] = useState(
+    prefill?.allowed_emails.join("\n") ?? "",
+  );
+  const [watermarkEnabled, setWatermarkEnabled] = useState(
+    prefill?.watermark_enabled ?? false,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,12 +135,18 @@ export function CreateShareLinkModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button type="button">Criar novo link</Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button type="button">Criar novo link</Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Criar link de compartilhamento</DialogTitle>
+          <DialogTitle>
+            {prefill
+              ? "Duplicar link de compartilhamento"
+              : "Criar link de compartilhamento"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -127,6 +166,11 @@ export function CreateShareLinkModal({
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              placeholder={
+                prefill?.has_password
+                  ? "O link original tinha senha — defina uma nova"
+                  : undefined
+              }
             />
           </div>
 
