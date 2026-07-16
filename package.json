@@ -2,7 +2,7 @@
   "name": "papershare",
   "version": "1.0.0",
   "engines": {
-    "node": ">=20.16.0 <21.0.0"
+    "node": "24.x"
   },
   "description": "[![Build](https://img.shields.io/badge/build-passing-brightgreen)]() [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]() [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)]()",
   "main": "index.js",
