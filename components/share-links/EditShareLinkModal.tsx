@@ -108,181 +108,194 @@ export function EditShareLinkModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Editar link de compartilhamento</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-label">Rótulo</Label>
-            <Input
-              id="edit-label"
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="-mx-1 flex-1 space-y-4 overflow-y-auto px-1">
+            <div className="space-y-2">
+              <Label htmlFor="edit-label">Rótulo</Label>
+              <Input
+                id="edit-label"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-password">Nova senha</Label>
-            <Input
-              id="edit-password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              disabled={clearPassword}
-              placeholder={
-                link.has_password
-                  ? "Deixe em branco para manter a atual"
-                  : "Sem senha"
-              }
-            />
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="clear-password"
-                checked={clearPassword}
-                onCheckedChange={(checked) =>
-                  setClearPassword(checked === true)
+            <div className="space-y-2">
+              <Label htmlFor="edit-password">Nova senha</Label>
+              <Input
+                id="edit-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={clearPassword}
+                placeholder={
+                  link.has_password
+                    ? "Deixe em branco para manter a atual"
+                    : "Sem senha"
                 }
               />
-              <Label htmlFor="clear-password">Remover senha</Label>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="clear-password"
+                  checked={clearPassword}
+                  onCheckedChange={(checked) =>
+                    setClearPassword(checked === true)
+                  }
+                />
+                <Label htmlFor="clear-password">Remover senha</Label>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-expiresAt">Expiração</Label>
-            <Input
-              id="edit-expiresAt"
-              type="date"
-              value={expiresAt}
-              onChange={(event) => setExpiresAt(event.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="edit-allowDownload"
-              checked={allowDownload}
-              onCheckedChange={(checked) => setAllowDownload(checked === true)}
-            />
-            <Label htmlFor="edit-allowDownload">Permitir download</Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="edit-isActive"
-              checked={isActive}
-              onCheckedChange={setIsActive}
-            />
-            <Label htmlFor="edit-isActive">Link ativo</Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="edit-notifyOnView"
-              checked={notifyOnView}
-              onCheckedChange={setNotifyOnView}
-            />
-            <Label htmlFor="edit-notifyOnView">
-              Notificar por e-mail ao ser visualizado
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="edit-requireEmail"
-              checked={requireEmail}
-              onCheckedChange={setRequireEmail}
-            />
-            <Label htmlFor="edit-requireEmail">Exigir email do visitante</Label>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-allowedEmails">
-              Lista de emails permitidos
-            </Label>
-            <Textarea
-              id="edit-allowedEmails"
-              value={allowedEmailsText}
-              onChange={(event) => setAllowedEmailsText(event.target.value)}
-              placeholder="um@exemplo.com&#10;outro@exemplo.com"
-              rows={3}
-            />
-            <p className="text-xs text-muted-foreground">
-              Um email por linha. Se preenchido, só esses emails poderão acessar
-              o link (mesmo com a senha correta). Deixe em branco para não
-              restringir.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="edit-watermarkEnabled"
-              checked={watermarkEnabled}
-              onCheckedChange={setWatermarkEnabled}
-            />
-            <Label htmlFor="edit-watermarkEnabled">
-              Marca d&apos;água com email do visitante
-            </Label>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-ndaText">Termo de confidencialidade</Label>
-            <Textarea
-              id="edit-ndaText"
-              value={ndaText}
-              onChange={(event) => setNdaText(event.target.value)}
-              placeholder="Cole aqui o texto que o visitante deve aceitar antes de ver o documento"
-              rows={4}
-            />
-            <p className="text-xs text-muted-foreground">
-              Se preenchido, o visitante precisa informar nome e email e aceitar
-              este termo antes de acessar o documento. Deixe em branco para
-              remover a exigência.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-brandAccentColor">Cor de destaque</Label>
-            <div className="flex items-center gap-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-expiresAt">Expiração</Label>
               <Input
-                id="edit-brandAccentColor"
-                type="color"
-                value={brandAccentColor || "#000000"}
-                onChange={(event) => setBrandAccentColor(event.target.value)}
-                className="h-9 w-14 p-1"
+                id="edit-expiresAt"
+                type="date"
+                value={expiresAt}
+                onChange={(event) => setExpiresAt(event.target.value)}
               />
-              {brandAccentColor && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setBrandAccentColor("")}
-                >
-                  Remover
-                </Button>
-              )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-brandWelcomeMessage">
-              Mensagem de boas-vindas
-            </Label>
-            <Textarea
-              id="edit-brandWelcomeMessage"
-              value={brandWelcomeMessage}
-              onChange={(event) => setBrandWelcomeMessage(event.target.value)}
-              placeholder="Ex: Olá! Segue o contrato revisado, qualquer dúvida me chama."
-              rows={2}
-            />
-          </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="edit-allowDownload"
+                checked={allowDownload}
+                onCheckedChange={(checked) =>
+                  setAllowDownload(checked === true)
+                }
+              />
+              <Label htmlFor="edit-allowDownload">Permitir download</Label>
+            </div>
 
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
+            <div className="flex items-center gap-2">
+              <Switch
+                id="edit-isActive"
+                checked={isActive}
+                onCheckedChange={setIsActive}
+              />
+              <Label htmlFor="edit-isActive">Link ativo</Label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="edit-notifyOnView"
+                checked={notifyOnView}
+                onCheckedChange={setNotifyOnView}
+              />
+              <Label htmlFor="edit-notifyOnView">
+                Notificar por e-mail ao ser visualizado
+              </Label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="edit-requireEmail"
+                checked={requireEmail}
+                onCheckedChange={setRequireEmail}
+              />
+              <Label htmlFor="edit-requireEmail">
+                Exigir email do visitante
+              </Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-allowedEmails">
+                Lista de emails permitidos
+              </Label>
+              <Textarea
+                id="edit-allowedEmails"
+                value={allowedEmailsText}
+                onChange={(event) => setAllowedEmailsText(event.target.value)}
+                placeholder="um@exemplo.com&#10;outro@exemplo.com"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                Um email por linha. Se preenchido, só esses emails poderão
+                acessar o link (mesmo com a senha correta). Deixe em branco para
+                não restringir.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="edit-watermarkEnabled"
+                checked={watermarkEnabled}
+                onCheckedChange={setWatermarkEnabled}
+              />
+              <Label htmlFor="edit-watermarkEnabled">
+                Marca d&apos;água com email do visitante
+              </Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-ndaText">Termo de confidencialidade</Label>
+              <Textarea
+                id="edit-ndaText"
+                value={ndaText}
+                onChange={(event) => setNdaText(event.target.value)}
+                placeholder="Cole aqui o texto que o visitante deve aceitar antes de ver o documento"
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">
+                Se preenchido, o visitante precisa informar nome e email e
+                aceitar este termo antes de acessar o documento. Deixe em branco
+                para remover a exigência.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-brandAccentColor">Cor de destaque</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="edit-brandAccentColor"
+                  type="color"
+                  value={brandAccentColor || "#000000"}
+                  onChange={(event) => setBrandAccentColor(event.target.value)}
+                  className="h-9 w-14 p-1"
+                />
+                {brandAccentColor && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBrandAccentColor("")}
+                  >
+                    Remover
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Usada nos botões e destaques da página de visualização, no lugar
+                da cor padrão do Papershare — útil para combinar com a marca de
+                quem está enviando. Só aparece depois que o visitante
+                desbloqueia o documento, não nas telas de senha, email ou termo
+                de aceite.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-brandWelcomeMessage">
+                Mensagem de boas-vindas
+              </Label>
+              <Textarea
+                id="edit-brandWelcomeMessage"
+                value={brandWelcomeMessage}
+                onChange={(event) => setBrandWelcomeMessage(event.target.value)}
+                placeholder="Ex: Olá! Segue o contrato revisado, qualquer dúvida me chama."
+                rows={2}
+              />
+            </div>
+
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
+          </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
