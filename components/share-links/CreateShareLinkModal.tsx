@@ -162,7 +162,7 @@ export function CreateShareLinkModal({
           <Button type="button">Criar novo link</Button>
         </DialogTrigger>
       )}
-      <DialogContent>
+      <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>
             {prefill
@@ -171,156 +171,169 @@ export function CreateShareLinkModal({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="label">Rótulo (opcional)</Label>
-            <Input
-              id="label"
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha (opcional)</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder={
-                prefill?.has_password
-                  ? "O link original tinha senha — defina uma nova"
-                  : undefined
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="expiresAt">Expiração (opcional)</Label>
-            <Input
-              id="expiresAt"
-              type="date"
-              value={expiresAt}
-              onChange={(event) => setExpiresAt(event.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="allowDownload"
-              checked={allowDownload}
-              onCheckedChange={(checked) => setAllowDownload(checked === true)}
-            />
-            <Label htmlFor="allowDownload">Permitir download</Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="notifyOnView"
-              checked={notifyOnView}
-              onCheckedChange={setNotifyOnView}
-            />
-            <Label htmlFor="notifyOnView">
-              Notificar por e-mail ao ser visualizado
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="requireEmail"
-              checked={requireEmail}
-              onCheckedChange={setRequireEmail}
-            />
-            <Label htmlFor="requireEmail">Exigir email do visitante</Label>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="allowedEmails">
-              Lista de emails permitidos (opcional)
-            </Label>
-            <Textarea
-              id="allowedEmails"
-              value={allowedEmailsText}
-              onChange={(event) => setAllowedEmailsText(event.target.value)}
-              placeholder="um@exemplo.com&#10;outro@exemplo.com"
-              rows={3}
-            />
-            <p className="text-xs text-muted-foreground">
-              Um email por linha. Se preenchido, só esses emails poderão acessar
-              o link (mesmo com a senha correta).
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="watermarkEnabled"
-              checked={watermarkEnabled}
-              onCheckedChange={setWatermarkEnabled}
-            />
-            <Label htmlFor="watermarkEnabled">
-              Marca d&apos;água com email do visitante
-            </Label>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ndaText">
-              Termo de confidencialidade (opcional)
-            </Label>
-            <Textarea
-              id="ndaText"
-              value={ndaText}
-              onChange={(event) => setNdaText(event.target.value)}
-              placeholder="Cole aqui o texto que o visitante deve aceitar antes de ver o documento"
-              rows={4}
-            />
-            <p className="text-xs text-muted-foreground">
-              Se preenchido, o visitante precisa informar nome e email e aceitar
-              este termo antes de acessar o documento.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="brandAccentColor">Cor de destaque (opcional)</Label>
-            <div className="flex items-center gap-2">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="-mx-1 flex-1 space-y-4 overflow-y-auto px-1">
+            <div className="space-y-2">
+              <Label htmlFor="label">Rótulo (opcional)</Label>
               <Input
-                id="brandAccentColor"
-                type="color"
-                value={brandAccentColor || "#000000"}
-                onChange={(event) => setBrandAccentColor(event.target.value)}
-                className="h-9 w-14 p-1"
+                id="label"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
               />
-              {brandAccentColor && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setBrandAccentColor("")}
-                >
-                  Remover
-                </Button>
-              )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="brandWelcomeMessage">
-              Mensagem de boas-vindas (opcional)
-            </Label>
-            <Textarea
-              id="brandWelcomeMessage"
-              value={brandWelcomeMessage}
-              onChange={(event) => setBrandWelcomeMessage(event.target.value)}
-              placeholder="Ex: Olá! Segue o contrato revisado, qualquer dúvida me chama."
-              rows={2}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha (opcional)</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={
+                  prefill?.has_password
+                    ? "O link original tinha senha — defina uma nova"
+                    : undefined
+                }
+              />
+            </div>
 
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="expiresAt">Expiração (opcional)</Label>
+              <Input
+                id="expiresAt"
+                type="date"
+                value={expiresAt}
+                onChange={(event) => setExpiresAt(event.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="allowDownload"
+                checked={allowDownload}
+                onCheckedChange={(checked) =>
+                  setAllowDownload(checked === true)
+                }
+              />
+              <Label htmlFor="allowDownload">Permitir download</Label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="notifyOnView"
+                checked={notifyOnView}
+                onCheckedChange={setNotifyOnView}
+              />
+              <Label htmlFor="notifyOnView">
+                Notificar por e-mail ao ser visualizado
+              </Label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="requireEmail"
+                checked={requireEmail}
+                onCheckedChange={setRequireEmail}
+              />
+              <Label htmlFor="requireEmail">Exigir email do visitante</Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="allowedEmails">
+                Lista de emails permitidos (opcional)
+              </Label>
+              <Textarea
+                id="allowedEmails"
+                value={allowedEmailsText}
+                onChange={(event) => setAllowedEmailsText(event.target.value)}
+                placeholder="um@exemplo.com&#10;outro@exemplo.com"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                Um email por linha. Se preenchido, só esses emails poderão
+                acessar o link (mesmo com a senha correta).
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="watermarkEnabled"
+                checked={watermarkEnabled}
+                onCheckedChange={setWatermarkEnabled}
+              />
+              <Label htmlFor="watermarkEnabled">
+                Marca d&apos;água com email do visitante
+              </Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ndaText">
+                Termo de confidencialidade (opcional)
+              </Label>
+              <Textarea
+                id="ndaText"
+                value={ndaText}
+                onChange={(event) => setNdaText(event.target.value)}
+                placeholder="Cole aqui o texto que o visitante deve aceitar antes de ver o documento"
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">
+                Se preenchido, o visitante precisa informar nome e email e
+                aceitar este termo antes de acessar o documento.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brandAccentColor">
+                Cor de destaque (opcional)
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="brandAccentColor"
+                  type="color"
+                  value={brandAccentColor || "#000000"}
+                  onChange={(event) => setBrandAccentColor(event.target.value)}
+                  className="h-9 w-14 p-1"
+                />
+                {brandAccentColor && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBrandAccentColor("")}
+                  >
+                    Remover
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Usada nos botões e destaques da página de visualização, no lugar
+                da cor padrão do Papershare — útil para combinar com a marca de
+                quem está enviando. Só aparece depois que o visitante
+                desbloqueia o documento, não nas telas de senha, email ou termo
+                de aceite.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brandWelcomeMessage">
+                Mensagem de boas-vindas (opcional)
+              </Label>
+              <Textarea
+                id="brandWelcomeMessage"
+                value={brandWelcomeMessage}
+                onChange={(event) => setBrandWelcomeMessage(event.target.value)}
+                placeholder="Ex: Olá! Segue o contrato revisado, qualquer dúvida me chama."
+                rows={2}
+              />
+            </div>
+
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
+          </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
