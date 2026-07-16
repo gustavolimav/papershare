@@ -74,6 +74,9 @@ export function ShareLinkCard({
             {!link.is_active && <Badge variant="destructive">Revogado</Badge>}
             {link.is_active && <Badge variant="secondary">Ativo</Badge>}
             {link.has_password && <Badge variant="outline">Com senha</Badge>}
+            {link.require_email && (
+              <Badge variant="outline">Requer email</Badge>
+            )}
           </div>
         </div>
 

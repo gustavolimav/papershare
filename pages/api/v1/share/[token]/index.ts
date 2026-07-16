@@ -28,10 +28,12 @@ async function getHandler(
   // Header only, no query-param fallback: query strings end up in server
   // and proxy access logs, browser history, and Referer headers.
   const providedPassword = request.headers["x-share-password"];
+  const providedEmail = request.headers["x-viewer-email"];
 
   const result = await shareLink.getByToken(
     token,
     typeof providedPassword === "string" ? providedPassword : undefined,
+    typeof providedEmail === "string" ? providedEmail : undefined,
   );
 
   return response.status(200).json(result);

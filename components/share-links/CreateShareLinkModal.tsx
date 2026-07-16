@@ -31,6 +31,7 @@ export function CreateShareLinkModal({
   const [expiresAt, setExpiresAt] = useState("");
   const [allowDownload, setAllowDownload] = useState(true);
   const [notifyOnView, setNotifyOnView] = useState(true);
+  const [requireEmail, setRequireEmail] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,6 +41,7 @@ export function CreateShareLinkModal({
     setExpiresAt("");
     setAllowDownload(true);
     setNotifyOnView(true);
+    setRequireEmail(false);
     setError(null);
   }
 
@@ -52,6 +54,7 @@ export function CreateShareLinkModal({
       const body: Record<string, unknown> = {
         allow_download: allowDownload,
         notify_on_view: notifyOnView,
+        require_email: requireEmail,
       };
 
       if (label) {
@@ -145,6 +148,15 @@ export function CreateShareLinkModal({
             <Label htmlFor="notifyOnView">
               Notificar por e-mail ao ser visualizado
             </Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="requireEmail"
+              checked={requireEmail}
+              onCheckedChange={setRequireEmail}
+            />
+            <Label htmlFor="requireEmail">Exigir email do visitante</Label>
           </div>
 
           {error && (

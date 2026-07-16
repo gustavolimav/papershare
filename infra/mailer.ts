@@ -7,6 +7,19 @@ const client = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
+// input.viewerEmail comes from an anonymous, unauthenticated visitor (the
+// share-link "require email" gate) and ends up in an HTML email sent to a
+// different party (the document owner) — must be escaped to prevent that
+// visitor injecting markup into the owner's inbox.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function sendViewNotification(
   input: ViewNotificationInput,
 ): Promise<void> {
@@ -18,6 +31,10 @@ async function sendViewNotification(
     ? `o link "${input.linkLabel}"`
     : "seu link de compartilhamento";
 
+  const viewerDescription = input.viewerEmail
+    ? `por <strong>${escapeHtml(input.viewerEmail)}</strong>`
+    : "por um novo visitante";
+
   await client.emails.send({
     from: process.env.MAIL_FROM_ADDRESS ?? DEFAULT_FROM_ADDRESS,
     to: input.to,
@@ -27,8 +44,8 @@ async function sendViewNotification(
         <p>Olá,</p>
         <p>
           ${linkDescription} do documento
-          <strong>${input.documentTitle}</strong> foi aberto por um novo
-          visitante.
+          <strong>${input.documentTitle}</strong> foi aberto
+          ${viewerDescription}.
         </p>
         <p>
           <a

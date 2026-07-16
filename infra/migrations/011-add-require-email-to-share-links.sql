@@ -1,0 +1,4 @@
+ALTER TABLE
+  share_links
+ADD COLUMN
+  require_email BOOLEAN NOT NULL DEFAULT FALSE;

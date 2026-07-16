@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PasswordGate } from "@/components/viewer/PasswordGate";
+import { EmailGate } from "@/components/viewer/EmailGate";
 import { PDFViewer } from "@/components/viewer/PDFViewer";
 import { getViewerFingerprint } from "@/lib/fingerprint";
 import type { ShareLinkWithDocument } from "@/types/index";
@@ -13,6 +14,7 @@ interface ViewerPageProps {
 type LoadState =
   | { status: "loading" }
   | { status: "password-required"; error?: string }
+  | { status: "email-required"; error?: string }
   | { status: "error"; message: string }
   | { status: "ready"; link: ShareLinkWithDocument; fileData: ArrayBuffer };
 
@@ -36,10 +38,12 @@ function triggerBlobDownload(blob: Blob, filename: string) {
 export function ViewerPage({ token }: ViewerPageProps) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
   const fingerprintRef = useRef<string>("");
   const startTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef(1);
   const passwordRef = useRef<string | undefined>(undefined);
+  const emailRef = useRef<string | undefined>(undefined);
   // Accumulated dwell time per page number, in seconds.
   const pageTimesRef = useRef<Map<number, number>>(new Map());
   const currentPageTrackRef = useRef<{
@@ -70,10 +74,20 @@ export function ViewerPage({ token }: ViewerPageProps) {
   }, []);
 
   const load = useCallback(
-    async (password?: string) => {
-      const headers: HeadersInit = password
-        ? { "X-Share-Password": password }
-        : {};
+    async (overrides?: { password?: string; email?: string }) => {
+      if (overrides?.password !== undefined) {
+        passwordRef.current = overrides.password;
+      }
+      if (overrides?.email !== undefined) {
+        emailRef.current = overrides.email;
+      }
+
+      const headers: HeadersInit = {
+        ...(passwordRef.current
+          ? { "X-Share-Password": passwordRef.current }
+          : {}),
+        ...(emailRef.current ? { "X-Viewer-Email": emailRef.current } : {}),
+      };
 
       const linkResponse = await fetch(`/api/v1/share/${token}`, { headers });
 
@@ -89,7 +103,17 @@ export function ViewerPage({ token }: ViewerPageProps) {
         if (message.includes("Senha")) {
           setState({
             status: "password-required",
-            ...(password ? { error: "Senha incorreta." } : {}),
+            ...(overrides?.password !== undefined
+              ? { error: "Senha incorreta." }
+              : {}),
+          });
+          return;
+        }
+
+        if (message.includes("Email")) {
+          setState({
+            status: "email-required",
+            ...(overrides?.email !== undefined ? { error: message } : {}),
           });
           return;
         }
@@ -110,7 +134,6 @@ export function ViewerPage({ token }: ViewerPageProps) {
       }
 
       const link: ShareLinkWithDocument = await linkResponse.json();
-      passwordRef.current = password;
 
       if (link.document.mime_type !== "application/pdf") {
         setState({ status: "ready", link, fileData: new ArrayBuffer(0) });
@@ -136,7 +159,10 @@ export function ViewerPage({ token }: ViewerPageProps) {
       fetch(`/api/v1/share/${token}/view`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ viewer_fingerprint: fingerprintRef.current }),
+        body: JSON.stringify({
+          viewer_fingerprint: fingerprintRef.current,
+          ...(emailRef.current ? { viewer_email: emailRef.current } : {}),
+        }),
       }).catch(() => undefined);
     },
     [token],
@@ -170,9 +196,12 @@ export function ViewerPage({ token }: ViewerPageProps) {
       return;
     }
 
-    const headers: HeadersInit = passwordRef.current
-      ? { "X-Share-Password": passwordRef.current }
-      : {};
+    const headers: HeadersInit = {
+      ...(passwordRef.current
+        ? { "X-Share-Password": passwordRef.current }
+        : {}),
+      ...(emailRef.current ? { "X-Viewer-Email": emailRef.current } : {}),
+    };
 
     const response = await fetch(`/api/v1/share/${token}/file`, { headers });
 
@@ -202,6 +231,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
           [
             JSON.stringify({
               viewer_fingerprint: fingerprintRef.current,
+              ...(emailRef.current && { viewer_email: emailRef.current }),
               time_on_page: timeOnPage,
               pages_viewed: pagesViewedRef.current,
               ...(pageTimes.length > 0 && { page_times: pageTimes }),
@@ -231,8 +261,22 @@ export function ViewerPage({ token }: ViewerPageProps) {
         isSubmitting={isSubmittingPassword}
         onSubmit={async (password) => {
           setIsSubmittingPassword(true);
-          await load(password);
+          await load({ password });
           setIsSubmittingPassword(false);
+        }}
+      />
+    );
+  }
+
+  if (state.status === "email-required") {
+    return (
+      <EmailGate
+        error={state.error}
+        isSubmitting={isSubmittingEmail}
+        onSubmit={async (email) => {
+          setIsSubmittingEmail(true);
+          await load({ email });
+          setIsSubmittingEmail(false);
         }}
       />
     );

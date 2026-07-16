@@ -37,6 +37,7 @@ export function EditShareLinkModal({
   const [allowDownload, setAllowDownload] = useState(link.allow_download);
   const [isActive, setIsActive] = useState(link.is_active);
   const [notifyOnView, setNotifyOnView] = useState(link.notify_on_view);
+  const [requireEmail, setRequireEmail] = useState(link.require_email);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,6 +52,7 @@ export function EditShareLinkModal({
         allow_download: allowDownload,
         is_active: isActive,
         notify_on_view: notifyOnView,
+        require_email: requireEmail,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
 
@@ -164,6 +166,15 @@ export function EditShareLinkModal({
             <Label htmlFor="edit-notifyOnView">
               Notificar por e-mail ao ser visualizado
             </Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="edit-requireEmail"
+              checked={requireEmail}
+              onCheckedChange={setRequireEmail}
+            />
+            <Label htmlFor="edit-requireEmail">Exigir email do visitante</Label>
           </div>
 
           {error && (

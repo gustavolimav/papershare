@@ -24,10 +24,12 @@ export default router.handler(controller.errorHandlers);
 async function getHandler(request: FileRequest, response: NextApiResponse) {
   const token = request.query.token as string;
   const providedPassword = request.headers["x-share-password"];
+  const providedEmail = request.headers["x-viewer-email"];
 
   const { storage_key, mime_type } = await shareLink.getFileByToken(
     token,
     typeof providedPassword === "string" ? providedPassword : undefined,
+    typeof providedEmail === "string" ? providedEmail : undefined,
   );
 
   const file = await storage.getFile(storage_key);

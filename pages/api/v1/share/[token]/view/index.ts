@@ -39,6 +39,9 @@ async function postHandler(
     ...(validated.viewer_fingerprint !== undefined && {
       viewer_fingerprint: validated.viewer_fingerprint,
     }),
+    ...(validated.viewer_email !== undefined && {
+      viewer_email: validated.viewer_email,
+    }),
     ...(validated.time_on_page !== undefined && {
       time_on_page: validated.time_on_page,
     }),
@@ -55,9 +58,11 @@ async function postHandler(
   const newView = await linkView.recordView(token, input);
 
   if (newView.is_new_viewer) {
-    notifyOwnerOfNewViewer(newView.share_link_id, request).catch(
-      () => undefined,
-    );
+    notifyOwnerOfNewViewer(
+      newView.share_link_id,
+      newView.viewer_email,
+      request,
+    ).catch(() => undefined);
   }
 
   return response.status(201).json(newView);
@@ -68,6 +73,7 @@ async function postHandler(
 // viewer whose request triggered it.
 async function notifyOwnerOfNewViewer(
   shareLinkId: string,
+  viewerEmail: string | null,
   request: NextApiRequest,
 ): Promise<void> {
   const info = await shareLink.getNotificationInfo(shareLinkId);
@@ -82,6 +88,7 @@ async function notifyOwnerOfNewViewer(
     documentId: info.document_id,
     linkLabel: info.link_label,
     analyticsUrl: `${getBaseUrl(request)}/documents/${info.document_id}/analytics`,
+    viewerEmail,
   });
 }
 

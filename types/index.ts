@@ -67,6 +67,7 @@ export interface ShareLink {
   created_at: Date;
   updated_at: Date;
   notify_on_view: boolean;
+  require_email: boolean;
 }
 
 export interface ShareLinkResponse {
@@ -82,6 +83,7 @@ export interface ShareLinkResponse {
   updated_at: Date;
   has_password: boolean;
   notify_on_view: boolean;
+  require_email: boolean;
 }
 
 // Deliberately narrower than ShareLinkResponse: this is what the public,
@@ -110,6 +112,7 @@ export interface LinkView {
   id: string;
   share_link_id: string;
   viewer_fingerprint: string | null;
+  viewer_email: string | null;
   ip_address: string | null;
   country_code: string | null;
   user_agent: string | null;
@@ -208,6 +211,7 @@ export interface ShareLinkCreateInput {
   expires_at?: string;
   allow_download?: boolean;
   notify_on_view?: boolean;
+  require_email?: boolean;
 }
 
 export interface ShareLinkUpdateInput {
@@ -217,6 +221,7 @@ export interface ShareLinkUpdateInput {
   allow_download?: boolean;
   is_active?: boolean;
   notify_on_view?: boolean;
+  require_email?: boolean;
 }
 
 export interface PageTimeInput {
@@ -226,6 +231,7 @@ export interface PageTimeInput {
 
 export interface LinkViewCreateInput {
   viewer_fingerprint?: string;
+  viewer_email?: string;
   ip_address?: string;
   user_agent?: string;
   time_on_page?: number;
@@ -239,6 +245,7 @@ export interface ViewNotificationInput {
   documentId: string;
   linkLabel: string | null;
   analyticsUrl: string;
+  viewerEmail?: string | null;
 }
 
 // Database Query Types
@@ -369,10 +376,15 @@ export interface ShareLinkModel {
     input: ShareLinkUpdateInput,
   ): Promise<ShareLinkResponse>;
   revokeById(id: string, documentId: string): Promise<ShareLinkResponse>;
-  getByToken(token: string, password?: string): Promise<ShareLinkWithDocument>;
+  getByToken(
+    token: string,
+    password?: string,
+    email?: string,
+  ): Promise<ShareLinkWithDocument>;
   getFileByToken(
     token: string,
     password?: string,
+    email?: string,
   ): Promise<{ storage_key: string; mime_type: string }>;
   validateToken(token: string): Promise<{ id: string }>;
   getNotificationInfo(
