@@ -35,6 +35,7 @@ export function CreateShareLinkModal({
   const [notifyOnView, setNotifyOnView] = useState(true);
   const [requireEmail, setRequireEmail] = useState(false);
   const [allowedEmailsText, setAllowedEmailsText] = useState("");
+  const [watermarkEnabled, setWatermarkEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,6 +47,7 @@ export function CreateShareLinkModal({
     setNotifyOnView(true);
     setRequireEmail(false);
     setAllowedEmailsText("");
+    setWatermarkEnabled(false);
     setError(null);
   }
 
@@ -61,6 +63,7 @@ export function CreateShareLinkModal({
         allow_download: allowDownload,
         notify_on_view: notifyOnView,
         require_email: requireEmail,
+        watermark_enabled: watermarkEnabled,
         ...(allowedEmails.length > 0 && { allowed_emails: allowedEmails }),
       };
 
@@ -181,6 +184,17 @@ export function CreateShareLinkModal({
               Um email por linha. Se preenchido, só esses emails poderão acessar
               o link (mesmo com a senha correta).
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="watermarkEnabled"
+              checked={watermarkEnabled}
+              onCheckedChange={setWatermarkEnabled}
+            />
+            <Label htmlFor="watermarkEnabled">
+              Marca d&apos;água com email do visitante
+            </Label>
           </div>
 
           {error && (

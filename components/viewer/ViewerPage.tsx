@@ -44,6 +44,10 @@ export function ViewerPage({ token }: ViewerPageProps) {
   const pagesViewedRef = useRef(1);
   const passwordRef = useRef<string | undefined>(undefined);
   const emailRef = useRef<string | undefined>(undefined);
+  // Computed once, when the document first loads, so it stays stable across
+  // zoom/page changes within the same viewing session instead of drifting
+  // with "now" on every render.
+  const watermarkTextRef = useRef<string | undefined>(undefined);
   // Accumulated dwell time per page number, in seconds.
   const pageTimesRef = useRef<Map<number, number>>(new Map());
   const currentPageTrackRef = useRef<{
@@ -155,6 +159,10 @@ export function ViewerPage({ token }: ViewerPageProps) {
       const fileData = await fileResponse.arrayBuffer();
       setState({ status: "ready", link, fileData });
       startTimeRef.current = Date.now();
+
+      if (link.watermark_enabled && emailRef.current) {
+        watermarkTextRef.current = `${emailRef.current} · ${new Date().toLocaleString("pt-BR")}`;
+      }
 
       fetch(`/api/v1/share/${token}/view`, {
         method: "POST",
@@ -320,6 +328,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
         pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
         trackPageChange(page);
       }}
+      watermarkText={watermarkTextRef.current}
     />
   );
 }

@@ -12,6 +12,39 @@ interface PDFViewerProps {
   allowDownload: boolean;
   onDownload: () => void;
   onPageChange?: (page: number) => void;
+  watermarkText?: string | undefined;
+}
+
+// Tiles the given text diagonally across the canvas, drawn directly into
+// the rendered bitmap (not a DOM overlay) so it survives a screenshot or a
+// browser print of the page. This deters casual leaking — it isn't
+// tamper-proof against someone editing the client, and the downloadable
+// file itself is untouched (that would need rewriting the PDF bytes, out
+// of scope here).
+function drawWatermark(
+  context: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  text: string,
+) {
+  context.save();
+  context.globalAlpha = 0.15;
+  context.fillStyle = "#000000";
+  context.font = "16px sans-serif";
+  context.textAlign = "center";
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate(-Math.PI / 6);
+
+  const stepX = context.measureText(text).width + 60;
+  const stepY = 90;
+  const diagonal = Math.hypot(canvas.width, canvas.height);
+
+  for (let y = -diagonal; y < diagonal; y += stepY) {
+    for (let x = -diagonal; x < diagonal; x += stepX) {
+      context.fillText(text, x, y);
+    }
+  }
+
+  context.restore();
 }
 
 export function PDFViewer({
@@ -19,6 +52,7 @@ export function PDFViewer({
   allowDownload,
   onDownload,
   onPageChange,
+  watermarkText,
 }: PDFViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const docRef = useRef<PDFDocumentProxy | null>(null);
@@ -91,6 +125,10 @@ export function PDFViewer({
       canvas.height = viewport.height;
 
       await page.render({ canvasContext: context, viewport, canvas }).promise;
+
+      if (watermarkText) {
+        drawWatermark(context, canvas, watermarkText);
+      }
     }
 
     renderPage();
@@ -99,7 +137,7 @@ export function PDFViewer({
     return () => {
       cancelled = true;
     };
-  }, [currentPage, scale, totalPages, onPageChange]);
+  }, [currentPage, scale, totalPages, onPageChange, watermarkText]);
 
   if (error) {
     return (

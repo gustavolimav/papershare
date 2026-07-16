@@ -80,6 +80,7 @@ describe("GET /api/v1/share/[token]", () => {
       is_active: true,
       created_at: responseBody.created_at,
       has_password: false,
+      watermark_enabled: false,
       document: {
         id: document.id,
         title: "Public doc",
@@ -301,6 +302,41 @@ describe("GET /api/v1/share/[token]", () => {
 
     expect(response.status).toBe(403);
     expect((await response.json()).message).toBe("Email não autorizado.");
+  });
+
+  test("With watermark_enabled, no email provided", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      watermark_enabled: true,
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Email obrigatório.");
+  });
+
+  test("With watermark_enabled, valid email provided", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      watermark_enabled: true,
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+      { headers: { "X-Viewer-Email": "viewer@example.com" } },
+    );
+
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+    expect(responseBody.watermark_enabled).toBe(true);
   });
 
   test("With the linked document soft-deleted", async () => {

@@ -68,6 +68,7 @@ export interface ShareLink {
   updated_at: Date;
   notify_on_view: boolean;
   require_email: boolean;
+  watermark_enabled: boolean;
 }
 
 export interface ShareLinkResponse {
@@ -85,11 +86,14 @@ export interface ShareLinkResponse {
   notify_on_view: boolean;
   require_email: boolean;
   allowed_emails: string[];
+  watermark_enabled: boolean;
 }
 
 // Deliberately narrower than ShareLinkResponse: this is what the public,
 // unauthenticated endpoint returns, so it must not leak the link's
 // document_id/user_id/updated_at or the document's storage_key/user_id/timestamps.
+// watermark_enabled IS included (unlike allowed_emails) — the viewer's own
+// client needs it to decide whether to draw the canvas watermark.
 export interface ShareLinkWithDocument {
   id: string;
   token: string;
@@ -99,6 +103,7 @@ export interface ShareLinkWithDocument {
   is_active: boolean;
   created_at: Date;
   has_password: boolean;
+  watermark_enabled: boolean;
   document: {
     id: string;
     title: string;
@@ -214,6 +219,7 @@ export interface ShareLinkCreateInput {
   notify_on_view?: boolean;
   require_email?: boolean;
   allowed_emails?: string[];
+  watermark_enabled?: boolean;
 }
 
 export interface ShareLinkUpdateInput {
@@ -225,6 +231,7 @@ export interface ShareLinkUpdateInput {
   notify_on_view?: boolean;
   require_email?: boolean;
   allowed_emails?: string[] | null;
+  watermark_enabled?: boolean;
 }
 
 export interface PageTimeInput {

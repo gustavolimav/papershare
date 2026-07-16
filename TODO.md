@@ -356,9 +356,11 @@ engagement scoring via cirrusinsight.com).
       `share_links.require_email` + `link_views.viewer_email`; gated via a
       new `X-Viewer-Email` header, checked after the password gate. See
       CHANGELOG for details.
-- [ ] Dynamic watermark overlay (viewer email + timestamp burned into the
+- [x] Dynamic watermark overlay (viewer email + timestamp burned into the
       PDF canvas render) — deters leaking a "confidential" document,
-      standard in every data-room competitor
+      standard in every data-room competitor. Migration `014` adds
+      `share_links.watermark_enabled`; enabling it implies email is
+      required, same as the allow-list. See CHANGELOG for details.
 - [x] Email allow-list per share link — only pre-approved addresses can
       unlock it, even with the correct password. Migration `013` adds
       `share_link_allowed_emails`; presence of a list implies email is

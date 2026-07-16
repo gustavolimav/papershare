@@ -1,0 +1,4 @@
+ALTER TABLE
+  share_links
+ADD COLUMN
+  watermark_enabled BOOLEAN NOT NULL DEFAULT FALSE;

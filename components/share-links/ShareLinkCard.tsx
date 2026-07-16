@@ -82,6 +82,9 @@ export function ShareLinkCard({
                 Lista de emails ({link.allowed_emails.length})
               </Badge>
             )}
+            {link.watermark_enabled && (
+              <Badge variant="outline">Marca d&apos;água</Badge>
+            )}
           </div>
         </div>
 

@@ -16,7 +16,7 @@ import type {
 const SHARE_LINK_COLUMNS = `
   id, token, document_id, user_id, label, password_hash,
   expires_at, allow_download, is_active, created_at, updated_at,
-  notify_on_view, require_email
+  notify_on_view, require_email, watermark_enabled
 `;
 
 interface ShareLinkTokenRow {
@@ -28,6 +28,7 @@ interface ShareLinkTokenRow {
   allow_download: boolean;
   is_active: boolean;
   require_email: boolean;
+  watermark_enabled: boolean;
   has_allow_list: boolean;
   email_is_allowed: boolean;
   link_created_at: Date;
@@ -145,10 +146,11 @@ async function create(
         INSERT INTO
           share_links (
             id, document_id, user_id, label, password_hash,
-            expires_at, allow_download, notify_on_view, require_email
+            expires_at, allow_download, notify_on_view, require_email,
+            watermark_enabled
           )
         VALUES
-          ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING
           ${SHARE_LINK_COLUMNS}
         ;`,
@@ -162,6 +164,7 @@ async function create(
       input.allow_download ?? true,
       input.notify_on_view ?? true,
       input.require_email ?? false,
+      input.watermark_enabled ?? false,
     ],
   });
 
@@ -272,6 +275,11 @@ async function updateById(
     setClauses.push(`require_email = $${values.length}`);
   }
 
+  if (input.watermark_enabled !== undefined) {
+    values.push(input.watermark_enabled);
+    setClauses.push(`watermark_enabled = $${values.length}`);
+  }
+
   setClauses.push("updated_at = NOW()");
   values.push(id);
 
@@ -336,6 +344,7 @@ async function fetchAndValidateTokenRow(
           sl.allow_download,
           sl.is_active,
           sl.require_email,
+          sl.watermark_enabled,
           EXISTS (
             SELECT 1 FROM share_link_allowed_emails a
             WHERE a.share_link_id = sl.id
@@ -391,8 +400,10 @@ async function fetchAndValidateTokenRow(
 
   // Checked after the password so a link with both gates gives the viewer
   // one thing to fix at a time instead of a single generic error. An
-  // allow-list implies an email is required even if require_email itself
-  // is off — the owner shouldn't have to flip both toggles.
+  // allow-list or an enabled watermark both imply an email is required
+  // even if require_email itself is off — the owner shouldn't have to
+  // flip multiple toggles (the watermark specifically needs an identity
+  // to burn into the render).
   if (row.has_allow_list) {
     if (
       !providedEmail ||
@@ -406,7 +417,7 @@ async function fetchAndValidateTokenRow(
       });
     }
   } else if (
-    row.require_email &&
+    (row.require_email || row.watermark_enabled) &&
     !(providedEmail && isValidEmail(providedEmail))
   ) {
     throw new ForbiddenError({
@@ -445,6 +456,7 @@ async function getByToken(
     is_active: row.is_active,
     created_at: row.link_created_at,
     has_password: row.password_hash !== null,
+    watermark_enabled: row.watermark_enabled,
     document: {
       id: row.document_id,
       title: row.title,

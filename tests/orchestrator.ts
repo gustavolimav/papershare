@@ -161,6 +161,7 @@ async function createShareLink(
     notify_on_view?: boolean;
     require_email?: boolean;
     allowed_emails?: string[];
+    watermark_enabled?: boolean;
   },
   // returns `any` because the endpoint can respond with either a ShareLinkResponse or an ErrorResponse
 ): Promise<any> {
@@ -271,6 +272,7 @@ interface Orchestrator {
       notify_on_view?: boolean;
       require_email?: boolean;
       allowed_emails?: string[];
+      watermark_enabled?: boolean;
     },
   ): Promise<any>;
   // eslint-disable-next-line no-unused-vars
