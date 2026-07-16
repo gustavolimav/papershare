@@ -45,6 +45,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
   const fingerprintRef = useRef<string>("");
   const startTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef(1);
+  const hasDownloadedRef = useRef(false);
   const passwordRef = useRef<string | undefined>(undefined);
   const emailRef = useRef<string | undefined>(undefined);
   const nameRef = useRef<string | undefined>(undefined);
@@ -229,6 +230,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
         new Blob([fileData], { type: link.document.mime_type }),
         filename,
       );
+      hasDownloadedRef.current = true;
       return;
     }
 
@@ -247,6 +249,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
     }
 
     triggerBlobDownload(await response.blob(), filename);
+    hasDownloadedRef.current = true;
   }, [state, token]);
 
   useEffect(() => {
@@ -273,6 +276,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
               time_on_page: timeOnPage,
               pages_viewed: pagesViewedRef.current,
               ...(pageTimes.length > 0 && { page_times: pageTimes }),
+              ...(hasDownloadedRef.current && { downloaded: true }),
             }),
           ],
           { type: "application/json" },

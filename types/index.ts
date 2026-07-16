@@ -136,6 +136,7 @@ export interface LinkView {
   user_agent: string | null;
   time_on_page: number | null;
   pages_viewed: number | null;
+  downloaded: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -173,10 +174,30 @@ export interface PageBreakdown {
   view_count: number;
 }
 
-// Only on the per-link response: a page-by-page breakdown only makes sense
-// in the context of one link, not aggregated across a document's links.
+// One row per distinct viewer (grouped by fingerprint) on a single link,
+// aggregated across all of their visits — a viewer can have more than one
+// link_views row if they return after the 30-min dedup window closes.
+export interface ViewerEngagement {
+  viewer_email: string | null;
+  viewer_name: string | null;
+  total_time_on_page: number;
+  max_pages_viewed: number;
+  visit_count: number;
+  downloaded: boolean;
+  first_viewed_at: Date;
+  last_viewed_at: Date;
+  // 0-100, weighted blend of time on page / % of pages viewed / return
+  // visits / download — see models/linkView.ts#computeEngagementScore for
+  // the exact weights and rationale.
+  engagement_score: number;
+}
+
+// Only on the per-link response: a page-by-page breakdown (and the
+// per-viewer engagement list) only make sense in the context of one link,
+// not aggregated across a document's links.
 export interface LinkAnalyticsResponse extends LinkViewAnalytics {
   page_breakdown: PageBreakdown[];
+  viewers: ViewerEngagement[];
 }
 
 export interface TopLink {
@@ -266,6 +287,7 @@ export interface LinkViewCreateInput {
   time_on_page?: number;
   pages_viewed?: number;
   page_times?: PageTimeInput[];
+  downloaded?: boolean;
 }
 
 export interface ViewNotificationInput {
@@ -432,7 +454,10 @@ export interface LinkViewModel {
     token: string,
     input: LinkViewCreateInput,
   ): Promise<RecordedLinkView>;
-  getAnalyticsByLinkId(linkId: string): Promise<LinkAnalyticsResponse>;
+  getAnalyticsByLinkId(
+    linkId: string,
+    pageCount: number | null,
+  ): Promise<LinkAnalyticsResponse>;
   getAnalyticsByDocumentId(
     documentId: string,
   ): Promise<DocumentAnalyticsResponse>;

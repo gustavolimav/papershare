@@ -31,10 +31,10 @@ async function getHandler(
   const documentId = request.query.id as string;
   const linkId = request.query.linkId as string;
 
-  await document.findOneById(documentId, request.user!.id);
+  const doc = await document.findOneById(documentId, request.user!.id);
   await shareLink.findOneById(linkId, documentId);
 
-  const analytics = await linkView.getAnalyticsByLinkId(linkId);
+  const analytics = await linkView.getAnalyticsByLinkId(linkId, doc.page_count);
 
   return response.status(200).json(analytics);
 }

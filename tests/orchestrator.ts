@@ -196,6 +196,7 @@ async function recordView(
     time_on_page?: number;
     pages_viewed?: number;
     page_times?: { page: number; seconds: number }[];
+    downloaded?: boolean;
   },
   // returns `any` because the endpoint can respond with either a LinkView or an ErrorResponse
 ): Promise<any> {
@@ -295,6 +296,7 @@ interface Orchestrator {
       time_on_page?: number;
       pages_viewed?: number;
       page_times?: { page: number; seconds: number }[];
+      downloaded?: boolean;
     },
   ): Promise<any>;
   pushBackLinkViewCreatedAt(
