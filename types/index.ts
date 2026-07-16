@@ -84,6 +84,7 @@ export interface ShareLinkResponse {
   has_password: boolean;
   notify_on_view: boolean;
   require_email: boolean;
+  allowed_emails: string[];
 }
 
 // Deliberately narrower than ShareLinkResponse: this is what the public,
@@ -212,6 +213,7 @@ export interface ShareLinkCreateInput {
   allow_download?: boolean;
   notify_on_view?: boolean;
   require_email?: boolean;
+  allowed_emails?: string[];
 }
 
 export interface ShareLinkUpdateInput {
@@ -222,6 +224,7 @@ export interface ShareLinkUpdateInput {
   is_active?: boolean;
   notify_on_view?: boolean;
   require_email?: boolean;
+  allowed_emails?: string[] | null;
 }
 
 export interface PageTimeInput {

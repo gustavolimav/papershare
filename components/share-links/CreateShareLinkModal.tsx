@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { parseAllowedEmails } from "@/lib/parseAllowedEmails";
 import type { ShareLinkResponse } from "@/types/index";
 
 interface CreateShareLinkModalProps {
@@ -32,6 +34,7 @@ export function CreateShareLinkModal({
   const [allowDownload, setAllowDownload] = useState(true);
   const [notifyOnView, setNotifyOnView] = useState(true);
   const [requireEmail, setRequireEmail] = useState(false);
+  const [allowedEmailsText, setAllowedEmailsText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,6 +45,7 @@ export function CreateShareLinkModal({
     setAllowDownload(true);
     setNotifyOnView(true);
     setRequireEmail(false);
+    setAllowedEmailsText("");
     setError(null);
   }
 
@@ -51,10 +55,13 @@ export function CreateShareLinkModal({
     setIsSubmitting(true);
 
     try {
+      const allowedEmails = parseAllowedEmails(allowedEmailsText);
+
       const body: Record<string, unknown> = {
         allow_download: allowDownload,
         notify_on_view: notifyOnView,
         require_email: requireEmail,
+        ...(allowedEmails.length > 0 && { allowed_emails: allowedEmails }),
       };
 
       if (label) {
@@ -157,6 +164,23 @@ export function CreateShareLinkModal({
               onCheckedChange={setRequireEmail}
             />
             <Label htmlFor="requireEmail">Exigir email do visitante</Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="allowedEmails">
+              Lista de emails permitidos (opcional)
+            </Label>
+            <Textarea
+              id="allowedEmails"
+              value={allowedEmailsText}
+              onChange={(event) => setAllowedEmailsText(event.target.value)}
+              placeholder="um@exemplo.com&#10;outro@exemplo.com"
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground">
+              Um email por linha. Se preenchido, só esses emails poderão acessar
+              o link (mesmo com a senha correta).
+            </p>
           </div>
 
           {error && (

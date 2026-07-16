@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { parseAllowedEmails } from "@/lib/parseAllowedEmails";
 import type { ShareLinkResponse, ShareLinkUpdateInput } from "@/types/index";
 
 interface EditShareLinkModalProps {
@@ -38,6 +40,9 @@ export function EditShareLinkModal({
   const [isActive, setIsActive] = useState(link.is_active);
   const [notifyOnView, setNotifyOnView] = useState(link.notify_on_view);
   const [requireEmail, setRequireEmail] = useState(link.require_email);
+  const [allowedEmailsText, setAllowedEmailsText] = useState(
+    link.allowed_emails.join("\n"),
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,6 +58,7 @@ export function EditShareLinkModal({
         is_active: isActive,
         notify_on_view: notifyOnView,
         require_email: requireEmail,
+        allowed_emails: parseAllowedEmails(allowedEmailsText),
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
 
@@ -175,6 +181,24 @@ export function EditShareLinkModal({
               onCheckedChange={setRequireEmail}
             />
             <Label htmlFor="edit-requireEmail">Exigir email do visitante</Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-allowedEmails">
+              Lista de emails permitidos
+            </Label>
+            <Textarea
+              id="edit-allowedEmails"
+              value={allowedEmailsText}
+              onChange={(event) => setAllowedEmailsText(event.target.value)}
+              placeholder="um@exemplo.com&#10;outro@exemplo.com"
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground">
+              Um email por linha. Se preenchido, só esses emails poderão acessar
+              o link (mesmo com a senha correta). Deixe em branco para não
+              restringir.
+            </p>
           </div>
 
           {error && (

@@ -77,6 +77,11 @@ export function ShareLinkCard({
             {link.require_email && (
               <Badge variant="outline">Requer email</Badge>
             )}
+            {link.allowed_emails.length > 0 && (
+              <Badge variant="outline">
+                Lista de emails ({link.allowed_emails.length})
+              </Badge>
+            )}
           </div>
         </div>
 

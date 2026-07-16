@@ -64,6 +64,7 @@ describe("POST /api/v1/documents/[id]/links", () => {
       has_password: false,
       notify_on_view: true,
       require_email: false,
+      allowed_emails: [],
     });
     expect(responseBody.password_hash).toBeUndefined();
   });
@@ -94,6 +95,28 @@ describe("POST /api/v1/documents/[id]/links", () => {
     expect(responseBody.require_email).toBe(true);
     expect(new Date(responseBody.expires_at).toISOString()).toBe(expiresAt);
     expect(responseBody.password_hash).toBeUndefined();
+  });
+
+  test("With allowed_emails, dedupes case-insensitively", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+
+    const responseBody = await orchestrator.createShareLink(
+      cookie,
+      document.id,
+      {
+        allowed_emails: [
+          "Zed@example.com",
+          "alice@example.com",
+          "ZED@example.com",
+        ],
+      },
+    );
+
+    expect(responseBody.allowed_emails).toHaveLength(2);
+    expect([...responseBody.allowed_emails].sort()).toEqual(
+      ["Zed@example.com", "alice@example.com"].sort(),
+    );
   });
 
   test("With expires_at in the past", async () => {
