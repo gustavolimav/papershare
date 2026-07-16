@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PasswordGate } from "@/components/viewer/PasswordGate";
 import { EmailGate } from "@/components/viewer/EmailGate";
+import { NdaGate } from "@/components/viewer/NdaGate";
 import { PDFViewer } from "@/components/viewer/PDFViewer";
 import { getViewerFingerprint } from "@/lib/fingerprint";
 import type { ShareLinkWithDocument } from "@/types/index";
@@ -15,6 +16,7 @@ type LoadState =
   | { status: "loading" }
   | { status: "password-required"; error?: string }
   | { status: "email-required"; error?: string }
+  | { status: "nda-required"; ndaText: string; error?: string }
   | { status: "error"; message: string }
   | { status: "ready"; link: ShareLinkWithDocument; fileData: ArrayBuffer };
 
@@ -39,11 +41,13 @@ export function ViewerPage({ token }: ViewerPageProps) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
   const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
+  const [isSubmittingNda, setIsSubmittingNda] = useState(false);
   const fingerprintRef = useRef<string>("");
   const startTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef(1);
   const passwordRef = useRef<string | undefined>(undefined);
   const emailRef = useRef<string | undefined>(undefined);
+  const nameRef = useRef<string | undefined>(undefined);
   // Computed once, when the document first loads, so it stays stable across
   // zoom/page changes within the same viewing session instead of drifting
   // with "now" on every render.
@@ -78,12 +82,19 @@ export function ViewerPage({ token }: ViewerPageProps) {
   }, []);
 
   const load = useCallback(
-    async (overrides?: { password?: string; email?: string }) => {
+    async (overrides?: {
+      password?: string;
+      email?: string;
+      name?: string;
+    }) => {
       if (overrides?.password !== undefined) {
         passwordRef.current = overrides.password;
       }
       if (overrides?.email !== undefined) {
         emailRef.current = overrides.email;
+      }
+      if (overrides?.name !== undefined) {
+        nameRef.current = overrides.name;
       }
 
       const headers: HeadersInit = {
@@ -91,6 +102,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
           ? { "X-Share-Password": passwordRef.current }
           : {}),
         ...(emailRef.current ? { "X-Viewer-Email": emailRef.current } : {}),
+        ...(nameRef.current ? { "X-Viewer-Name": nameRef.current } : {}),
       };
 
       const linkResponse = await fetch(`/api/v1/share/${token}`, { headers });
@@ -109,6 +121,21 @@ export function ViewerPage({ token }: ViewerPageProps) {
             status: "password-required",
             ...(overrides?.password !== undefined
               ? { error: "Senha incorreta." }
+              : {}),
+          });
+          return;
+        }
+
+        if (message.includes("termos")) {
+          const ndaResponse = await fetch(`/api/v1/share/${token}/nda`);
+          const ndaBody = await ndaResponse.json().catch(() => null);
+          const ndaText: string = ndaBody?.nda_text ?? "";
+
+          setState({
+            status: "nda-required",
+            ndaText,
+            ...(overrides?.name !== undefined || overrides?.email !== undefined
+              ? { error: message }
               : {}),
           });
           return;
@@ -170,6 +197,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
         body: JSON.stringify({
           viewer_fingerprint: fingerprintRef.current,
           ...(emailRef.current ? { viewer_email: emailRef.current } : {}),
+          ...(nameRef.current ? { viewer_name: nameRef.current } : {}),
         }),
       }).catch(() => undefined);
     },
@@ -209,6 +237,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
         ? { "X-Share-Password": passwordRef.current }
         : {}),
       ...(emailRef.current ? { "X-Viewer-Email": emailRef.current } : {}),
+      ...(nameRef.current ? { "X-Viewer-Name": nameRef.current } : {}),
     };
 
     const response = await fetch(`/api/v1/share/${token}/file`, { headers });
@@ -240,6 +269,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
             JSON.stringify({
               viewer_fingerprint: fingerprintRef.current,
               ...(emailRef.current && { viewer_email: emailRef.current }),
+              ...(nameRef.current && { viewer_name: nameRef.current }),
               time_on_page: timeOnPage,
               pages_viewed: pagesViewedRef.current,
               ...(pageTimes.length > 0 && { page_times: pageTimes }),
@@ -290,6 +320,21 @@ export function ViewerPage({ token }: ViewerPageProps) {
     );
   }
 
+  if (state.status === "nda-required") {
+    return (
+      <NdaGate
+        ndaText={state.ndaText}
+        error={state.error}
+        isSubmitting={isSubmittingNda}
+        onSubmit={async (name, email) => {
+          setIsSubmittingNda(true);
+          await load({ name, email });
+          setIsSubmittingNda(false);
+        }}
+      />
+    );
+  }
+
   if (state.status === "error") {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 text-center text-muted-foreground">
@@ -300,9 +345,25 @@ export function ViewerPage({ token }: ViewerPageProps) {
 
   const { link, fileData } = state;
 
+  // Branding only applies once the document is actually ready to view, not
+  // on the gate screens above — the owner's accent color/welcome message are
+  // a reward for reaching the content, not something shown to an unverified
+  // visitor.
+  const accentStyle = link.brand_accent_color
+    ? ({ "--primary": link.brand_accent_color } as React.CSSProperties)
+    : undefined;
+
   if (link.document.mime_type !== "application/pdf") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+      <div
+        className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
+        style={accentStyle}
+      >
+        {link.brand_welcome_message && (
+          <p className="max-w-md text-sm text-muted-foreground">
+            {link.brand_welcome_message}
+          </p>
+        )}
         <p className="text-muted-foreground">
           Pré-visualização não disponível para este tipo de arquivo.
         </p>
@@ -320,15 +381,22 @@ export function ViewerPage({ token }: ViewerPageProps) {
   }
 
   return (
-    <PDFViewer
-      fileData={fileData}
-      allowDownload={link.allow_download}
-      onDownload={handleDownload}
-      onPageChange={(page) => {
-        pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
-        trackPageChange(page);
-      }}
-      watermarkText={watermarkTextRef.current}
-    />
+    <div style={accentStyle}>
+      {link.brand_welcome_message && (
+        <p className="border-b bg-muted/30 px-4 py-2 text-center text-sm text-muted-foreground">
+          {link.brand_welcome_message}
+        </p>
+      )}
+      <PDFViewer
+        fileData={fileData}
+        allowDownload={link.allow_download}
+        onDownload={handleDownload}
+        onPageChange={(page) => {
+          pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
+          trackPageChange(page);
+        }}
+        watermarkText={watermarkTextRef.current}
+      />
+    </div>
   );
 }

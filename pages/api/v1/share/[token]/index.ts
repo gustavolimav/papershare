@@ -29,11 +29,13 @@ async function getHandler(
   // and proxy access logs, browser history, and Referer headers.
   const providedPassword = request.headers["x-share-password"];
   const providedEmail = request.headers["x-viewer-email"];
+  const providedName = request.headers["x-viewer-name"];
 
   const result = await shareLink.getByToken(
     token,
     typeof providedPassword === "string" ? providedPassword : undefined,
     typeof providedEmail === "string" ? providedEmail : undefined,
+    typeof providedName === "string" ? providedName : undefined,
   );
 
   return response.status(200).json(result);

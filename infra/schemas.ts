@@ -96,6 +96,21 @@ const allowedEmailsSchema = z
   .array(z.string().email("Um dos 'allowed_emails' informados não é válido."))
   .max(100, "O 'allowed_emails' excede o número máximo de 100 endereços.");
 
+const ndaTextSchema = z
+  .string()
+  .max(10000, "O 'nda_text' deve ter no máximo 10000 caracteres.");
+
+const brandAccentColorSchema = z
+  .string()
+  .regex(
+    /^#[0-9A-Fa-f]{6}$/,
+    "A 'brand_accent_color' deve ser uma cor hexadecimal no formato #RRGGBB.",
+  );
+
+const brandWelcomeMessageSchema = z
+  .string()
+  .max(500, "A 'brand_welcome_message' deve ter no máximo 500 caracteres.");
+
 export const shareLinkCreateSchema = z.object({
   label: z
     .string()
@@ -117,6 +132,9 @@ export const shareLinkCreateSchema = z.object({
   require_email: z.boolean().optional(),
   allowed_emails: allowedEmailsSchema.optional(),
   watermark_enabled: z.boolean().optional(),
+  nda_text: ndaTextSchema.optional(),
+  brand_accent_color: brandAccentColorSchema.optional(),
+  brand_welcome_message: brandWelcomeMessageSchema.optional(),
 });
 
 export const shareLinkUpdateSchema = z
@@ -145,6 +163,9 @@ export const shareLinkUpdateSchema = z
     require_email: z.boolean().optional(),
     allowed_emails: allowedEmailsSchema.nullable().optional(),
     watermark_enabled: z.boolean().optional(),
+    nda_text: ndaTextSchema.nullable().optional(),
+    brand_accent_color: brandAccentColorSchema.nullable().optional(),
+    brand_welcome_message: brandWelcomeMessageSchema.nullable().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser fornecido para atualização.",
@@ -159,6 +180,10 @@ export const linkViewCreateSchema = z.object({
     .string()
     .email("O 'viewer_email' informado não é válido.")
     .max(254, "O 'viewer_email' deve ter no máximo 254 caracteres.")
+    .optional(),
+  viewer_name: z
+    .string()
+    .max(255, "O 'viewer_name' deve ter no máximo 255 caracteres.")
     .optional(),
   time_on_page: z
     .number()

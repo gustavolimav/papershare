@@ -62,6 +62,7 @@ describe("POST /api/v1/share/[token]/view", () => {
       share_link_id: link.id,
       viewer_fingerprint: "fingerprint-1",
       viewer_email: null,
+      viewer_name: null,
       ip_address: responseBody.ip_address,
       country_code: null,
       user_agent: responseBody.user_agent,
@@ -86,6 +87,22 @@ describe("POST /api/v1/share/[token]/view", () => {
     });
 
     expect(responseBody.viewer_email).toBe("viewer@example.com");
+  });
+
+  test("With a viewer_name, persists it on the view", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      nda_text: "Keep this confidential.",
+    });
+
+    const responseBody = await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "fingerprint-name-1",
+      viewer_email: "viewer@example.com",
+      viewer_name: "Jane Viewer",
+    });
+
+    expect(responseBody.viewer_name).toBe("Jane Viewer");
   });
 
   test("With notify_on_view disabled on the link, recording still succeeds", async () => {
