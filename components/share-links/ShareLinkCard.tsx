@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, Pencil, Ban } from "lucide-react";
+import { Copy, Check, Pencil, Ban, CopyPlus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,12 +23,14 @@ interface ShareLinkCardProps {
   link: ShareLinkResponse;
   onUpdated: (link: ShareLinkResponse) => void;
   onRevoked: (link: ShareLinkResponse) => void;
+  onDuplicate: (link: ShareLinkResponse) => void;
 }
 
 export function ShareLinkCard({
   link,
   onUpdated,
   onRevoked,
+  onDuplicate,
 }: ShareLinkCardProps) {
   const [copied, setCopied] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -113,26 +115,36 @@ export function ShareLinkCard({
           {link.allow_download ? "Download permitido" : "Download bloqueado"}
         </p>
 
-        {link.is_active && (
-          <div className="flex gap-2 pt-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditOpen(true)}
-            >
-              <Pencil className="mr-1 h-3 w-3" /> Editar
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsRevokeOpen(true)}
-            >
-              <Ban className="mr-1 h-3 w-3" /> Revogar
-            </Button>
-          </div>
-        )}
+        <div className="flex gap-2 pt-1">
+          {link.is_active && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditOpen(true)}
+              >
+                <Pencil className="mr-1 h-3 w-3" /> Editar
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsRevokeOpen(true)}
+              >
+                <Ban className="mr-1 h-3 w-3" /> Revogar
+              </Button>
+            </>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onDuplicate(link)}
+          >
+            <CopyPlus className="mr-1 h-3 w-3" /> Duplicar
+          </Button>
+        </div>
       </CardContent>
 
       <EditShareLinkModal

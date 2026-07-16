@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { ShareLinkCard } from "@/components/share-links/ShareLinkCard";
@@ -16,6 +17,9 @@ export function ShareLinkList({ documentId }: ShareLinkListProps) {
     `/api/v1/documents/${documentId}/links`,
     fetcher,
   );
+  const [duplicateFrom, setDuplicateFrom] = useState<ShareLinkResponse | null>(
+    null,
+  );
 
   return (
     <section className="space-y-4">
@@ -26,6 +30,24 @@ export function ShareLinkList({ documentId }: ShareLinkListProps) {
           onCreated={() => mutate()}
         />
       </div>
+
+      {/* key forces a remount (and fresh prefill-seeded state) whenever a
+          different link is chosen to duplicate. */}
+      <CreateShareLinkModal
+        key={duplicateFrom?.id ?? "duplicate-none"}
+        documentId={documentId}
+        prefill={duplicateFrom ?? undefined}
+        open={duplicateFrom !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDuplicateFrom(null);
+          }
+        }}
+        onCreated={() => {
+          mutate();
+          setDuplicateFrom(null);
+        }}
+      />
 
       {isLoading && (
         <div className="space-y-3">
@@ -55,6 +77,7 @@ export function ShareLinkList({ documentId }: ShareLinkListProps) {
               link={link}
               onUpdated={() => mutate()}
               onRevoked={() => mutate()}
+              onDuplicate={setDuplicateFrom}
             />
           ))}
         </div>

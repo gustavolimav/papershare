@@ -375,8 +375,12 @@ engagement scoring via cirrusinsight.com).
       title/description shown even for gated links (title not leaked only
       for revoked/expired/deleted/nonexistent ones). See CHANGELOG for
       details.
-- [ ] "Duplicate settings" when creating a new share link from an existing
-      one (password/expiry/branding), reducing friction for repeat senders
+- [x] "Duplicate settings" when creating a new share link from an existing
+      one (password/expiry/branding), reducing friction for repeat senders.
+      New "Duplicar" button on `ShareLinkCard.tsx` opens `CreateShareLinkModal`
+      pre-filled from the source link; password can't be carried over (only
+      its hash is ever available) so that field starts blank. See CHANGELOG
+      for details.
 - [ ] Custom branding per share link (logo, accent color, welcome message)
       — cheap to build now, becomes a paid-tier hook in Phase 10
 
