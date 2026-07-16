@@ -548,6 +548,58 @@ async function getNotificationInfo(
   return results.rows[0] ?? null;
 }
 
+// Used by the public viewer page's generateMetadata (crawlers/link
+// unfurlers never have the password/email a gated link requires), so it
+// deliberately skips the password/require_email/allow-list checks — only
+// the document title/description are exposed, nothing sensitive. Returns
+// null instead of throwing for a revoked/expired/deleted link, so the
+// caller can fall back to generic metadata instead of erroring.
+async function getPublicMetadata(
+  token: string,
+): Promise<{ title: string; description: string | null } | null> {
+  const results = await database.query<{
+    title: string;
+    description: string | null;
+    is_active: boolean;
+    expires_at: Date | null;
+    document_deleted_at: Date | null;
+  }>({
+    text: `
+        SELECT
+          d.title,
+          d.description,
+          sl.is_active,
+          sl.expires_at,
+          d.deleted_at AS document_deleted_at
+        FROM
+          share_links sl
+        JOIN
+          documents d ON d.id = sl.document_id
+        WHERE
+          sl.token = $1
+        LIMIT
+          1
+        ;`,
+    values: [token],
+  });
+
+  if (!results.rowCount) {
+    return null;
+  }
+
+  const row = results.rows[0]!;
+
+  if (
+    !row.is_active ||
+    (row.expires_at && new Date(row.expires_at) < new Date()) ||
+    row.document_deleted_at
+  ) {
+    return null;
+  }
+
+  return { title: row.title, description: row.description };
+}
+
 const shareLink: ShareLinkModel = {
   create,
   findAllByDocumentId,
@@ -558,6 +610,7 @@ const shareLink: ShareLinkModel = {
   getFileByToken,
   validateToken,
   getNotificationInfo,
+  getPublicMetadata,
 };
 
 export default shareLink;

@@ -400,6 +400,9 @@ export interface ShareLinkModel {
   getNotificationInfo(
     shareLinkId: string,
   ): Promise<ShareLinkNotificationInfo | null>;
+  getPublicMetadata(
+    token: string,
+  ): Promise<{ title: string; description: string | null } | null>;
 }
 
 export interface LinkViewModel {
