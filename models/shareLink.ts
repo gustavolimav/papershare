@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import database from "../infra/database";
 import { NotFoundError, ForbiddenError } from "../infra/errors";
+import { isValidEmail } from "../infra/schemas";
 import password from "./password";
 import type {
   ShareLink,
@@ -15,7 +16,7 @@ import type {
 const SHARE_LINK_COLUMNS = `
   id, token, document_id, user_id, label, password_hash,
   expires_at, allow_download, is_active, created_at, updated_at,
-  notify_on_view
+  notify_on_view, require_email
 `;
 
 interface ShareLinkTokenRow {
@@ -26,6 +27,7 @@ interface ShareLinkTokenRow {
   expires_at: Date | null;
   allow_download: boolean;
   is_active: boolean;
+  require_email: boolean;
   link_created_at: Date;
   document_id: string;
   title: string;
@@ -76,10 +78,10 @@ async function create(
         INSERT INTO
           share_links (
             id, document_id, user_id, label, password_hash,
-            expires_at, allow_download, notify_on_view
+            expires_at, allow_download, notify_on_view, require_email
           )
         VALUES
-          ($1, $2, $3, $4, $5, $6, $7, $8)
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING
           ${SHARE_LINK_COLUMNS}
         ;`,
@@ -92,6 +94,7 @@ async function create(
       input.expires_at ?? null,
       input.allow_download ?? true,
       input.notify_on_view ?? true,
+      input.require_email ?? false,
     ],
   });
 
@@ -189,6 +192,11 @@ async function updateById(
     setClauses.push(`notify_on_view = $${values.length}`);
   }
 
+  if (input.require_email !== undefined) {
+    values.push(input.require_email);
+    setClauses.push(`require_email = $${values.length}`);
+  }
+
   setClauses.push("updated_at = NOW()");
   values.push(id);
 
@@ -236,6 +244,7 @@ async function revokeById(
 async function fetchAndValidateTokenRow(
   token: string,
   providedPassword?: string,
+  providedEmail?: string,
 ): Promise<ShareLinkTokenRow> {
   const results = await database.query<ShareLinkTokenRow>({
     text: `
@@ -247,6 +256,7 @@ async function fetchAndValidateTokenRow(
           sl.expires_at,
           sl.allow_download,
           sl.is_active,
+          sl.require_email,
           sl.created_at AS link_created_at,
           d.id AS document_id,
           d.title,
@@ -292,6 +302,15 @@ async function fetchAndValidateTokenRow(
     }
   }
 
+  // Checked after the password so a link with both gates gives the viewer
+  // one thing to fix at a time instead of a single generic error.
+  if (row.require_email && !(providedEmail && isValidEmail(providedEmail))) {
+    throw new ForbiddenError({
+      message: "Email obrigatório.",
+      action: "Informe um email válido para continuar.",
+    });
+  }
+
   if (row.document_deleted_at) {
     throw new NotFoundError({
       message: "O documento deste link não está mais disponível.",
@@ -305,8 +324,13 @@ async function fetchAndValidateTokenRow(
 async function getByToken(
   token: string,
   providedPassword?: string,
+  providedEmail?: string,
 ): Promise<ShareLinkWithDocument> {
-  const row = await fetchAndValidateTokenRow(token, providedPassword);
+  const row = await fetchAndValidateTokenRow(
+    token,
+    providedPassword,
+    providedEmail,
+  );
 
   return {
     id: row.link_id,
@@ -333,8 +357,13 @@ async function getByToken(
 async function getFileByToken(
   token: string,
   providedPassword?: string,
+  providedEmail?: string,
 ): Promise<{ storage_key: string; mime_type: string }> {
-  const row = await fetchAndValidateTokenRow(token, providedPassword);
+  const row = await fetchAndValidateTokenRow(
+    token,
+    providedPassword,
+    providedEmail,
+  );
 
   return { storage_key: row.storage_key, mime_type: row.mime_type };
 }

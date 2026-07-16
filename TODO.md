@@ -350,9 +350,12 @@ engagement scoring via cirrusinsight.com).
 
 - [ ] Optional NDA/consent gate per share link — viewer must accept a
       custom NDA text and provide name + email before the document loads
-- [ ] Optional "require email" per share link (today viewing is anonymous
+- [x] Optional "require email" per share link (today viewing is anonymous
       by fingerprint only) — also what makes the notification feature above
-      actually name the viewer
+      actually name the viewer. Migrations `011`/`012` add
+      `share_links.require_email` + `link_views.viewer_email`; gated via a
+      new `X-Viewer-Email` header, checked after the password gate. See
+      CHANGELOG for details.
 - [ ] Dynamic watermark overlay (viewer email + timestamp burned into the
       PDF canvas render) — deters leaking a "confidential" document,
       standard in every data-room competitor

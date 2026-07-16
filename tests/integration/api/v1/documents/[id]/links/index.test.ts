@@ -63,11 +63,12 @@ describe("POST /api/v1/documents/[id]/links", () => {
       updated_at: responseBody.updated_at,
       has_password: false,
       notify_on_view: true,
+      require_email: false,
     });
     expect(responseBody.password_hash).toBeUndefined();
   });
 
-  test("With label, password, expiry, allow_download and notify_on_view", async () => {
+  test("With label, password, expiry, allow_download, notify_on_view and require_email", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);
 
@@ -82,6 +83,7 @@ describe("POST /api/v1/documents/[id]/links", () => {
         expires_at: expiresAt,
         allow_download: false,
         notify_on_view: false,
+        require_email: true,
       },
     );
 
@@ -89,6 +91,7 @@ describe("POST /api/v1/documents/[id]/links", () => {
     expect(responseBody.has_password).toBe(true);
     expect(responseBody.allow_download).toBe(false);
     expect(responseBody.notify_on_view).toBe(false);
+    expect(responseBody.require_email).toBe(true);
     expect(new Date(responseBody.expires_at).toISOString()).toBe(expiresAt);
     expect(responseBody.password_hash).toBeUndefined();
   });

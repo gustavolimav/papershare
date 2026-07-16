@@ -110,6 +110,7 @@ export const shareLinkCreateSchema = z.object({
     .optional(),
   allow_download: z.boolean().optional(),
   notify_on_view: z.boolean().optional(),
+  require_email: z.boolean().optional(),
 });
 
 export const shareLinkUpdateSchema = z
@@ -135,6 +136,7 @@ export const shareLinkUpdateSchema = z
     allow_download: z.boolean().optional(),
     is_active: z.boolean().optional(),
     notify_on_view: z.boolean().optional(),
+    require_email: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser fornecido para atualização.",
@@ -144,6 +146,11 @@ export const linkViewCreateSchema = z.object({
   viewer_fingerprint: z
     .string()
     .max(64, "O 'viewer_fingerprint' deve ter no máximo 64 caracteres.")
+    .optional(),
+  viewer_email: z
+    .string()
+    .email("O 'viewer_email' informado não é válido.")
+    .max(254, "O 'viewer_email' deve ter no máximo 254 caracteres.")
     .optional(),
   time_on_page: z
     .number()
@@ -165,6 +172,12 @@ export const linkViewCreateSchema = z.object({
     .max(2000, "O 'page_times' excede o número máximo de páginas permitido.")
     .optional(),
 });
+
+// Used outside request-body validation (e.g. the X-Viewer-Email header on
+// the public share endpoints), where there's no Zod object schema to run.
+export function isValidEmail(value: string): boolean {
+  return z.string().email().safeParse(value).success;
+}
 
 export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);

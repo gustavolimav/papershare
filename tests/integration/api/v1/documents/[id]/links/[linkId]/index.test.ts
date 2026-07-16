@@ -137,6 +137,28 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
     expect(responseBody.notify_on_view).toBe(false);
   });
 
+  test("Toggling require_email on", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.require_email).toBe(false);
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ require_email: true }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+    expect(responseBody.require_email).toBe(true);
+  });
+
   test("Clearing expires_at with null", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);
