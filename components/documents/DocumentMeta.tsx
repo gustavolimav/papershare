@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { BarChart3 } from "lucide-react";
 import { EditDocumentForm } from "@/components/documents/EditDocumentForm";
 import { Button } from "@/components/ui/button";
 import { formatFileSize, formatDate } from "@/lib/formatters";
@@ -36,14 +38,21 @@ export function DocumentMeta({ doc, onUpdated }: DocumentMetaProps) {
             <p className="mt-1 text-muted-foreground">{doc.description}</p>
           )}
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEditing(true)}
-        >
-          Editar
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/documents/${doc.id}/analytics`}>
+              <BarChart3 className="mr-1 h-4 w-4" /> Analytics
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+          >
+            Editar
+          </Button>
+        </div>
       </div>
 
       <p className="text-sm text-muted-foreground">
