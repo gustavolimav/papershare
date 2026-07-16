@@ -369,8 +369,12 @@ engagement scoring via cirrusinsight.com).
 
 ### Growth / perceived polish
 
-- [ ] Open Graph meta tags on public share/view pages so links render as
-      a proper preview card in Slack/iMessage/Twitter instead of a bare URL
+- [x] Open Graph meta tags on public share/view pages so links render as
+      a proper preview card in Slack/iMessage/Twitter instead of a bare URL.
+      `app/view/[token]/page.tsx` gained `generateMetadata()`; document
+      title/description shown even for gated links (title not leaked only
+      for revoked/expired/deleted/nonexistent ones). See CHANGELOG for
+      details.
 - [ ] "Duplicate settings" when creating a new share link from an existing
       one (password/expiry/branding), reducing friction for repeat senders
 - [ ] Custom branding per share link (logo, accent color, welcome message)
