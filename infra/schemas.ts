@@ -116,6 +116,7 @@ export const shareLinkCreateSchema = z.object({
   notify_on_view: z.boolean().optional(),
   require_email: z.boolean().optional(),
   allowed_emails: allowedEmailsSchema.optional(),
+  watermark_enabled: z.boolean().optional(),
 });
 
 export const shareLinkUpdateSchema = z
@@ -143,6 +144,7 @@ export const shareLinkUpdateSchema = z
     notify_on_view: z.boolean().optional(),
     require_email: z.boolean().optional(),
     allowed_emails: allowedEmailsSchema.nullable().optional(),
+    watermark_enabled: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser fornecido para atualização.",

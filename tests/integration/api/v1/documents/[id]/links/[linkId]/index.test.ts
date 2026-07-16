@@ -197,6 +197,28 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
     expect(clearBody.allowed_emails).toEqual([]);
   });
 
+  test("Toggling watermark_enabled on", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.watermark_enabled).toBe(false);
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ watermark_enabled: true }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+    expect(responseBody.watermark_enabled).toBe(true);
+  });
+
   test("Clearing expires_at with null", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);

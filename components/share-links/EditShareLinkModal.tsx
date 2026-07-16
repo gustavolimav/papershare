@@ -43,6 +43,9 @@ export function EditShareLinkModal({
   const [allowedEmailsText, setAllowedEmailsText] = useState(
     link.allowed_emails.join("\n"),
   );
+  const [watermarkEnabled, setWatermarkEnabled] = useState(
+    link.watermark_enabled,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,6 +62,7 @@ export function EditShareLinkModal({
         notify_on_view: notifyOnView,
         require_email: requireEmail,
         allowed_emails: parseAllowedEmails(allowedEmailsText),
+        watermark_enabled: watermarkEnabled,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
 
@@ -199,6 +203,17 @@ export function EditShareLinkModal({
               o link (mesmo com a senha correta). Deixe em branco para não
               restringir.
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="edit-watermarkEnabled"
+              checked={watermarkEnabled}
+              onCheckedChange={setWatermarkEnabled}
+            />
+            <Label htmlFor="edit-watermarkEnabled">
+              Marca d&apos;água com email do visitante
+            </Label>
           </div>
 
           {error && (

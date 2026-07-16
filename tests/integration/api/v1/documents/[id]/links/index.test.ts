@@ -65,6 +65,7 @@ describe("POST /api/v1/documents/[id]/links", () => {
       notify_on_view: true,
       require_email: false,
       allowed_emails: [],
+      watermark_enabled: false,
     });
     expect(responseBody.password_hash).toBeUndefined();
   });
@@ -117,6 +118,19 @@ describe("POST /api/v1/documents/[id]/links", () => {
     expect([...responseBody.allowed_emails].sort()).toEqual(
       ["Zed@example.com", "alice@example.com"].sort(),
     );
+  });
+
+  test("With watermark_enabled", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+
+    const responseBody = await orchestrator.createShareLink(
+      cookie,
+      document.id,
+      { watermark_enabled: true },
+    );
+
+    expect(responseBody.watermark_enabled).toBe(true);
   });
 
   test("With expires_at in the past", async () => {
