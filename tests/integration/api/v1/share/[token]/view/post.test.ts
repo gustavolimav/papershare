@@ -68,6 +68,7 @@ describe("POST /api/v1/share/[token]/view", () => {
       user_agent: responseBody.user_agent,
       time_on_page: 42,
       pages_viewed: 3,
+      downloaded: false,
       created_at: responseBody.created_at,
       updated_at: responseBody.updated_at,
       is_new_viewer: true,
@@ -103,6 +104,37 @@ describe("POST /api/v1/share/[token]/view", () => {
     });
 
     expect(responseBody.viewer_name).toBe("Jane Viewer");
+  });
+
+  test("With downloaded: true, persists it on the view", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    const responseBody = await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "fingerprint-download-1",
+      downloaded: true,
+    });
+
+    expect(responseBody.downloaded).toBe(true);
+  });
+
+  test("Once downloaded is true, a later update without it doesn't clear it", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "fingerprint-download-2",
+      downloaded: true,
+    });
+
+    const secondView = await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "fingerprint-download-2",
+      time_on_page: 5,
+    });
+
+    expect(secondView.downloaded).toBe(true);
   });
 
   test("With notify_on_view disabled on the link, recording still succeeds", async () => {

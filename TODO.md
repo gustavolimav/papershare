@@ -286,7 +286,7 @@ foundation from day one. Reasons:
 
 ---
 
-## Phase 7 — Engagement, Trust & Growth ⏳
+## Phase 7 — Engagement, Trust & Growth ✅
 
 **Goal:** Close the feature gap against the direct competitive set (DocSend,
 Papermark, PandaDoc) with the specific capabilities that come up as their
@@ -338,13 +338,13 @@ engagement scoring via cirrusinsight.com).
       different links. Verified end-to-end in-browser with a 3-page PDF
       (real per-page times matched the chart and tooltip exactly), plus
       130/130 integration tests passing.
-- [ ] Composite engagement score per viewer (weighted blend of time on
+- [x] Composite engagement score per viewer (weighted blend of time on
       page, % of pages viewed, return visits, download) surfaced in the
       analytics dashboard — 2026 market trend is scoring viewer interest
       as a single signal instead of raw time-on-page, so sales/investor
-      relations teams know who to follow up with first. Deferred: needs a
-      per-viewer list UI that doesn't exist yet (today's analytics are
-      aggregate-only) — bigger scope than this pass.
+      relations teams know who to follow up with first. Migration `018`
+      adds `link_views.downloaded`; new per-viewer list in
+      `LinkAnalyticsDrawer.tsx` sorted by score. See CHANGELOG for details.
 
 ### Trust & access control (needed to compete for data-room / high-stakes use cases)
 

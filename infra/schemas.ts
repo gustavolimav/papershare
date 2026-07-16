@@ -204,6 +204,7 @@ export const linkViewCreateSchema = z.object({
     )
     .max(2000, "O 'page_times' excede o número máximo de páginas permitido.")
     .optional(),
+  downloaded: z.boolean().optional(),
 });
 
 // Used outside request-body validation (e.g. the X-Viewer-Email header on

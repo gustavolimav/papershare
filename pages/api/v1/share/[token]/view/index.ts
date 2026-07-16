@@ -54,6 +54,9 @@ async function postHandler(
     ...(validated.page_times !== undefined && {
       page_times: validated.page_times,
     }),
+    ...(validated.downloaded !== undefined && {
+      downloaded: validated.downloaded,
+    }),
     ...(ipAddress !== undefined && { ip_address: ipAddress }),
     ...(typeof userAgent === "string" && { user_agent: userAgent }),
   };

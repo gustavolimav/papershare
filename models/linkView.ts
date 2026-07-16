@@ -10,6 +10,7 @@ import type {
   TopLink,
   PageBreakdown,
   PageTimeInput,
+  ViewerEngagement,
   LinkViewModel,
 } from "../types/index";
 
@@ -42,7 +43,8 @@ async function persistPageTimes(
 
 const LINK_VIEW_COLUMNS = `
   id, share_link_id, viewer_fingerprint, viewer_email, viewer_name, ip_address,
-  country_code, user_agent, time_on_page, pages_viewed, created_at, updated_at
+  country_code, user_agent, time_on_page, pages_viewed, downloaded, created_at,
+  updated_at
 `;
 
 // Repeat views from the same viewer within this window are merged into the
@@ -74,10 +76,10 @@ async function insertView(
         INSERT INTO
           link_views (
             share_link_id, viewer_fingerprint, viewer_email, viewer_name,
-            ip_address, user_agent, time_on_page, pages_viewed
+            ip_address, user_agent, time_on_page, pages_viewed, downloaded
           )
         VALUES
-          ($1, $2, $3, $4, $5, $6, $7, $8)
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING
           ${LINK_VIEW_COLUMNS}
         ;`,
@@ -90,6 +92,7 @@ async function insertView(
       input.user_agent ?? null,
       input.time_on_page ?? null,
       input.pages_viewed ?? null,
+      input.downloaded ?? false,
     ],
   });
 
@@ -146,9 +149,10 @@ async function upsertViewWithDedup(
               viewer_name = COALESCE($2, viewer_name),
               time_on_page = COALESCE($3, time_on_page),
               pages_viewed = COALESCE($4, pages_viewed),
+              downloaded = downloaded OR $5,
               updated_at = NOW()
             WHERE
-              id = $5
+              id = $6
             RETURNING
               ${LINK_VIEW_COLUMNS}
             ;`,
@@ -157,6 +161,7 @@ async function upsertViewWithDedup(
           input.viewer_name ?? null,
           input.time_on_page ?? null,
           input.pages_viewed ?? null,
+          input.downloaded ?? false,
           existing.rows[0].id,
         ],
       });
@@ -187,10 +192,10 @@ async function upsertViewWithDedup(
             INSERT INTO
               link_views (
                 share_link_id, viewer_fingerprint, viewer_email, viewer_name,
-                ip_address, user_agent, time_on_page, pages_viewed
+                ip_address, user_agent, time_on_page, pages_viewed, downloaded
               )
             VALUES
-              ($1, $2, $3, $4, $5, $6, $7, $8)
+              ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING
               ${LINK_VIEW_COLUMNS}
             ;`,
@@ -203,6 +208,7 @@ async function upsertViewWithDedup(
           input.user_agent ?? null,
           input.time_on_page ?? null,
           input.pages_viewed ?? null,
+          input.downloaded ?? false,
         ],
       });
     }
@@ -276,10 +282,107 @@ async function getPageBreakdown(linkId: string): Promise<PageBreakdown[]> {
   return results.rows;
 }
 
+// Weighted blend of four signals into a single 0-100 "who should I follow
+// up with first" score — the 2026 market trend cited in TODO.md is scoring
+// viewer interest as one number instead of asking a sales/IR team to eyeball
+// raw time-on-page. Weights favor completing the document (time + pages,
+// 60% combined) over just showing up again or grabbing a copy, but still
+// give real credit to both.
+const ENGAGEMENT_TIME_TARGET_SECONDS = 120; // 2 min of engaged reading = full marks on this axis
+const ENGAGEMENT_VISITS_TARGET = 3; // 3+ separate visits = full marks; signals real, repeated interest
+const ENGAGEMENT_WEIGHTS = {
+  time: 0.3,
+  pages: 0.3,
+  visits: 0.2,
+  download: 0.2,
+};
+
+function computeEngagementScore(
+  viewer: {
+    total_time_on_page: number;
+    max_pages_viewed: number;
+    visit_count: number;
+    downloaded: boolean;
+  },
+  pageCount: number | null,
+): number {
+  const timeScore = Math.min(
+    viewer.total_time_on_page / ENGAGEMENT_TIME_TARGET_SECONDS,
+    1,
+  );
+  // A document with no known page count (non-PDF files don't track one)
+  // can't measure "% of pages viewed", so this axis contributes nothing
+  // rather than guessing.
+  const pagesScore = pageCount
+    ? Math.min(viewer.max_pages_viewed / pageCount, 1)
+    : 0;
+  const visitsScore = Math.min(
+    viewer.visit_count / ENGAGEMENT_VISITS_TARGET,
+    1,
+  );
+  const downloadScore = viewer.downloaded ? 1 : 0;
+
+  const weighted =
+    timeScore * ENGAGEMENT_WEIGHTS.time +
+    pagesScore * ENGAGEMENT_WEIGHTS.pages +
+    visitsScore * ENGAGEMENT_WEIGHTS.visits +
+    downloadScore * ENGAGEMENT_WEIGHTS.download;
+
+  return Math.round(weighted * 100);
+}
+
+// One row per distinct viewer, aggregated across every visit they've made
+// to this link — a returning viewer (outside the 30-min dedup window) has
+// more than one link_views row, grouped here by fingerprint. Rows with no
+// fingerprint (dedup wasn't possible) group by their own id, so they still
+// show up individually instead of collapsing into one bucket.
+async function getViewersByLinkId(
+  linkId: string,
+  pageCount: number | null,
+): Promise<ViewerEngagement[]> {
+  const results = await database.query<{
+    viewer_email: string | null;
+    viewer_name: string | null;
+    total_time_on_page: number;
+    max_pages_viewed: number;
+    visit_count: number;
+    downloaded: boolean;
+    first_viewed_at: Date;
+    last_viewed_at: Date;
+  }>({
+    text: `
+        SELECT
+          (array_agg(viewer_email ORDER BY updated_at DESC) FILTER (WHERE viewer_email IS NOT NULL))[1] AS viewer_email,
+          (array_agg(viewer_name ORDER BY updated_at DESC) FILTER (WHERE viewer_name IS NOT NULL))[1] AS viewer_name,
+          COALESCE(SUM(time_on_page), 0)::int AS total_time_on_page,
+          COALESCE(MAX(pages_viewed), 0)::int AS max_pages_viewed,
+          COUNT(*)::int AS visit_count,
+          BOOL_OR(downloaded) AS downloaded,
+          MIN(created_at) AS first_viewed_at,
+          MAX(updated_at) AS last_viewed_at
+        FROM
+          link_views
+        WHERE
+          share_link_id = $1
+        GROUP BY
+          COALESCE(viewer_fingerprint, id::text)
+        ;`,
+    values: [linkId],
+  });
+
+  return results.rows
+    .map((row) => ({
+      ...row,
+      engagement_score: computeEngagementScore(row, pageCount),
+    }))
+    .sort((a, b) => b.engagement_score - a.engagement_score);
+}
+
 async function getAnalyticsByLinkId(
   linkId: string,
+  pageCount: number | null,
 ): Promise<LinkAnalyticsResponse> {
-  const [statsResult, viewsByDay, pageBreakdown] = await Promise.all([
+  const [statsResult, viewsByDay, pageBreakdown, viewers] = await Promise.all([
     database.query<{
       total_views: number;
       unique_viewers: number;
@@ -308,12 +411,14 @@ async function getAnalyticsByLinkId(
       linkId,
     ),
     getPageBreakdown(linkId),
+    getViewersByLinkId(linkId, pageCount),
   ]);
 
   return {
     ...statsResult.rows[0]!,
     views_by_day: viewsByDay,
     page_breakdown: pageBreakdown,
+    viewers,
   };
 }
 

@@ -70,6 +70,7 @@ describe("GET /api/v1/documents/[id]/links/[linkId]/analytics", () => {
       ),
     ).toBe(0);
     expect(analytics.page_breakdown).toEqual([]);
+    expect(analytics.viewers).toEqual([]);
   });
 
   test("With correct totals after seeding known view rows", async () => {
@@ -171,5 +172,63 @@ describe("GET /api/v1/documents/[id]/links/[linkId]/analytics", () => {
     expect(analytics.page_breakdown).toEqual([
       { page_number: 1, avg_time_seconds: 15, view_count: 1 },
     ]);
+  });
+
+  test("Returns per-viewer engagement scores, sorted highest first", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    // sample.pdf has page_count: 1, so pages_viewed: 1 is 100% of the document.
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    // "engaged-viewer": two separate visits (30+ min apart) totalling full
+    // engaged-reading time, saw the whole document, and downloaded it.
+    const firstVisit = await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "engaged-viewer",
+      time_on_page: 60,
+      pages_viewed: 1,
+    });
+    await orchestrator.pushBackLinkViewCreatedAt(firstVisit.id, 40);
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "engaged-viewer",
+      time_on_page: 60,
+      downloaded: true,
+    });
+
+    // "quick-viewer": a single brief visit, no pages recorded, no download.
+    await orchestrator.recordView(link.token, {
+      viewer_fingerprint: "quick-viewer",
+      time_on_page: 10,
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}/analytics`,
+      { headers: { Cookie: cookie } },
+    );
+
+    const analytics = await response.json();
+
+    expect(analytics.viewers).toHaveLength(2);
+
+    const [topViewer, secondViewer] = analytics.viewers;
+
+    expect(topViewer).toMatchObject({
+      total_time_on_page: 120,
+      max_pages_viewed: 1,
+      visit_count: 2,
+      downloaded: true,
+      engagement_score: 93,
+    });
+
+    expect(secondViewer).toMatchObject({
+      total_time_on_page: 10,
+      max_pages_viewed: 0,
+      visit_count: 1,
+      downloaded: false,
+      engagement_score: 9,
+    });
+
+    expect(topViewer.engagement_score).toBeGreaterThan(
+      secondViewer.engagement_score,
+    );
   });
 });
