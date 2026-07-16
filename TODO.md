@@ -359,8 +359,11 @@ engagement scoring via cirrusinsight.com).
 - [ ] Dynamic watermark overlay (viewer email + timestamp burned into the
       PDF canvas render) — deters leaking a "confidential" document,
       standard in every data-room competitor
-- [ ] Email allow-list per share link — only pre-approved addresses can
-      unlock it, even with the correct password
+- [x] Email allow-list per share link — only pre-approved addresses can
+      unlock it, even with the correct password. Migration `013` adds
+      `share_link_allowed_emails`; presence of a list implies email is
+      required regardless of the `require_email` toggle. See CHANGELOG
+      for details.
 
 ### Growth / perceived polish
 

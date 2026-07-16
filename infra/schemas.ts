@@ -92,6 +92,10 @@ function isFutureDate(value: string): boolean {
   return new Date(value) > new Date();
 }
 
+const allowedEmailsSchema = z
+  .array(z.string().email("Um dos 'allowed_emails' informados não é válido."))
+  .max(100, "O 'allowed_emails' excede o número máximo de 100 endereços.");
+
 export const shareLinkCreateSchema = z.object({
   label: z
     .string()
@@ -111,6 +115,7 @@ export const shareLinkCreateSchema = z.object({
   allow_download: z.boolean().optional(),
   notify_on_view: z.boolean().optional(),
   require_email: z.boolean().optional(),
+  allowed_emails: allowedEmailsSchema.optional(),
 });
 
 export const shareLinkUpdateSchema = z
@@ -137,6 +142,7 @@ export const shareLinkUpdateSchema = z
     is_active: z.boolean().optional(),
     notify_on_view: z.boolean().optional(),
     require_email: z.boolean().optional(),
+    allowed_emails: allowedEmailsSchema.nullable().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser fornecido para atualização.",

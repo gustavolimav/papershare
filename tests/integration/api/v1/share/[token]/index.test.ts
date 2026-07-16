@@ -237,6 +237,72 @@ describe("GET /api/v1/share/[token]", () => {
     expect(withBoth.status).toBe(200);
   });
 
+  test("With an allow-list, no email provided", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      allowed_emails: ["approved@example.com"],
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Email não autorizado.");
+  });
+
+  test("With an allow-list, an email not on the list", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      allowed_emails: ["approved@example.com"],
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+      { headers: { "X-Viewer-Email": "notapproved@example.com" } },
+    );
+
+    expect(response.status).toBe(403);
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe("Email não autorizado.");
+  });
+
+  test("With an allow-list, the approved email (case-insensitive)", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      allowed_emails: ["Approved@Example.com"],
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+      { headers: { "X-Viewer-Email": "approved@example.com" } },
+    );
+
+    expect(response.status).toBe(200);
+  });
+
+  test("With an allow-list but require_email off, email is still required", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id, {
+      allowed_emails: ["approved@example.com"],
+      require_email: false,
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    expect(response.status).toBe(403);
+    expect((await response.json()).message).toBe("Email não autorizado.");
+  });
+
   test("With the linked document soft-deleted", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);

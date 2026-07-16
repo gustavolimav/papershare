@@ -159,6 +159,44 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
     expect(responseBody.require_email).toBe(true);
   });
 
+  test("Setting allowed_emails then clearing with an empty array", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.allowed_emails).toEqual([]);
+
+    const setResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({
+          allowed_emails: ["viewer1@example.com", "viewer2@example.com"],
+        }),
+      },
+    );
+
+    expect(setResponse.status).toBe(200);
+    const setBody = await setResponse.json();
+    expect([...setBody.allowed_emails].sort()).toEqual(
+      ["viewer1@example.com", "viewer2@example.com"].sort(),
+    );
+
+    const clearResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ allowed_emails: [] }),
+      },
+    );
+
+    expect(clearResponse.status).toBe(200);
+    const clearBody = await clearResponse.json();
+    expect(clearBody.allowed_emails).toEqual([]);
+  });
+
   test("Clearing expires_at with null", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);

@@ -28,6 +28,8 @@ interface ShareLinkTokenRow {
   allow_download: boolean;
   is_active: boolean;
   require_email: boolean;
+  has_allow_list: boolean;
+  email_is_allowed: boolean;
   link_created_at: Date;
   document_id: string;
   title: string;
@@ -39,9 +41,74 @@ interface ShareLinkTokenRow {
   document_deleted_at: Date | null;
 }
 
-function toResponse(link: ShareLink): ShareLinkResponse {
+function toResponse(
+  link: ShareLink,
+  allowedEmails: string[],
+): ShareLinkResponse {
   const { password_hash, ...rest } = link;
-  return { ...rest, has_password: password_hash !== null };
+  return {
+    ...rest,
+    has_password: password_hash !== null,
+    allowed_emails: allowedEmails,
+  };
+}
+
+async function getAllowedEmails(shareLinkId: string): Promise<string[]> {
+  const results = await database.query<{ email: string }>({
+    text: `
+        SELECT
+          email
+        FROM
+          share_link_allowed_emails
+        WHERE
+          share_link_id = $1
+        ORDER BY
+          email ASC
+        ;`,
+    values: [shareLinkId],
+  });
+
+  return results.rows.map((row) => row.email);
+}
+
+// Full-replace semantics: clears the existing allow-list and inserts the
+// given set, so the owner doesn't need a separate add/remove API for what's
+// really just "here's the current list" from the edit form.
+async function replaceAllowedEmails(
+  shareLinkId: string,
+  emails: string[],
+): Promise<void> {
+  const client = await database.getNewClient();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query({
+      text: "DELETE FROM share_link_allowed_emails WHERE share_link_id = $1;",
+      values: [shareLinkId],
+    });
+
+    for (const email of emails) {
+      await client.query({
+        text: `
+            INSERT INTO
+              share_link_allowed_emails (share_link_id, email)
+            VALUES
+              ($1, $2)
+            ON CONFLICT
+              DO NOTHING
+            ;`,
+        values: [shareLinkId, email],
+      });
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    await client.end();
+  }
 }
 
 function assertLinkIsActiveAndNotExpired(row: {
@@ -98,7 +165,11 @@ async function create(
     ],
   });
 
-  return toResponse(results.rows[0]!);
+  if (input.allowed_emails?.length) {
+    await replaceAllowedEmails(id, input.allowed_emails);
+  }
+
+  return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
 
 async function findAllByDocumentId(
@@ -118,7 +189,11 @@ async function findAllByDocumentId(
     values: [documentId],
   });
 
-  return results.rows.map(toResponse);
+  return Promise.all(
+    results.rows.map(async (row) =>
+      toResponse(row, await getAllowedEmails(row.id)),
+    ),
+  );
 }
 
 async function findOneById(
@@ -147,7 +222,7 @@ async function findOneById(
     });
   }
 
-  return toResponse(results.rows[0]!);
+  return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
 
 async function updateById(
@@ -214,7 +289,11 @@ async function updateById(
     values,
   });
 
-  return toResponse(results.rows[0]!);
+  if (input.allowed_emails !== undefined) {
+    await replaceAllowedEmails(id, input.allowed_emails ?? []);
+  }
+
+  return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
 
 async function revokeById(
@@ -238,7 +317,7 @@ async function revokeById(
     values: [id],
   });
 
-  return toResponse(results.rows[0]!);
+  return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
 
 async function fetchAndValidateTokenRow(
@@ -257,6 +336,14 @@ async function fetchAndValidateTokenRow(
           sl.allow_download,
           sl.is_active,
           sl.require_email,
+          EXISTS (
+            SELECT 1 FROM share_link_allowed_emails a
+            WHERE a.share_link_id = sl.id
+          ) AS has_allow_list,
+          EXISTS (
+            SELECT 1 FROM share_link_allowed_emails a
+            WHERE a.share_link_id = sl.id AND LOWER(a.email) = LOWER($2)
+          ) AS email_is_allowed,
           sl.created_at AS link_created_at,
           d.id AS document_id,
           d.title,
@@ -275,7 +362,7 @@ async function fetchAndValidateTokenRow(
         LIMIT
           1
         ;`,
-    values: [token],
+    values: [token, providedEmail ?? ""],
   });
 
   if (!results.rowCount) {
@@ -303,8 +390,25 @@ async function fetchAndValidateTokenRow(
   }
 
   // Checked after the password so a link with both gates gives the viewer
-  // one thing to fix at a time instead of a single generic error.
-  if (row.require_email && !(providedEmail && isValidEmail(providedEmail))) {
+  // one thing to fix at a time instead of a single generic error. An
+  // allow-list implies an email is required even if require_email itself
+  // is off — the owner shouldn't have to flip both toggles.
+  if (row.has_allow_list) {
+    if (
+      !providedEmail ||
+      !isValidEmail(providedEmail) ||
+      !row.email_is_allowed
+    ) {
+      throw new ForbiddenError({
+        message: "Email não autorizado.",
+        action:
+          "Este link só pode ser acessado por emails aprovados pelo proprietário do documento.",
+      });
+    }
+  } else if (
+    row.require_email &&
+    !(providedEmail && isValidEmail(providedEmail))
+  ) {
     throw new ForbiddenError({
       message: "Email obrigatório.",
       action: "Informe um email válido para continuar.",
