@@ -69,6 +69,9 @@ export interface ShareLink {
   notify_on_view: boolean;
   require_email: boolean;
   watermark_enabled: boolean;
+  nda_text: string | null;
+  brand_accent_color: string | null;
+  brand_welcome_message: string | null;
 }
 
 export interface ShareLinkResponse {
@@ -87,13 +90,18 @@ export interface ShareLinkResponse {
   require_email: boolean;
   allowed_emails: string[];
   watermark_enabled: boolean;
+  nda_text: string | null;
+  brand_accent_color: string | null;
+  brand_welcome_message: string | null;
 }
 
 // Deliberately narrower than ShareLinkResponse: this is what the public,
 // unauthenticated endpoint returns, so it must not leak the link's
 // document_id/user_id/updated_at or the document's storage_key/user_id/timestamps.
-// watermark_enabled IS included (unlike allowed_emails) — the viewer's own
-// client needs it to decide whether to draw the canvas watermark.
+// watermark_enabled/nda_text/brand_* ARE included (unlike allowed_emails) —
+// the viewer's own client needs them to render the watermark, the NDA gate,
+// and the branding, none of which are sensitive (the owner set them for
+// display).
 export interface ShareLinkWithDocument {
   id: string;
   token: string;
@@ -104,6 +112,9 @@ export interface ShareLinkWithDocument {
   created_at: Date;
   has_password: boolean;
   watermark_enabled: boolean;
+  nda_text: string | null;
+  brand_accent_color: string | null;
+  brand_welcome_message: string | null;
   document: {
     id: string;
     title: string;
@@ -119,6 +130,7 @@ export interface LinkView {
   share_link_id: string;
   viewer_fingerprint: string | null;
   viewer_email: string | null;
+  viewer_name: string | null;
   ip_address: string | null;
   country_code: string | null;
   user_agent: string | null;
@@ -220,6 +232,9 @@ export interface ShareLinkCreateInput {
   require_email?: boolean;
   allowed_emails?: string[];
   watermark_enabled?: boolean;
+  nda_text?: string;
+  brand_accent_color?: string;
+  brand_welcome_message?: string;
 }
 
 export interface ShareLinkUpdateInput {
@@ -232,6 +247,9 @@ export interface ShareLinkUpdateInput {
   require_email?: boolean;
   allowed_emails?: string[] | null;
   watermark_enabled?: boolean;
+  nda_text?: string | null;
+  brand_accent_color?: string | null;
+  brand_welcome_message?: string | null;
 }
 
 export interface PageTimeInput {
@@ -242,6 +260,7 @@ export interface PageTimeInput {
 export interface LinkViewCreateInput {
   viewer_fingerprint?: string;
   viewer_email?: string;
+  viewer_name?: string;
   ip_address?: string;
   user_agent?: string;
   time_on_page?: number;
@@ -390,11 +409,13 @@ export interface ShareLinkModel {
     token: string,
     password?: string,
     email?: string,
+    name?: string,
   ): Promise<ShareLinkWithDocument>;
   getFileByToken(
     token: string,
     password?: string,
     email?: string,
+    name?: string,
   ): Promise<{ storage_key: string; mime_type: string }>;
   validateToken(token: string): Promise<{ id: string }>;
   getNotificationInfo(
@@ -403,6 +424,7 @@ export interface ShareLinkModel {
   getPublicMetadata(
     token: string,
   ): Promise<{ title: string; description: string | null } | null>;
+  getNdaText(token: string): Promise<string | null>;
 }
 
 export interface LinkViewModel {

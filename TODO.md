@@ -348,8 +348,13 @@ engagement scoring via cirrusinsight.com).
 
 ### Trust & access control (needed to compete for data-room / high-stakes use cases)
 
-- [ ] Optional NDA/consent gate per share link — viewer must accept a
-      custom NDA text and provide name + email before the document loads
+- [x] Optional NDA/consent gate per share link — viewer must accept a
+      custom NDA text and provide name + email before the document loads.
+      Migrations `016`/`017` add `share_links.nda_text` +
+      `link_views.viewer_name`; enforced last in the gating pipeline,
+      independent of the allow-list so both can coexist on the same link.
+      NDA text served pre-credential via a new permission-free
+      `GET /api/v1/share/[token]/nda` endpoint. See CHANGELOG for details.
 - [x] Optional "require email" per share link (today viewing is anonymous
       by fingerprint only) — also what makes the notification feature above
       actually name the viewer. Migrations `011`/`012` add
@@ -381,8 +386,11 @@ engagement scoring via cirrusinsight.com).
       pre-filled from the source link; password can't be carried over (only
       its hash is ever available) so that field starts blank. See CHANGELOG
       for details.
-- [ ] Custom branding per share link (logo, accent color, welcome message)
-      — cheap to build now, becomes a paid-tier hook in Phase 10
+- [x] Custom branding per share link (accent color, welcome message)
+      — cheap to build now, becomes a paid-tier hook in Phase 10. Migration
+      `015` adds `share_links.brand_accent_color` + `brand_welcome_message`;
+      applied only on the "ready" viewer state, not the gate screens. Logo
+      upload deferred — out of scope for this pass. See CHANGELOG for details.
 
 ---
 

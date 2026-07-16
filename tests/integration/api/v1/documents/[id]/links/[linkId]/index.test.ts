@@ -219,6 +219,108 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
     expect(responseBody.watermark_enabled).toBe(true);
   });
 
+  test("Setting nda_text then clearing it with null", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.nda_text).toBeNull();
+
+    const setResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ nda_text: "Confidential terms apply." }),
+      },
+    );
+
+    expect(setResponse.status).toBe(200);
+    const setBody = await setResponse.json();
+    expect(setBody.nda_text).toBe("Confidential terms apply.");
+
+    const clearResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ nda_text: null }),
+      },
+    );
+
+    expect(clearResponse.status).toBe(200);
+    const clearBody = await clearResponse.json();
+    expect(clearBody.nda_text).toBeNull();
+  });
+
+  test("Setting brand_accent_color then clearing it with null", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.brand_accent_color).toBeNull();
+
+    const setResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ brand_accent_color: "#123ABC" }),
+      },
+    );
+
+    expect(setResponse.status).toBe(200);
+    const setBody = await setResponse.json();
+    expect(setBody.brand_accent_color).toBe("#123ABC");
+
+    const clearResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ brand_accent_color: null }),
+      },
+    );
+
+    expect(clearResponse.status).toBe(200);
+    const clearBody = await clearResponse.json();
+    expect(clearBody.brand_accent_color).toBeNull();
+  });
+
+  test("Setting brand_welcome_message then clearing it with null", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    expect(link.brand_welcome_message).toBeNull();
+
+    const setResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ brand_welcome_message: "Welcome!" }),
+      },
+    );
+
+    expect(setResponse.status).toBe(200);
+    const setBody = await setResponse.json();
+    expect(setBody.brand_welcome_message).toBe("Welcome!");
+
+    const clearResponse = await fetch(
+      `http://localhost:3000/api/v1/documents/${document.id}/links/${link.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ brand_welcome_message: null }),
+      },
+    );
+
+    expect(clearResponse.status).toBe(200);
+    const clearBody = await clearResponse.json();
+    expect(clearBody.brand_welcome_message).toBeNull();
+  });
+
   test("Clearing expires_at with null", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const document = await orchestrator.uploadDocument(cookie);

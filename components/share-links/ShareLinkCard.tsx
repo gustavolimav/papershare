@@ -87,6 +87,10 @@ export function ShareLinkCard({
             {link.watermark_enabled && (
               <Badge variant="outline">Marca d&apos;água</Badge>
             )}
+            {link.nda_text && <Badge variant="outline">Termo de NDA</Badge>}
+            {(link.brand_accent_color || link.brand_welcome_message) && (
+              <Badge variant="outline">Personalizado</Badge>
+            )}
           </div>
         </div>
 

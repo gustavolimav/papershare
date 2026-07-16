@@ -42,6 +42,9 @@ async function postHandler(
     ...(validated.viewer_email !== undefined && {
       viewer_email: validated.viewer_email,
     }),
+    ...(validated.viewer_name !== undefined && {
+      viewer_name: validated.viewer_name,
+    }),
     ...(validated.time_on_page !== undefined && {
       time_on_page: validated.time_on_page,
     }),

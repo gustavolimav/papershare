@@ -46,6 +46,13 @@ export function EditShareLinkModal({
   const [watermarkEnabled, setWatermarkEnabled] = useState(
     link.watermark_enabled,
   );
+  const [ndaText, setNdaText] = useState(link.nda_text ?? "");
+  const [brandAccentColor, setBrandAccentColor] = useState(
+    link.brand_accent_color ?? "",
+  );
+  const [brandWelcomeMessage, setBrandWelcomeMessage] = useState(
+    link.brand_welcome_message ?? "",
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,6 +70,9 @@ export function EditShareLinkModal({
         require_email: requireEmail,
         allowed_emails: parseAllowedEmails(allowedEmailsText),
         watermark_enabled: watermarkEnabled,
+        nda_text: ndaText || null,
+        brand_accent_color: brandAccentColor || null,
+        brand_welcome_message: brandWelcomeMessage || null,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
 
@@ -214,6 +224,58 @@ export function EditShareLinkModal({
             <Label htmlFor="edit-watermarkEnabled">
               Marca d&apos;água com email do visitante
             </Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-ndaText">Termo de confidencialidade</Label>
+            <Textarea
+              id="edit-ndaText"
+              value={ndaText}
+              onChange={(event) => setNdaText(event.target.value)}
+              placeholder="Cole aqui o texto que o visitante deve aceitar antes de ver o documento"
+              rows={4}
+            />
+            <p className="text-xs text-muted-foreground">
+              Se preenchido, o visitante precisa informar nome e email e aceitar
+              este termo antes de acessar o documento. Deixe em branco para
+              remover a exigência.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-brandAccentColor">Cor de destaque</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="edit-brandAccentColor"
+                type="color"
+                value={brandAccentColor || "#000000"}
+                onChange={(event) => setBrandAccentColor(event.target.value)}
+                className="h-9 w-14 p-1"
+              />
+              {brandAccentColor && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setBrandAccentColor("")}
+                >
+                  Remover
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-brandWelcomeMessage">
+              Mensagem de boas-vindas
+            </Label>
+            <Textarea
+              id="edit-brandWelcomeMessage"
+              value={brandWelcomeMessage}
+              onChange={(event) => setBrandWelcomeMessage(event.target.value)}
+              placeholder="Ex: Olá! Segue o contrato revisado, qualquer dúvida me chama."
+              rows={2}
+            />
           </div>
 
           {error && (

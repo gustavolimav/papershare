@@ -41,8 +41,8 @@ async function persistPageTimes(
 }
 
 const LINK_VIEW_COLUMNS = `
-  id, share_link_id, viewer_fingerprint, viewer_email, ip_address, country_code,
-  user_agent, time_on_page, pages_viewed, created_at, updated_at
+  id, share_link_id, viewer_fingerprint, viewer_email, viewer_name, ip_address,
+  country_code, user_agent, time_on_page, pages_viewed, created_at, updated_at
 `;
 
 // Repeat views from the same viewer within this window are merged into the
@@ -73,11 +73,11 @@ async function insertView(
     text: `
         INSERT INTO
           link_views (
-            share_link_id, viewer_fingerprint, viewer_email, ip_address,
-            user_agent, time_on_page, pages_viewed
+            share_link_id, viewer_fingerprint, viewer_email, viewer_name,
+            ip_address, user_agent, time_on_page, pages_viewed
           )
         VALUES
-          ($1, $2, $3, $4, $5, $6, $7)
+          ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING
           ${LINK_VIEW_COLUMNS}
         ;`,
@@ -85,6 +85,7 @@ async function insertView(
       shareLinkId,
       input.viewer_fingerprint ?? null,
       input.viewer_email ?? null,
+      input.viewer_name ?? null,
       input.ip_address ?? null,
       input.user_agent ?? null,
       input.time_on_page ?? null,
@@ -142,16 +143,18 @@ async function upsertViewWithDedup(
               link_views
             SET
               viewer_email = COALESCE($1, viewer_email),
-              time_on_page = COALESCE($2, time_on_page),
-              pages_viewed = COALESCE($3, pages_viewed),
+              viewer_name = COALESCE($2, viewer_name),
+              time_on_page = COALESCE($3, time_on_page),
+              pages_viewed = COALESCE($4, pages_viewed),
               updated_at = NOW()
             WHERE
-              id = $4
+              id = $5
             RETURNING
               ${LINK_VIEW_COLUMNS}
             ;`,
         values: [
           input.viewer_email ?? null,
+          input.viewer_name ?? null,
           input.time_on_page ?? null,
           input.pages_viewed ?? null,
           existing.rows[0].id,
@@ -183,11 +186,11 @@ async function upsertViewWithDedup(
         text: `
             INSERT INTO
               link_views (
-                share_link_id, viewer_fingerprint, viewer_email, ip_address,
-                user_agent, time_on_page, pages_viewed
+                share_link_id, viewer_fingerprint, viewer_email, viewer_name,
+                ip_address, user_agent, time_on_page, pages_viewed
               )
             VALUES
-              ($1, $2, $3, $4, $5, $6, $7)
+              ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING
               ${LINK_VIEW_COLUMNS}
             ;`,
@@ -195,6 +198,7 @@ async function upsertViewWithDedup(
           shareLinkId,
           input.viewer_fingerprint ?? null,
           input.viewer_email ?? null,
+          input.viewer_name ?? null,
           input.ip_address ?? null,
           input.user_agent ?? null,
           input.time_on_page ?? null,

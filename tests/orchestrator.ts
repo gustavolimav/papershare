@@ -162,6 +162,9 @@ async function createShareLink(
     require_email?: boolean;
     allowed_emails?: string[];
     watermark_enabled?: boolean;
+    nda_text?: string;
+    brand_accent_color?: string;
+    brand_welcome_message?: string;
   },
   // returns `any` because the endpoint can respond with either a ShareLinkResponse or an ErrorResponse
 ): Promise<any> {
@@ -189,6 +192,7 @@ async function recordView(
   body?: {
     viewer_fingerprint?: string;
     viewer_email?: string;
+    viewer_name?: string;
     time_on_page?: number;
     pages_viewed?: number;
     page_times?: { page: number; seconds: number }[];
@@ -273,6 +277,9 @@ interface Orchestrator {
       require_email?: boolean;
       allowed_emails?: string[];
       watermark_enabled?: boolean;
+      nda_text?: string;
+      brand_accent_color?: string;
+      brand_welcome_message?: string;
     },
   ): Promise<any>;
   // eslint-disable-next-line no-unused-vars
@@ -284,6 +291,7 @@ interface Orchestrator {
     body?: {
       viewer_fingerprint?: string;
       viewer_email?: string;
+      viewer_name?: string;
       time_on_page?: number;
       pages_viewed?: number;
       page_times?: { page: number; seconds: number }[];

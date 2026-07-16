@@ -66,6 +66,9 @@ describe("POST /api/v1/documents/[id]/links", () => {
       require_email: false,
       allowed_emails: [],
       watermark_enabled: false,
+      nda_text: null,
+      brand_accent_color: null,
+      brand_welcome_message: null,
     });
     expect(responseBody.password_hash).toBeUndefined();
   });
@@ -131,6 +134,64 @@ describe("POST /api/v1/documents/[id]/links", () => {
     );
 
     expect(responseBody.watermark_enabled).toBe(true);
+  });
+
+  test("With nda_text", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+
+    const responseBody = await orchestrator.createShareLink(
+      cookie,
+      document.id,
+      {
+        nda_text: "By viewing this document you agree to keep it confidential.",
+      },
+    );
+
+    expect(responseBody.nda_text).toBe(
+      "By viewing this document you agree to keep it confidential.",
+    );
+  });
+
+  test("With brand_accent_color", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+
+    const responseBody = await orchestrator.createShareLink(
+      cookie,
+      document.id,
+      { brand_accent_color: "#FF5733" },
+    );
+
+    expect(responseBody.brand_accent_color).toBe("#FF5733");
+  });
+
+  test("With an invalid brand_accent_color format", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+
+    const responseBody = await orchestrator.createShareLink(
+      cookie,
+      document.id,
+      { brand_accent_color: "not-a-color" },
+    );
+
+    expect(responseBody.name).toBe("ValidationError");
+  });
+
+  test("With brand_welcome_message", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const document = await orchestrator.uploadDocument(cookie);
+
+    const responseBody = await orchestrator.createShareLink(
+      cookie,
+      document.id,
+      { brand_welcome_message: "Thanks for reviewing our proposal!" },
+    );
+
+    expect(responseBody.brand_welcome_message).toBe(
+      "Thanks for reviewing our proposal!",
+    );
   });
 
   test("With expires_at in the past", async () => {
