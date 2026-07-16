@@ -83,7 +83,7 @@ export function ViewerControls({
       </div>
 
       {allowDownload && (
-        <Button type="button" variant="outline" size="sm" onClick={onDownload}>
+        <Button type="button" variant="default" size="sm" onClick={onDownload}>
           <Download className="mr-1 h-4 w-4" /> Download
         </Button>
       )}
