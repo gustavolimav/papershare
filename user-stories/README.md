@@ -92,6 +92,7 @@ Stories are ordered by recommended implementation sequence within each phase. Te
 | [US-24](./tech-debt/US-24-migration-admin-auth.md)       | Migration Endpoint Admin Auth | Protect the migration runner HTTP endpoint with a `MIGRATIONS_SECRET` header token.                                 |
 | [US-25](./tech-debt/US-25-updated-at-trigger.md)         | `updated_at` Trigger          | Add a PostgreSQL trigger to auto-update `updated_at` on all tables, removing manual timestamp updates from queries. |
 | [US-26](./tech-debt/US-26-ci-typecheck.md)               | CI TypeScript Type-Check      | Add a `tsc --noEmit` step to GitHub Actions CI to catch type regressions on every pull request.                     |
+| [US-34](./tech-debt/US-34-investigate-non-pdf-viewer.md) | Investigate Non-PDF Viewer    | Investigation only: confirm why `.docx`/`.pptx` links show no preview and record no views, and recommend a fix.     |
 
 ---
 

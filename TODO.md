@@ -534,6 +534,7 @@ These are not tied to a specific phase but should be addressed progressively.
   - [x] Extended (2026-07-15): `users.is_superadmin` column + `/superadmin/migrations` page, so a logged-in superadmin session works as an alternative to the secret header. Named "superadmin" (not "admin") to stay distinct from any future customer-facing admin role. No API/UI grants superadmin — promotion is a manual SQL `UPDATE`, documented in `CLAUDE.md`, to keep real emails out of this public repo's committed code.
 - [ ] Add `updated_at` trigger function in migrations (currently updated manually)
 - [x] CI: add TypeScript type-check step to GitHub Actions — `typecheck` job in `.github/workflows/linting.yaml`
+- [ ] Non-PDF documents (`.docx`/`.pptx`) show a "preview not available" message in the public viewer instead of any content, and — because `ViewerPage.tsx`'s non-PDF branch skips the file fetch entirely — never record a view either, so their analytics stay at zero regardless of real traffic. Spec written to investigate root cause and evaluate fix options (client-side rendering, server-side PDF conversion, third-party embed, or just fixing the view-tracking gap and keeping the download-only fallback) before committing to an approach: `user-stories/tech-debt/US-34-investigate-non-pdf-viewer.md`.
 
 ### Security hardening (2026-07-12)
 
