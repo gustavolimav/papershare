@@ -74,7 +74,11 @@ export function LinkAnalyticsDrawer({
                 <h3 className="mb-3 text-sm font-semibold">
                   Engajamento por visitante
                 </h3>
-                <ViewerEngagementList viewers={data.viewers} />
+                <ViewerEngagementList
+                  documentId={documentId}
+                  linkId={linkId!}
+                  viewers={data.viewers}
+                />
               </div>
             </div>
           )}

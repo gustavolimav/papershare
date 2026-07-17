@@ -36,6 +36,8 @@ describe("POST /api/v1/documents", () => {
         size_bytes: responseBody.size_bytes,
         page_count: 1,
         user_id: responseBody.user_id,
+        ai_summary: null,
+        ai_summary_generated_at: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         deleted_at: null,

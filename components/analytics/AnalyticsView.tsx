@@ -7,6 +7,7 @@ import { StatCard } from "@/components/analytics/StatCard";
 import { ViewsChart } from "@/components/analytics/ViewsChart";
 import { TopLinksTable } from "@/components/analytics/TopLinksTable";
 import { LinkAnalyticsDrawer } from "@/components/analytics/LinkAnalyticsDrawer";
+import { InsightCard } from "@/components/analytics/InsightCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration } from "@/lib/formatters";
 import type { DocumentAnalyticsResponse, TopLink } from "@/types/index";
@@ -66,6 +67,8 @@ export function AnalyticsView({ documentId }: AnalyticsViewProps) {
           value={data.avg_pages_viewed?.toFixed(1) ?? "—"}
         />
       </div>
+
+      <InsightCard documentId={documentId} />
 
       <div>
         <h2 className="mb-3 text-lg font-semibold">Visualizações por dia</h2>

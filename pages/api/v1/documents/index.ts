@@ -14,6 +14,7 @@ import {
   MAX_FILE_SIZE_BYTES,
 } from "../../../../infra/schemas";
 import document from "../../../../models/document";
+import summarizer from "../../../../models/summarizer";
 import type {
   AuthenticatedNextApiRequest,
   DocumentResponse,
@@ -93,6 +94,11 @@ async function postHandler(
     page_count: pageCount,
     user_id: request.user!.id,
   });
+
+  // Fire-and-forget, same pattern as the new-viewer notification email:
+  // never blocks or affects the upload response, and any failure (API
+  // error, unsupported file type, missing key) just leaves ai_summary null.
+  summarizer.summarizeDocument(newDocument, fileBuffer).catch(() => undefined);
 
   return response.status(201).json(newDocument);
 }
