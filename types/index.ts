@@ -55,6 +55,56 @@ export interface WorkspaceWithRole extends Workspace {
   ai_configured: boolean;
 }
 
+export type SubscriptionPlan = "free" | "pro" | "business";
+
+// Never "free" — a row only exists once a workspace has actually
+// subscribed. "free" is represented by the absence of a row.
+export type PaidSubscriptionPlan = Exclude<SubscriptionPlan, "free">;
+
+export type SubscriptionStatus =
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "incomplete";
+
+export interface Subscription {
+  id: string;
+  workspace_id: string;
+  stripe_customer_id: string;
+  stripe_subscription_id: string;
+  plan: PaidSubscriptionPlan;
+  status: SubscriptionStatus;
+  current_period_end: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface UpsertSubscriptionInput {
+  workspaceId: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  plan: PaidSubscriptionPlan;
+  status: SubscriptionStatus;
+  currentPeriodEnd: Date;
+}
+
+export interface PlanLimits {
+  maxDocuments: number | null;
+  maxActiveLinks: number | null;
+  features: PlanFeature[];
+}
+
+export type PlanFeature =
+  | "watermark"
+  | "nda"
+  | "allowlist"
+  | "branding"
+  | "engagement_score";
+
+export interface CheckoutSessionResponse {
+  url: string;
+}
+
 export interface WorkspaceMember {
   workspace_id: string;
   user_id: string;
@@ -549,6 +599,18 @@ export interface WorkspaceModel {
     actingUserId: string,
     targetUserId: string,
   ): Promise<void>;
+}
+
+export interface SubscriptionModel {
+  getPlanForWorkspace(workspaceId: string): Promise<SubscriptionPlan>;
+  getByWorkspaceId(workspaceId: string): Promise<Subscription | null>;
+  getByStripeSubscriptionId(
+    stripeSubscriptionId: string,
+  ): Promise<Subscription | null>;
+  upsertFromStripeEvent(input: UpsertSubscriptionInput): Promise<void>;
+  markCanceled(stripeSubscriptionId: string): Promise<void>;
+  markPastDue(stripeSubscriptionId: string): Promise<void>;
+  PLAN_LIMITS: Record<SubscriptionPlan, PlanLimits>;
 }
 
 export interface ShareLinkModel {

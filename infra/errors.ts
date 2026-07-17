@@ -171,6 +171,28 @@ export class ConflictError extends Error {
   }
 }
 
+export class PaymentRequiredError extends Error {
+  public readonly name = "PaymentRequiredError";
+  public readonly action: string;
+  public readonly statusCode = 402;
+
+  constructor({ cause, message, action }: ErrorConstructorOptions = {}) {
+    super(message || "Este recurso não está disponível no seu plano atual.", {
+      cause,
+    });
+    this.action = action || "Faça upgrade do seu plano para continuar.";
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status: this.statusCode,
+    };
+  }
+}
+
 export class UnauthorizedError extends Error {
   public readonly name = "UnauthorizedError";
   public readonly action: string;
