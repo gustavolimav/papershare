@@ -492,9 +492,10 @@ since Phase 9.
 
 > **Tools:** Stripe for subscriptions (Checkout + Customer Portal, BRL). Real billing launch, not just infrastructure — no grandfathering needed since there are no paying users yet.
 
-- [ ] US-35 — Billing infrastructure: `subscriptions` table
+- [x] US-35 — Billing infrastructure: `subscriptions` table
       (`workspace_id`-scoped), `infra/stripe.ts`, `models/subscription.ts`,
-      checkout/portal endpoints, signed webhook handler.
+      checkout/portal endpoints, signed webhook handler. See CHANGELOG for
+      details.
 - [ ] US-36 — Plan gating: Free capped at 10 documents/10 active links;
       watermark/NDA/allow-list/branding/engagement-score become Pro-only;
       downgrades keep existing data working, just block new creation.

@@ -5,6 +5,7 @@ import {
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
+  PaymentRequiredError,
   ServiceError,
   TooManyRequestsError,
   UnauthorizedError,
@@ -47,6 +48,11 @@ function onErrorHandler(
   }
 
   if (err instanceof ConflictError) {
+    response.status(err.statusCode).json(err);
+    return;
+  }
+
+  if (err instanceof PaymentRequiredError) {
     response.status(err.statusCode).json(err);
     return;
   }

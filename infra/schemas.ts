@@ -195,6 +195,12 @@ export const workspaceMemberRoleUpdateSchema = z.object({
   }),
 });
 
+export const billingCheckoutSchema = z.object({
+  plan: z.enum(["pro", "business"], {
+    message: "O 'plan' deve ser 'pro' ou 'business'.",
+  }),
+});
+
 export const linkViewCreateSchema = z.object({
   viewer_fingerprint: z
     .string()
