@@ -67,6 +67,19 @@ Stories are ordered by recommended implementation sequence within each phase. Te
 
 ---
 
+## Phase 9 — Team Workspaces (Basic)
+
+| ID                                                                                   | Title                                                        | One-sentence description                                                                                                                       |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| [US-28](./phase-9-workspaces/US-28-workspace-data-model.md)                          | Workspace Data Model & Migration                             | Create `workspaces`/`workspace_members` tables and migrate every existing document to a workspace via an auto-created personal workspace.      |
+| [US-29](./phase-9-workspaces/US-29-workspace-crud-and-switching.md)                  | Workspace CRUD & Switching                                   | Add create/list/rename/delete endpoints plus a `.../activate` endpoint that sets the requester's active workspace.                             |
+| [US-30](./phase-9-workspaces/US-30-member-management.md)                             | Member Invitation & Role Management                          | Add invite-by-email, role-change, and remove/leave endpoints, with last-owner and personal-workspace guardrails.                               |
+| [US-31](./phase-9-workspaces/US-31-document-authorization-migration.md)              | Document & Share-Link Authorization Becomes Workspace-Scoped | Replace every direct `user_id` ownership check on documents/share links with a workspace role check, so the shared library is actually shared. |
+| [US-32](./phase-9-workspaces/US-32-ai-key-resolution-via-workspace.md)               | AI Features Resolve the Workspace's Key                      | Point every AI feature's key resolution at the document's workspace's creator instead of the document's uploader.                              |
+| [US-33](./phase-9-workspaces/US-33-frontend-workspace-switcher-and-team-settings.md) | Frontend: Workspace Switcher & Team Settings                 | Build the header workspace switcher, workspace-creation modal, and the "Equipe" settings tab for member management.                            |
+
+---
+
 ## Technical Debt
 
 | ID                                                       | Title                         | One-sentence description                                                                                            |
@@ -92,5 +105,6 @@ For a single developer or agent working sequentially:
 4. **Phase 5 (backend analytics):** US-01 → US-02 → US-05 → US-03 → US-04
 5. **Phase 6 (frontend):** US-06 → US-07 → US-08 → US-09 → US-10 → US-13 → US-11 → US-12
 6. **Phase 7 (AI):** US-14 → US-15 → US-17 → US-18 → US-16
+7. **Phase 9 (team workspaces):** US-28 → US-29 → US-30 → US-31 → US-32 → US-33 (strictly sequential — each story's endpoints/migrations are consumed by the next)
 
-For parallel teams: Phase 5 and Phase 6 (up to US-11) can be built concurrently. Phase 7 requires US-14 before any other AI story.
+For parallel teams: Phase 5 and Phase 6 (up to US-11) can be built concurrently. Phase 7 requires US-14 before any other AI story. Phase 9 does not parallelize well — US-31 in particular depends on every model/endpoint from US-28-30 existing first, and US-33 needs US-31/US-32 to have something real to render.
