@@ -440,14 +440,40 @@ the recognized format for M&A, fundraising, and due-diligence sharing
 change than Phase 7/8 (touches the ownership model throughout the app), so
 it's sequenced after the lower-effort wins above.
 
-- [ ] Multi-user workspaces: invite teammates, shared document library,
-      role-based permissions (owner/editor/viewer of the workspace itself)
+> Design validated and detailed stories written 2026-07-16:
+> `docs/plans/2026-07-16-team-workspaces-design.md` (key decisions +
+> rationale) and `user-stories/phase-9-workspaces/US-28` through `US-33`
+> (implementation-ready specs). The first slice ("workspaces básico") is
+> scoped below; data rooms and custom domain are deliberately deferred to
+> a later slice of this same phase.
+
+- [ ] **Workspaces básico** — multi-user workspaces with invite, shared
+      document library, and role-based permissions (owner/editor/viewer of
+      the workspace itself). Every user gets an automatic personal
+      workspace at registration; documents always belong to exactly one
+      workspace (no more direct user ownership). Broken into 6 stories:
+  - [ ] US-28 — Workspace data model & migration (`workspaces`,
+        `workspace_members`, `documents.workspace_id` backfill,
+        `users.active_workspace_id`)
+  - [ ] US-29 — Workspace CRUD + switching (create/list/rename/delete,
+        `.../activate`)
+  - [ ] US-30 — Member invitation & role management (invite by email —
+        existing accounts only, no token/accept flow — role change,
+        remove/leave, last-owner protection)
+  - [ ] US-31 — Document & share-link authorization migrates from direct
+        `user_id` ownership to workspace role checks
+  - [ ] US-32 — AI features resolve the workspace creator's key instead of
+        the document uploader's
+  - [ ] US-33 — Frontend: header workspace switcher, workspace-creation
+        modal, "Equipe" settings tab, "Enviado por" on document cards
 - [ ] Data rooms: group multiple documents into one named collection with
       a single shareable link, with per-document and per-recipient
       permission overrides (e.g. recipient A can download the term sheet
-      but only view the cap table)
+      but only view the cap table) — next slice of this phase, not yet
+      scoped into stories
 - [ ] Custom domain per workspace (e.g. `docs.yourcompany.com`) for
-      white-labeled sharing — pairs with Phase 7's custom branding
+      white-labeled sharing — pairs with Phase 7's custom branding — not
+      yet scoped into stories
 
 ---
 
