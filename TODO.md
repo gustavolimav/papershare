@@ -447,7 +447,7 @@ it's sequenced after the lower-effort wins above.
 > scoped below; data rooms and custom domain are deliberately deferred to
 > a later slice of this same phase.
 
-- [ ] **Workspaces básico** — multi-user workspaces with invite, shared
+- [x] **Workspaces básico** — multi-user workspaces with invite, shared
       document library, and role-based permissions (owner/editor/viewer of
       the workspace itself). Every user gets an automatic personal
       workspace at registration; documents always belong to exactly one
@@ -460,12 +460,14 @@ it's sequenced after the lower-effort wins above.
   - [x] US-30 — Member invitation & role management (invite by email —
         existing accounts only, no token/accept flow — role change,
         remove/leave, last-owner protection). See CHANGELOG for details.
-  - [ ] US-31 — Document & share-link authorization migrates from direct
-        `user_id` ownership to workspace role checks
-  - [ ] US-32 — AI features resolve the workspace creator's key instead of
-        the document uploader's
-  - [ ] US-33 — Frontend: header workspace switcher, workspace-creation
-        modal, "Equipe" settings tab, "Enviado por" on document cards
+  - [x] US-31 — Document & share-link authorization migrates from direct
+        `user_id` ownership to workspace role checks. See CHANGELOG for
+        details.
+  - [x] US-32 — AI features resolve the workspace creator's key instead of
+        the document uploader's. See CHANGELOG for details.
+  - [x] US-33 — Frontend: header workspace switcher, workspace-creation
+        modal, "Equipe" settings tab, "Enviado por" on document cards. See
+        CHANGELOG for details.
 - [ ] Data rooms: group multiple documents into one named collection with
       a single shareable link, with per-document and per-recipient
       permission overrides (e.g. recipient A can download the term sheet

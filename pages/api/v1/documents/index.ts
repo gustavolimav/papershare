@@ -41,10 +41,10 @@ async function getHandler(
 ) {
   const { page, per_page } = validate(paginationSchema, request.query);
 
-  const result = await document.findAllByUserId(request.user!.id, {
-    page,
-    perPage: per_page,
-  });
+  const result = await document.findAllByWorkspaceId(
+    request.user!.active_workspace_id!,
+    { page, perPage: per_page },
+  );
 
   return response.status(200).json(result);
 }
@@ -93,6 +93,7 @@ async function postHandler(
     size_bytes: saved.size,
     page_count: pageCount,
     user_id: request.user!.id,
+    workspace_id: request.user!.active_workspace_id!,
   });
 
   // Fire-and-forget, same pattern as the new-viewer notification email:

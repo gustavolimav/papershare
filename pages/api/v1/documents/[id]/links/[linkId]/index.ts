@@ -6,7 +6,6 @@ import {
   validate,
   shareLinkUpdateSchema,
 } from "../../../../../../../infra/schemas";
-import document from "../../../../../../../models/document";
 import shareLink from "../../../../../../../models/shareLink";
 import type {
   AuthenticatedNextApiRequest,
@@ -36,8 +35,6 @@ async function patchHandler(
   const documentId = request.query.id as string;
   const linkId = request.query.linkId as string;
 
-  await document.findOneById(documentId, request.user!.id);
-
   const validated = validate(shareLinkUpdateSchema, request.body);
   const updateInput = Object.fromEntries(
     Object.entries(validated).filter(([, v]) => v !== undefined),
@@ -46,6 +43,7 @@ async function patchHandler(
   const updatedLink = await shareLink.updateById(
     linkId,
     documentId,
+    request.user!.id,
     updateInput,
   );
 
@@ -59,9 +57,11 @@ async function deleteHandler(
   const documentId = request.query.id as string;
   const linkId = request.query.linkId as string;
 
-  await document.findOneById(documentId, request.user!.id);
-
-  const revokedLink = await shareLink.revokeById(linkId, documentId);
+  const revokedLink = await shareLink.revokeById(
+    linkId,
+    documentId,
+    request.user!.id,
+  );
 
   return response.status(200).json(revokedLink);
 }

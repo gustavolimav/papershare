@@ -2,7 +2,7 @@ import type { MessageStream } from "@anthropic-ai/sdk/lib/MessageStream";
 import ai from "../infra/ai";
 import { ValidationError } from "../infra/errors";
 import documentChunks from "./documentChunks";
-import document from "./document";
+import workspace from "./workspace";
 import user from "./user";
 
 function buildPrompt(
@@ -27,11 +27,12 @@ async function answerQuestion(
   documentId: string,
   question: string,
 ): Promise<MessageStream> {
-  // Bring-your-own-key: the chat runs against the document owner's own
-  // Anthropic key, not a platform-wide one — resolved here since this
+  // Bring-your-own-key: the chat runs against the document's workspace
+  // creator's own Anthropic key (the workspace's single AI identity), not
+  // the uploader's or a platform-wide one — resolved here since this
   // function only receives the documentId, not an authenticated user.
-  const ownerId = await document.getOwnerId(documentId);
-  const apiKey = ownerId ? await user.getAiApiKey(ownerId) : null;
+  const creatorId = await workspace.getCreatorIdForDocument(documentId);
+  const apiKey = creatorId ? await user.getAiApiKey(creatorId) : null;
   ai.requireApiKey(apiKey);
 
   const allChunks = await documentChunks.ensureChunks(documentId);

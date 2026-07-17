@@ -73,7 +73,15 @@ async function findAllByUserId(userId: string): Promise<WorkspaceWithRole[]> {
           workspaces.created_at,
           workspaces.updated_at,
           workspaces.deleted_at,
-          workspace_members.role
+          workspace_members.role,
+          (
+            SELECT COUNT(*)::int FROM workspace_members wm2
+            WHERE wm2.workspace_id = workspaces.id
+          ) AS member_count,
+          (
+            SELECT creator.ai_api_key_encrypted IS NOT NULL FROM users creator
+            WHERE creator.id = workspaces.created_by
+          ) AS ai_configured
         FROM
           workspaces
         JOIN
@@ -89,6 +97,30 @@ async function findAllByUserId(userId: string): Promise<WorkspaceWithRole[]> {
   });
 
   return results.rows;
+}
+
+// Resolves the AI "identity" for a document: its workspace's creator,
+// regardless of who uploaded the document or who's currently acting.
+// Returns null if the document doesn't exist (e.g. deleted).
+async function getCreatorIdForDocument(
+  documentId: string,
+): Promise<string | null> {
+  const results = await database.query<{ created_by: string }>({
+    text: `
+        SELECT
+          workspaces.created_by
+        FROM
+          documents
+        JOIN
+          workspaces ON workspaces.id = documents.workspace_id
+        WHERE
+          documents.id = $1
+          AND documents.deleted_at IS NULL
+        ;`,
+    values: [documentId],
+  });
+
+  return results.rows[0]?.created_by ?? null;
 }
 
 // Central authorization check, reused by every workspace-scoped model
@@ -513,6 +545,7 @@ const workspace: WorkspaceModel = {
   updateById,
   deleteById,
   activate,
+  getCreatorIdForDocument,
   listMembers,
   inviteMember,
   updateMemberRole,

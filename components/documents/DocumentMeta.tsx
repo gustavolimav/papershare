@@ -11,9 +11,10 @@ import type { DocumentResponse } from "@/types/index";
 interface DocumentMetaProps {
   doc: DocumentResponse;
   onUpdated: (doc: DocumentResponse) => void;
+  canEdit: boolean;
 }
 
-export function DocumentMeta({ doc, onUpdated }: DocumentMetaProps) {
+export function DocumentMeta({ doc, onUpdated, canEdit }: DocumentMetaProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   if (isEditing) {
@@ -44,14 +45,16 @@ export function DocumentMeta({ doc, onUpdated }: DocumentMetaProps) {
               <BarChart3 className="mr-1 h-4 w-4" /> Analytics
             </Link>
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            Editar
-          </Button>
+          {canEdit && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+            >
+              Editar
+            </Button>
+          )}
         </div>
       </div>
 

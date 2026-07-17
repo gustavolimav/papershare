@@ -8,6 +8,7 @@ import { SummaryCard } from "@/components/documents/SummaryCard";
 import { ShareLinkList } from "@/components/share-links/ShareLinkList";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useWorkspaces } from "@/lib/useWorkspaces";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,8 @@ export function DocumentDetailView({
   const [doc, setDoc] = useState(initialDocument);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { activeWorkspace } = useWorkspaces();
+  const canEdit = activeWorkspace?.role !== "viewer";
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -52,22 +55,24 @@ export function DocumentDetailView({
 
   return (
     <div className="space-y-8">
-      <DocumentMeta doc={doc} onUpdated={setDoc} />
+      <DocumentMeta doc={doc} onUpdated={setDoc} canEdit={canEdit} />
 
       <SummaryCard doc={doc} onUpdated={setDoc} />
 
-      <Button
-        type="button"
-        variant="destructive"
-        size="sm"
-        onClick={() => setIsDeleteOpen(true)}
-      >
-        <Trash2 className="mr-1 h-4 w-4" /> Excluir documento
-      </Button>
+      {canEdit && (
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteOpen(true)}
+        >
+          <Trash2 className="mr-1 h-4 w-4" /> Excluir documento
+        </Button>
+      )}
 
       <Separator />
 
-      <ShareLinkList documentId={doc.id} />
+      <ShareLinkList documentId={doc.id} canEdit={canEdit} />
 
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>

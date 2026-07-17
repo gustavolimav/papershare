@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { useWorkspaces } from "@/lib/useWorkspaces";
 import { DocumentCard } from "@/components/documents/DocumentCard";
 import { UploadZone } from "@/components/documents/UploadZone";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +32,9 @@ export function DocumentList() {
     `/api/v1/documents?page=${page}&per_page=${PER_PAGE}`,
     fetcher,
   );
+  const { activeWorkspace } = useWorkspaces();
+  const showUploader = (activeWorkspace?.member_count ?? 0) > 1;
+  const canEdit = activeWorkspace?.role !== "viewer";
 
   async function handleConfirmDelete() {
     if (!documentToDelete) {
@@ -54,7 +58,7 @@ export function DocumentList() {
 
   return (
     <div className="space-y-6">
-      <UploadZone onUploaded={() => mutate()} />
+      {canEdit && <UploadZone onUploaded={() => mutate()} />}
 
       {isLoading && (
         <div className="space-y-3">
@@ -82,6 +86,8 @@ export function DocumentList() {
             <DocumentCard
               key={doc.id}
               doc={doc}
+              showUploader={showUploader}
+              canEdit={canEdit}
               onDeleteRequest={setDocumentToDelete}
             />
           ))}

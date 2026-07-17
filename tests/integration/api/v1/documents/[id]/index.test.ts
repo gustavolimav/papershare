@@ -37,7 +37,7 @@ describe("GET /api/v1/documents/[id]", () => {
       { headers: { Cookie: attackerCookie } },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("With own document", async () => {
@@ -118,7 +118,7 @@ describe("PATCH /api/v1/documents/[id]", () => {
       },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("Updating title and description of own document", async () => {
@@ -186,7 +186,7 @@ describe("DELETE /api/v1/documents/[id]", () => {
       { method: "DELETE", headers: { Cookie: attackerCookie } },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("With own document", async () => {

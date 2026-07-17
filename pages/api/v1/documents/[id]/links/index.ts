@@ -6,7 +6,6 @@ import {
   validate,
   shareLinkCreateSchema,
 } from "../../../../../../infra/schemas";
-import document from "../../../../../../models/document";
 import shareLink from "../../../../../../models/shareLink";
 import type {
   AuthenticatedNextApiRequest,
@@ -34,9 +33,10 @@ async function getHandler(
 ) {
   const documentId = request.query.id as string;
 
-  await document.findOneById(documentId, request.user!.id);
-
-  const links = await shareLink.findAllByDocumentId(documentId);
+  const links = await shareLink.findAllByDocumentId(
+    documentId,
+    request.user!.id,
+  );
 
   return response.status(200).json(links);
 }
@@ -46,8 +46,6 @@ async function postHandler(
   response: NextApiResponse<ShareLinkResponse>,
 ) {
   const documentId = request.query.id as string;
-
-  await document.findOneById(documentId, request.user!.id);
 
   const validated = validate(shareLinkCreateSchema, request.body);
   const input = Object.fromEntries(

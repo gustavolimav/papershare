@@ -1,6 +1,7 @@
 import storage from "../infra/storage";
 import ai from "../infra/ai";
 import document from "./document";
+import workspace from "./workspace";
 import user from "./user";
 import { extractText } from "./textExtraction";
 import type { DocumentResponse } from "../types/index";
@@ -30,7 +31,10 @@ async function summarizeDocument(
       return;
     }
 
-    const apiKey = await user.getAiApiKey(doc.user_id);
+    // Bring-your-own-key: resolved via the workspace's creator, not the
+    // uploader (doc.user_id) — a shared workspace has one AI identity.
+    const creatorId = await workspace.getCreatorIdForDocument(doc.id);
+    const apiKey = creatorId ? await user.getAiApiKey(creatorId) : null;
     const summary = await ai.complete({
       apiKey,
       system:

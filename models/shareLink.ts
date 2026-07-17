@@ -3,6 +3,7 @@ import database from "../infra/database";
 import { NotFoundError, ForbiddenError } from "../infra/errors";
 import { isValidEmail } from "../infra/schemas";
 import password from "./password";
+import workspace from "./workspace";
 import type {
   ShareLink,
   ShareLinkResponse,
@@ -136,11 +137,74 @@ function assertLinkIsActiveAndNotExpired(row: {
   }
 }
 
+// No role check — an existence/deleted_at check only, returning the
+// workspace_id every public function below needs for its own requireRole()
+// call (viewer for reads, editor for writes).
+async function getDocumentWorkspaceId(documentId: string): Promise<string> {
+  const results = await database.query<{ workspace_id: string }>({
+    text: `
+        SELECT
+          workspace_id
+        FROM
+          documents
+        WHERE
+          id = $1
+          AND deleted_at IS NULL
+        ;`,
+    values: [documentId],
+  });
+
+  const workspaceId = results.rows[0]?.workspace_id;
+
+  if (!workspaceId) {
+    throw new NotFoundError({
+      message: "O documento informado não foi encontrado.",
+      action: "Verifique se o identificador está correto.",
+    });
+  }
+
+  return workspaceId;
+}
+
+// Existence check only (the link belongs to this document) — no role
+// check, since every caller already did its own requireRole() first.
+async function findLinkRow(
+  id: string,
+  documentId: string,
+): Promise<ShareLinkResponse> {
+  const results = await database.query<ShareLink>({
+    text: `
+        SELECT
+          ${SHARE_LINK_COLUMNS}
+        FROM
+          share_links
+        WHERE
+          id = $1
+          AND document_id = $2
+        LIMIT
+          1
+        ;`,
+    values: [id, documentId],
+  });
+
+  if (!results.rowCount) {
+    throw new NotFoundError({
+      message: "O link de compartilhamento informado não foi encontrado.",
+      action: "Verifique se o identificador está correto.",
+    });
+  }
+
+  return toResponse(results.rows[0]!, await getAllowedEmails(id));
+}
+
 async function create(
   documentId: string,
   userId: string,
   input: ShareLinkCreateInput,
 ): Promise<ShareLinkResponse> {
+  const workspaceId = await getDocumentWorkspaceId(documentId);
+  await workspace.requireRole(workspaceId, userId, "editor");
+
   const id = crypto.randomUUID();
   const passwordHash = input.password
     ? await password.hash(input.password)
@@ -186,7 +250,11 @@ async function create(
 
 async function findAllByDocumentId(
   documentId: string,
+  userId: string,
 ): Promise<ShareLinkResponse[]> {
+  const workspaceId = await getDocumentWorkspaceId(documentId);
+  await workspace.requireRole(workspaceId, userId, "viewer");
+
   const results = await database.query<ShareLink>({
     text: `
         SELECT
@@ -211,38 +279,23 @@ async function findAllByDocumentId(
 async function findOneById(
   id: string,
   documentId: string,
+  userId: string,
 ): Promise<ShareLinkResponse> {
-  const results = await database.query<ShareLink>({
-    text: `
-        SELECT
-          ${SHARE_LINK_COLUMNS}
-        FROM
-          share_links
-        WHERE
-          id = $1
-          AND document_id = $2
-        LIMIT
-          1
-        ;`,
-    values: [id, documentId],
-  });
+  const workspaceId = await getDocumentWorkspaceId(documentId);
+  await workspace.requireRole(workspaceId, userId, "viewer");
 
-  if (!results.rowCount) {
-    throw new NotFoundError({
-      message: "O link de compartilhamento informado não foi encontrado.",
-      action: "Verifique se o identificador está correto.",
-    });
-  }
-
-  return toResponse(results.rows[0]!, await getAllowedEmails(id));
+  return findLinkRow(id, documentId);
 }
 
 async function updateById(
   id: string,
   documentId: string,
+  userId: string,
   input: ShareLinkUpdateInput,
 ): Promise<ShareLinkResponse> {
-  await findOneById(id, documentId);
+  const workspaceId = await getDocumentWorkspaceId(documentId);
+  await workspace.requireRole(workspaceId, userId, "editor");
+  await findLinkRow(id, documentId);
 
   const setClauses: string[] = [];
   const values: unknown[] = [];
@@ -331,8 +384,11 @@ async function updateById(
 async function revokeById(
   id: string,
   documentId: string,
+  userId: string,
 ): Promise<ShareLinkResponse> {
-  await findOneById(id, documentId);
+  const workspaceId = await getDocumentWorkspaceId(documentId);
+  await workspace.requireRole(workspaceId, userId, "editor");
+  await findLinkRow(id, documentId);
 
   const results = await database.query<ShareLink>({
     text: `
@@ -390,17 +446,21 @@ async function fetchAndValidateTokenRow(
           d.page_count,
           d.storage_key,
           d.deleted_at AS document_deleted_at,
-          -- The viewer chat needs the document owner's own Anthropic key
-          -- (bring-your-own-key) — this tells the frontend whether to show
-          -- the chat toggle at all, without exposing anything about the
-          -- key itself.
-          (u.ai_api_key_encrypted IS NOT NULL) AS ai_chat_available
+          -- The viewer chat needs the document's workspace creator's own
+          -- Anthropic key (bring-your-own-key, resolved per-workspace since
+          -- US-32 — not the uploader, who might be a different member of a
+          -- shared workspace) — this tells the frontend whether to show the
+          -- chat toggle at all, without exposing anything about the key
+          -- itself.
+          (creator.ai_api_key_encrypted IS NOT NULL) AS ai_chat_available
         FROM
           share_links sl
         JOIN
           documents d ON d.id = sl.document_id
         JOIN
-          users u ON u.id = d.user_id
+          workspaces w ON w.id = d.workspace_id
+        JOIN
+          users creator ON creator.id = w.created_by
         WHERE
           sl.token = $1
         LIMIT

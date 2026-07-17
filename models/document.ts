@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import database from "../infra/database";
-import { NotFoundError, ForbiddenError } from "../infra/errors";
+import { NotFoundError } from "../infra/errors";
+import workspace from "./workspace";
 import type {
   Document,
   DocumentCreateInput,
@@ -13,11 +14,16 @@ import type {
 
 const DOCUMENT_COLUMNS = `
   id, title, description, original_filename, storage_key, mime_type,
-  size_bytes, page_count, user_id, ai_summary, ai_summary_generated_at,
-  created_at, updated_at, deleted_at
+  size_bytes, page_count, user_id, workspace_id, ai_summary,
+  ai_summary_generated_at, created_at, updated_at, deleted_at
 `;
 
 async function create(input: DocumentCreateInput): Promise<DocumentResponse> {
+  // input.user_id is always the acting/authenticated user (the uploader),
+  // never someone else's id on their behalf — same value doubles as the
+  // audit field on the inserted row and the identity checked here.
+  await workspace.requireRole(input.workspace_id, input.user_id, "editor");
+
   const id = crypto.randomUUID();
 
   const results = await database.query<Document>({
@@ -25,10 +31,10 @@ async function create(input: DocumentCreateInput): Promise<DocumentResponse> {
         INSERT INTO
           documents (
             id, title, description, original_filename, storage_key,
-            mime_type, size_bytes, page_count, user_id
+            mime_type, size_bytes, page_count, user_id, workspace_id
           )
         VALUES
-          ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING
           ${DOCUMENT_COLUMNS}
         ;`,
@@ -42,36 +48,45 @@ async function create(input: DocumentCreateInput): Promise<DocumentResponse> {
       input.size_bytes,
       input.page_count,
       input.user_id,
+      input.workspace_id,
     ],
   });
 
   return results.rows[0]!;
 }
 
-async function findAllByUserId(
-  userId: string,
+async function findAllByWorkspaceId(
+  workspaceId: string,
   pagination: { page: number; perPage: number },
 ): Promise<DocumentListResponse> {
   const offset = (pagination.page - 1) * pagination.perPage;
 
   const [documentsResult, countResult] = await Promise.all([
-    database.query<Document>({
+    database.query<Document & { uploaded_by_username: string }>({
       text: `
           SELECT
-            ${DOCUMENT_COLUMNS}
+            documents.id, documents.title, documents.description,
+            documents.original_filename, documents.storage_key,
+            documents.mime_type, documents.size_bytes, documents.page_count,
+            documents.user_id, documents.workspace_id, documents.ai_summary,
+            documents.ai_summary_generated_at, documents.created_at,
+            documents.updated_at, documents.deleted_at,
+            users.username AS uploaded_by_username
           FROM
             documents
+          JOIN
+            users ON users.id = documents.user_id
           WHERE
-            user_id = $1
-            AND deleted_at IS NULL
+            documents.workspace_id = $1
+            AND documents.deleted_at IS NULL
           ORDER BY
-            created_at DESC
+            documents.created_at DESC
           LIMIT
             $2
           OFFSET
             $3
           ;`,
-      values: [userId, pagination.perPage, offset],
+      values: [workspaceId, pagination.perPage, offset],
     }),
     database.query<{ count: string }>({
       text: `
@@ -80,10 +95,10 @@ async function findAllByUserId(
           FROM
             documents
           WHERE
-            user_id = $1
+            workspace_id = $1
             AND deleted_at IS NULL
           ;`,
-      values: [userId],
+      values: [workspaceId],
     }),
   ]);
 
@@ -93,10 +108,10 @@ async function findAllByUserId(
   };
 }
 
-async function findOneById(
-  id: string,
-  userId: string,
-): Promise<DocumentResponse> {
+// No role check — an existence/deleted_at check only. Every public function
+// below layers its own requireRole() on top, at whatever level (viewer for
+// reads, editor for writes) is appropriate for that operation.
+async function findOneByIdRaw(id: string): Promise<Document> {
   const results = await database.query<Document>({
     text: `
         SELECT
@@ -119,14 +134,16 @@ async function findOneById(
     });
   }
 
-  const document = results.rows[0]!;
+  return results.rows[0]!;
+}
 
-  if (document.user_id !== userId) {
-    throw new ForbiddenError({
-      message: "Você não tem permissão para acessar este documento.",
-      action: "Verifique se você é o proprietário deste documento.",
-    });
-  }
+async function findOneById(
+  id: string,
+  userId: string,
+): Promise<DocumentResponse> {
+  const document = await findOneByIdRaw(id);
+
+  await workspace.requireRole(document.workspace_id, userId, "viewer");
 
   return document;
 }
@@ -136,7 +153,9 @@ async function updateById(
   userId: string,
   input: DocumentUpdateInput,
 ): Promise<DocumentResponse> {
-  await findOneById(id, userId);
+  const document = await findOneByIdRaw(id);
+
+  await workspace.requireRole(document.workspace_id, userId, "editor");
 
   const results = await database.query<Document>({
     text: `
@@ -161,7 +180,9 @@ async function deleteById(
   id: string,
   userId: string,
 ): Promise<{ storage_key: string }> {
-  await findOneById(id, userId);
+  const document = await findOneByIdRaw(id);
+
+  await workspace.requireRole(document.workspace_id, userId, "editor");
 
   const results = await database.query<{ storage_key: string }>({
     text: `
@@ -207,31 +228,13 @@ async function updateSummary(
   return { summary: row.ai_summary, generated_at: row.ai_summary_generated_at };
 }
 
-async function getOwnerId(id: string): Promise<string | null> {
-  const results = await database.query<{ user_id: string }>({
-    text: `
-        SELECT
-          user_id
-        FROM
-          documents
-        WHERE
-          id = $1
-          AND deleted_at IS NULL
-        ;`,
-    values: [id],
-  });
-
-  return results.rows[0]?.user_id ?? null;
-}
-
 const document: DocumentModel = {
   create,
-  findAllByUserId,
+  findAllByWorkspaceId,
   findOneById,
   updateById,
   deleteById,
   updateSummary,
-  getOwnerId,
 };
 
 export default document;

@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { AiSettingsForm } from "@/components/settings/AiSettingsForm";
+import { TeamSettingsForm } from "@/components/workspaces/TeamSettingsForm";
 import { DangerZone } from "@/components/settings/DangerZone";
 import { Separator } from "@/components/ui/separator";
 
@@ -44,6 +45,13 @@ export default async function SettingsPage() {
         <div>
           <h2 className="mb-3 text-lg font-semibold">IA</h2>
           <AiSettingsForm username={publicUser.username} />
+        </div>
+
+        <Separator />
+
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Equipe</h2>
+          <TeamSettingsForm />
         </div>
 
         <Separator />

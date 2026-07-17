@@ -3,7 +3,7 @@ import { FileText, FileType, Presentation, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatFileSize, formatDate } from "@/lib/formatters";
-import type { DocumentResponse } from "@/types/index";
+import type { DocumentListItem, DocumentResponse } from "@/types/index";
 
 const MIME_ICONS: Record<string, typeof FileText> = {
   "application/pdf": FileText,
@@ -14,11 +14,22 @@ const MIME_ICONS: Record<string, typeof FileText> = {
 };
 
 interface DocumentCardProps {
-  doc: DocumentResponse;
+  doc: DocumentListItem;
+  // Only meaningful in a shared workspace — hidden entirely for a personal
+  // workspace or one where every visible document has the same uploader.
+  showUploader: boolean;
+  // False for a viewer-role member: the backend already rejects the
+  // DELETE, but hiding the button avoids offering an action that just fails.
+  canEdit: boolean;
   onDeleteRequest: (doc: DocumentResponse) => void;
 }
 
-export function DocumentCard({ doc, onDeleteRequest }: DocumentCardProps) {
+export function DocumentCard({
+  doc,
+  showUploader,
+  canEdit,
+  onDeleteRequest,
+}: DocumentCardProps) {
   const Icon = MIME_ICONS[doc.mime_type] ?? FileText;
 
   return (
@@ -38,17 +49,24 @@ export function DocumentCard({ doc, onDeleteRequest }: DocumentCardProps) {
             {doc.page_count !== null && ` · ${doc.page_count} páginas`}
             {` · ${formatDate(doc.created_at)}`}
           </p>
+          {showUploader && (
+            <p className="text-xs text-muted-foreground">
+              Enviado por {doc.uploaded_by_username}
+            </p>
+          )}
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Excluir documento"
-          onClick={() => onDeleteRequest(doc)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {canEdit && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Excluir documento"
+            onClick={() => onDeleteRequest(doc)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
