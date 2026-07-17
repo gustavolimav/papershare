@@ -6,3 +6,12 @@ tsconfig.tsbuildinfo
 uploads/
 .DS_Store
 .claude/
+
+# Real secrets (Stripe, etc.) go here, never in .env.development — that
+# file is committed and only ever holds dummy/local-only values.
+.env*.local
+
+# Claude Code skill installs (npx skills add) — local agent tooling, not
+# part of the app.
+.agents/
+skills-lock.json
