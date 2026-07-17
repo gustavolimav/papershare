@@ -32,6 +32,25 @@ export interface Session {
   updated_at: Date;
 }
 
+export type WorkspaceRole = "owner" | "editor" | "viewer";
+
+export interface Workspace {
+  id: string;
+  name: string;
+  created_by: string;
+  is_personal: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface WorkspaceMember {
+  workspace_id: string;
+  user_id: string;
+  role: WorkspaceRole;
+  created_at: Date;
+}
+
 export interface Document {
   id: string;
   title: string;

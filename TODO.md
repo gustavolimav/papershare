@@ -452,9 +452,9 @@ it's sequenced after the lower-effort wins above.
       the workspace itself). Every user gets an automatic personal
       workspace at registration; documents always belong to exactly one
       workspace (no more direct user ownership). Broken into 6 stories:
-  - [ ] US-28 — Workspace data model & migration (`workspaces`,
+  - [x] US-28 — Workspace data model & migration (`workspaces`,
         `workspace_members`, `documents.workspace_id` backfill,
-        `users.active_workspace_id`)
+        `users.active_workspace_id`). See CHANGELOG for details.
   - [ ] US-29 — Workspace CRUD + switching (create/list/rename/delete,
         `.../activate`)
   - [ ] US-30 — Member invitation & role management (invite by email —
