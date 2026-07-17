@@ -218,11 +218,19 @@ async function runUpdateQuery(userWithNewValues: User, username: string) {
   }
 }
 
+// Also creates the user's personal workspace + owner membership + active
+// workspace pointer, atomically with the user row itself — a user with no
+// personal workspace is a broken state, so this all happens in one
+// transaction on a dedicated client rather than the shared pool.
 async function runInsertQuery(
   userInputValues: UserCreateInput & { password: string },
 ): Promise<UserPublic> {
+  const client = await database.getNewClient();
+
   try {
-    const results = await database.query<UserPublic>({
+    await client.query("BEGIN");
+
+    const userResult = await client.query({
       text: `
         INSERT INTO
           users (username, password, email)
@@ -238,9 +246,52 @@ async function runInsertQuery(
       ],
     });
 
-    return results.rows[0]!;
+    const newUser = userResult.rows[0] as UserPublic;
+
+    const workspaceResult = await client.query({
+      text: `
+        INSERT INTO
+          workspaces (name, created_by, is_personal)
+        VALUES
+          ($1, $2, true)
+        RETURNING
+          id
+        ;`,
+      values: [newUser.username, newUser.id],
+    });
+
+    const workspaceId = (workspaceResult.rows[0] as { id: string }).id;
+
+    await client.query({
+      text: `
+        INSERT INTO
+          workspace_members (workspace_id, user_id, role)
+        VALUES
+          ($1, $2, 'owner')
+        ;`,
+      values: [workspaceId, newUser.id],
+    });
+
+    await client.query({
+      text: `
+        UPDATE
+          users
+        SET
+          active_workspace_id = $1
+        WHERE
+          id = $2
+        ;`,
+      values: [workspaceId, newUser.id],
+    });
+
+    await client.query("COMMIT");
+
+    return newUser;
   } catch (error) {
+    await client.query("ROLLBACK");
     throwUniqueViolationAsValidationError(error);
+  } finally {
+    await client.end();
   }
 }
 
@@ -248,13 +299,19 @@ async function runInsertQuery(
 // two concurrent requests can both pass the SELECT check before either INSERTs.
 // The DB's UNIQUE constraint is the actual source of truth; this just translates
 // its violation into the same ValidationError the pre-check would have thrown.
+//
+// Two error shapes are handled here: a raw pg error (thrown by the dedicated
+// transaction client in runInsertQuery, which bypasses infra/database.ts's
+// pool wrapper) and a ServiceError-wrapped one (thrown via database.query()'s
+// pool, used by runUpdateQuery below).
 function isUniqueViolation(
   error: unknown,
-): error is ServiceError & { cause: { code: string; constraint?: string } } {
-  return (
-    error instanceof ServiceError &&
-    (error.cause as { code?: string } | undefined)?.code === "23505"
-  );
+): error is { code: string; constraint?: string } {
+  if (error instanceof ServiceError) {
+    return (error.cause as { code?: string } | undefined)?.code === "23505";
+  }
+
+  return (error as { code?: string } | undefined)?.code === "23505";
 }
 
 function throwUniqueViolationAsValidationError(error: unknown): never {
@@ -262,7 +319,10 @@ function throwUniqueViolationAsValidationError(error: unknown): never {
     throw error;
   }
 
-  const constraint = error.cause.constraint;
+  const constraint =
+    error instanceof ServiceError
+      ? (error.cause as { constraint?: string }).constraint
+      : (error as { constraint?: string }).constraint;
 
   if (constraint === "users_email_key") {
     throw new ValidationError({

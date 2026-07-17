@@ -1,3 +1,4 @@
+import database from "infra/database";
 import password from "models/password";
 import user from "models/user";
 import orchestrator from "tests/orchestrator";
@@ -56,6 +57,77 @@ describe("POST /api/v1/users", () => {
       );
 
       expect(incorrectPasswordCompare).toBeFalsy();
+    });
+
+    test("Creates a personal workspace with the new user as its owner", async () => {
+      const response = await fetch("http://localhost:3000/api/v1/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "workspaceowner",
+          password: "password123",
+          email: "workspaceowner@gmail.com",
+        }),
+      });
+
+      expect(response.status).toBe(201);
+
+      const responseBody = await response.json();
+
+      const results = await database.query({
+        text: `
+          SELECT
+            workspaces.id,
+            workspaces.is_personal,
+            workspaces.created_by,
+            workspace_members.role,
+            users.active_workspace_id
+          FROM
+            users
+          JOIN
+            workspaces ON workspaces.id = users.active_workspace_id
+          JOIN
+            workspace_members ON workspace_members.workspace_id = workspaces.id
+            AND workspace_members.user_id = users.id
+          WHERE
+            users.id = $1
+          ;`,
+        values: [responseBody.id],
+      });
+
+      expect(results.rowCount).toBe(1);
+
+      const row = results.rows[0];
+
+      expect(row.is_personal).toBe(true);
+      expect(row.created_by).toBe(responseBody.id);
+      expect(row.role).toBe("owner");
+      expect(row.active_workspace_id).toBe(row.id);
+    });
+
+    test("Re-running migrations after a user already exists does not error or duplicate their workspace", async () => {
+      const createdUser = await orchestrator.createUser({
+        username: "migrationidempotent",
+        email: "migrationidempotent@gmail.com",
+      });
+
+      await expect(orchestrator.runPendingMigrations()).resolves.not.toThrow();
+
+      const results = await database.query({
+        text: `
+          SELECT
+            count(*)::int AS count
+          FROM
+            workspaces
+          WHERE
+            created_by = $1
+          ;`,
+        values: [createdUser.id],
+      });
+
+      expect(results.rows[0].count).toBe(1);
     });
 
     test("With duplicated email", async () => {
