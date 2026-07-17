@@ -414,7 +414,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
         />
       </div>
 
-      {!isChatOpen && (
+      {link.ai_chat_available && !isChatOpen && (
         <Button
           type="button"
           variant="default"
@@ -426,7 +426,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
         </Button>
       )}
 
-      {isChatOpen && (
+      {link.ai_chat_available && isChatOpen && (
         <ChatPanel
           token={token}
           headers={chatHeaders}
