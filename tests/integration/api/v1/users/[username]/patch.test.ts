@@ -127,6 +127,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         is_superadmin: false,
+        active_workspace_id: responseBody.active_workspace_id,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -166,6 +167,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         is_superadmin: false,
+        active_workspace_id: responseBody.active_workspace_id,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -207,6 +209,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         is_superadmin: false,
+        active_workspace_id: responseBody.active_workspace_id,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);

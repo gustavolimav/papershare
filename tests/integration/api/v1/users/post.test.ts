@@ -36,11 +36,13 @@ describe("POST /api/v1/users", () => {
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         is_superadmin: false,
+        active_workspace_id: responseBody.active_workspace_id,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.active_workspace_id).not.toBeNull();
 
       const userFromDatabase = await user.findOneByUsername("testuser1");
 

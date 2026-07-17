@@ -455,8 +455,8 @@ it's sequenced after the lower-effort wins above.
   - [x] US-28 — Workspace data model & migration (`workspaces`,
         `workspace_members`, `documents.workspace_id` backfill,
         `users.active_workspace_id`). See CHANGELOG for details.
-  - [ ] US-29 — Workspace CRUD + switching (create/list/rename/delete,
-        `.../activate`)
+  - [x] US-29 — Workspace CRUD + switching (create/list/rename/delete,
+        `.../activate`). See CHANGELOG for details.
   - [ ] US-30 — Member invitation & role management (invite by email —
         existing accounts only, no token/accept flow — role change,
         remove/leave, last-owner protection)

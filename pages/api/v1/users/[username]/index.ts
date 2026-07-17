@@ -42,6 +42,7 @@ async function getHandler(
     created_at: user.created_at,
     updated_at: user.updated_at,
     is_superadmin: user.is_superadmin,
+    active_workspace_id: user.active_workspace_id,
   });
 }
 
@@ -72,6 +73,7 @@ async function patchHandler(
     created_at: updatedUser.created_at,
     updated_at: updatedUser.updated_at,
     is_superadmin: updatedUser.is_superadmin,
+    active_workspace_id: updatedUser.active_workspace_id,
   });
 }
 

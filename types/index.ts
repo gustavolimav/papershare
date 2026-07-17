@@ -12,6 +12,7 @@ export interface User {
   updated_at: Date;
   deleted_at: Date | null;
   is_superadmin: boolean;
+  active_workspace_id: string | null;
 }
 
 export interface UserPublic {
@@ -21,6 +22,7 @@ export interface UserPublic {
   created_at: Date;
   updated_at: Date;
   is_superadmin: boolean;
+  active_workspace_id: string | null;
 }
 
 export interface Session {
@@ -42,6 +44,10 @@ export interface Workspace {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
+}
+
+export interface WorkspaceWithRole extends Workspace {
+  role: WorkspaceRole;
 }
 
 export interface WorkspaceMember {
@@ -477,6 +483,27 @@ export interface DocumentModel {
   // viewer chat) that needs to resolve a document's owner without an
   // authenticated request of its own.
   getOwnerId(id: string): Promise<string | null>;
+}
+
+export interface WorkspaceModel {
+  create(userId: string, name: string): Promise<Workspace>;
+  findAllByUserId(userId: string): Promise<WorkspaceWithRole[]>;
+  // Throws NotFoundError if the workspace doesn't exist, is deleted, or the
+  // user isn't a member (same response for all three, to avoid leaking
+  // which workspaces exist); throws ForbiddenError if the user's role is
+  // below minRole. Central authorization check reused by US-30/US-31.
+  requireRole(
+    workspaceId: string,
+    userId: string,
+    minRole: WorkspaceRole,
+  ): Promise<void>;
+  updateById(
+    workspaceId: string,
+    userId: string,
+    name: string,
+  ): Promise<Workspace>;
+  deleteById(workspaceId: string, userId: string): Promise<void>;
+  activate(workspaceId: string, userId: string): Promise<Workspace>;
 }
 
 export interface ShareLinkModel {

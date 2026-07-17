@@ -27,5 +27,6 @@ async function postHandler(
     created_at: newUser.created_at,
     updated_at: newUser.updated_at,
     is_superadmin: newUser.is_superadmin,
+    active_workspace_id: newUser.active_workspace_id,
   });
 }
