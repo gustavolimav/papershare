@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { DocumentMeta } from "@/components/documents/DocumentMeta";
+import { SummaryCard } from "@/components/documents/SummaryCard";
 import { ShareLinkList } from "@/components/share-links/ShareLinkList";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -52,6 +53,8 @@ export function DocumentDetailView({
   return (
     <div className="space-y-8">
       <DocumentMeta doc={doc} onUpdated={setDoc} />
+
+      <SummaryCard doc={doc} onUpdated={setDoc} />
 
       <Button
         type="button"

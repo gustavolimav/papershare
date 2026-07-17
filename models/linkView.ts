@@ -282,6 +282,39 @@ async function getPageBreakdown(linkId: string): Promise<PageBreakdown[]> {
   return results.rows;
 }
 
+// Document-level equivalent of getPageBreakdown, aggregating across every
+// share link of the document — unlike a page-by-page breakdown across
+// *different* documents (which wouldn't mean anything), every link here
+// points at the exact same file, so combining them gives a real per-page
+// drop-off picture instead of the cruder avg_pages_viewed estimate.
+async function getPageBreakdownByDocumentId(
+  documentId: string,
+): Promise<PageBreakdown[]> {
+  const results = await database.query<PageBreakdown>({
+    text: `
+        SELECT
+          lvp.page_number,
+          AVG(lvp.time_on_page_seconds)::float AS avg_time_seconds,
+          COUNT(DISTINCT lvp.link_view_id)::int AS view_count
+        FROM
+          link_view_pages lvp
+        JOIN
+          link_views lv ON lv.id = lvp.link_view_id
+        JOIN
+          share_links sl ON sl.id = lv.share_link_id
+        WHERE
+          sl.document_id = $1
+        GROUP BY
+          lvp.page_number
+        ORDER BY
+          lvp.page_number
+        ;`,
+    values: [documentId],
+  });
+
+  return results.rows;
+}
+
 // Weighted blend of four signals into a single 0-100 "who should I follow
 // up with first" score — the 2026 market trend cited in TODO.md is scoring
 // viewer interest as one number instead of asking a sales/IR team to eyeball
@@ -336,30 +369,38 @@ function computeEngagementScore(
 // more than one link_views row, grouped here by fingerprint. Rows with no
 // fingerprint (dedup wasn't possible) group by their own id, so they still
 // show up individually instead of collapsing into one bucket.
+interface ViewerAggregateRow {
+  viewer_fingerprint: string | null;
+  viewer_email: string | null;
+  viewer_name: string | null;
+  total_time_on_page: number;
+  max_pages_viewed: number;
+  visit_count: number;
+  downloaded: boolean;
+  first_viewed_at: Date;
+  last_viewed_at: Date;
+}
+
+const VIEWER_AGGREGATE_SELECT = `
+  MAX(viewer_fingerprint) AS viewer_fingerprint,
+  (array_agg(viewer_email ORDER BY updated_at DESC) FILTER (WHERE viewer_email IS NOT NULL))[1] AS viewer_email,
+  (array_agg(viewer_name ORDER BY updated_at DESC) FILTER (WHERE viewer_name IS NOT NULL))[1] AS viewer_name,
+  COALESCE(SUM(time_on_page), 0)::int AS total_time_on_page,
+  COALESCE(MAX(pages_viewed), 0)::int AS max_pages_viewed,
+  COUNT(*)::int AS visit_count,
+  BOOL_OR(downloaded) AS downloaded,
+  MIN(created_at) AS first_viewed_at,
+  MAX(updated_at) AS last_viewed_at
+`;
+
 async function getViewersByLinkId(
   linkId: string,
   pageCount: number | null,
 ): Promise<ViewerEngagement[]> {
-  const results = await database.query<{
-    viewer_email: string | null;
-    viewer_name: string | null;
-    total_time_on_page: number;
-    max_pages_viewed: number;
-    visit_count: number;
-    downloaded: boolean;
-    first_viewed_at: Date;
-    last_viewed_at: Date;
-  }>({
+  const results = await database.query<ViewerAggregateRow>({
     text: `
         SELECT
-          (array_agg(viewer_email ORDER BY updated_at DESC) FILTER (WHERE viewer_email IS NOT NULL))[1] AS viewer_email,
-          (array_agg(viewer_name ORDER BY updated_at DESC) FILTER (WHERE viewer_name IS NOT NULL))[1] AS viewer_name,
-          COALESCE(SUM(time_on_page), 0)::int AS total_time_on_page,
-          COALESCE(MAX(pages_viewed), 0)::int AS max_pages_viewed,
-          COUNT(*)::int AS visit_count,
-          BOOL_OR(downloaded) AS downloaded,
-          MIN(created_at) AS first_viewed_at,
-          MAX(updated_at) AS last_viewed_at
+          ${VIEWER_AGGREGATE_SELECT}
         FROM
           link_views
         WHERE
@@ -376,6 +417,38 @@ async function getViewersByLinkId(
       engagement_score: computeEngagementScore(row, pageCount),
     }))
     .sort((a, b) => b.engagement_score - a.engagement_score);
+}
+
+// Same aggregation as getViewersByLinkId, scoped to a single viewer — used
+// by the follow-up email suggestion (US-27), which only needs one viewer's
+// engagement data, not the whole link's list.
+async function getViewerByFingerprint(
+  linkId: string,
+  fingerprint: string,
+  pageCount: number | null,
+): Promise<ViewerEngagement | null> {
+  const results = await database.query<ViewerAggregateRow>({
+    text: `
+        SELECT
+          ${VIEWER_AGGREGATE_SELECT}
+        FROM
+          link_views
+        WHERE
+          share_link_id = $1
+          AND viewer_fingerprint = $2
+        GROUP BY
+          viewer_fingerprint
+        ;`,
+    values: [linkId, fingerprint],
+  });
+
+  if (!results.rowCount) {
+    return null;
+  }
+
+  const row = results.rows[0]!;
+
+  return { ...row, engagement_score: computeEngagementScore(row, pageCount) };
 }
 
 async function getAnalyticsByLinkId(
@@ -490,6 +563,8 @@ const linkView: LinkViewModel = {
   recordView,
   getAnalyticsByLinkId,
   getAnalyticsByDocumentId,
+  getPageBreakdownByDocumentId,
+  getViewerByFingerprint,
 };
 
 export default linkView;

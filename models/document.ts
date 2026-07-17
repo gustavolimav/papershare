@@ -7,12 +7,14 @@ import type {
   DocumentUpdateInput,
   DocumentResponse,
   DocumentListResponse,
+  DocumentSummaryResponse,
   DocumentModel,
 } from "../types/index";
 
 const DOCUMENT_COLUMNS = `
   id, title, description, original_filename, storage_key, mime_type,
-  size_bytes, page_count, user_id, created_at, updated_at, deleted_at
+  size_bytes, page_count, user_id, ai_summary, ai_summary_generated_at,
+  created_at, updated_at, deleted_at
 `;
 
 async function create(input: DocumentCreateInput): Promise<DocumentResponse> {
@@ -178,12 +180,40 @@ async function deleteById(
   return { storage_key: results.rows[0]!.storage_key };
 }
 
+async function updateSummary(
+  id: string,
+  summary: string,
+): Promise<DocumentSummaryResponse> {
+  const results = await database.query<{
+    ai_summary: string | null;
+    ai_summary_generated_at: Date | null;
+  }>({
+    text: `
+        UPDATE
+          documents
+        SET
+          ai_summary = $1,
+          ai_summary_generated_at = NOW()
+        WHERE
+          id = $2
+        RETURNING
+          ai_summary, ai_summary_generated_at
+        ;`,
+    values: [summary, id],
+  });
+
+  const row = results.rows[0]!;
+
+  return { summary: row.ai_summary, generated_at: row.ai_summary_generated_at };
+}
+
 const document: DocumentModel = {
   create,
   findAllByUserId,
   findOneById,
   updateById,
   deleteById,
+  updateSummary,
 };
 
 export default document;

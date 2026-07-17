@@ -394,22 +394,40 @@ engagement scoring via cirrusinsight.com).
 
 ---
 
-## Phase 8 — AI Features ⏳
+## Phase 8 — AI Features ✅
 
 **Goal:** Add AI-powered value on top of existing data.
 
-> **Tools to evaluate:** Flowise (drag-and-drop agent builder, fast prototyping) or LangChain (full control, better for RAG pipelines over user documents).
+> **Tools to evaluate:** Flowise (drag-and-drop agent builder, fast prototyping) or LangChain (full control, better for RAG pipelines over user documents). Ended up needing neither — a thin shared Anthropic client wrapper (`infra/ai.ts`) was enough for all six stories.
 
-- [ ] Auto-summarization on upload (extract text → Claude API → store summary)
-- [ ] `GET /api/v1/documents/[id]/summary` — Return AI summary
-- [ ] "Ask about this document" chat interface on the viewer page (RAG)
-- [ ] Analytics insights: natural language summary of engagement ("Most viewers drop off at page 4")
-- [ ] Improvement suggestions based on engagement drop-off data
-- [ ] AI-drafted follow-up email suggestion for the document owner, based on
+- [x] Auto-summarization on upload (extract text → Claude API → store summary).
+      Migration `019` adds `documents.ai_summary`/`ai_summary_generated_at`;
+      fire-and-forget after upload, PDF-only extraction for this pass. See
+      CHANGELOG for details.
+- [x] `GET /api/v1/documents/[id]/summary` — Return AI summary. `POST` to the
+      same route regenerates synchronously, rate-limited to 3/hour per user.
+      See CHANGELOG for details.
+- [x] "Ask about this document" chat interface on the viewer page (RAG).
+      `POST /api/v1/share/[token]/chat`, SSE streaming, keyword-based
+      retrieval over per-page chunks (migration `022`) — no vector DB for
+      this MVP. See CHANGELOG for details.
+- [x] Analytics insights: natural language summary of engagement ("Most
+      viewers drop off at page 4"). Cached on the document row (migration
+      `021`), regenerated only when the underlying analytics change. See
+      CHANGELOG for details.
+- [x] Improvement suggestions based on engagement drop-off data. Uses real
+      per-page data aggregated across a document's links
+      (`getPageBreakdownByDocumentId`) rather than the `avg_pages_viewed`
+      estimate originally scoped here — Phase 7's per-page tracking landed
+      after this item was written, so the more precise version was cheap to
+      build instead. See CHANGELOG for details.
+- [x] AI-drafted follow-up email suggestion for the document owner, based on
       a viewer's engagement score and the page they dropped off at (depends
       on Phase 7's per-page tracking + engagement score) — matches the 2026
       "content intelligence" trend: knowing what to say next, not just what
-      was viewed
+      was viewed. Spec written this session as
+      `user-stories/phase-7-ai/US-27-followup-email-suggestion.md`. See
+      CHANGELOG for details.
 
 ---
 

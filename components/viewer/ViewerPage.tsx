@@ -5,6 +5,9 @@ import { PasswordGate } from "@/components/viewer/PasswordGate";
 import { EmailGate } from "@/components/viewer/EmailGate";
 import { NdaGate } from "@/components/viewer/NdaGate";
 import { PDFViewer } from "@/components/viewer/PDFViewer";
+import { ChatPanel } from "@/components/viewer/ChatPanel";
+import { MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { getViewerFingerprint } from "@/lib/fingerprint";
 import type { ShareLinkWithDocument } from "@/types/index";
 
@@ -42,6 +45,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
   const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
   const [isSubmittingNda, setIsSubmittingNda] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const fingerprintRef = useRef<string>("");
   const startTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef(1);
@@ -384,23 +388,51 @@ export function ViewerPage({ token }: ViewerPageProps) {
     );
   }
 
+  const chatHeaders: HeadersInit = {
+    ...(passwordRef.current ? { "X-Share-Password": passwordRef.current } : {}),
+    ...(emailRef.current ? { "X-Viewer-Email": emailRef.current } : {}),
+    ...(nameRef.current ? { "X-Viewer-Name": nameRef.current } : {}),
+  };
+
   return (
-    <div style={accentStyle}>
-      {link.brand_welcome_message && (
-        <p className="border-b bg-muted/30 px-4 py-2 text-center text-sm text-muted-foreground">
-          {link.brand_welcome_message}
-        </p>
+    <div className="flex h-screen" style={accentStyle}>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {link.brand_welcome_message && (
+          <p className="border-b bg-muted/30 px-4 py-2 text-center text-sm text-muted-foreground">
+            {link.brand_welcome_message}
+          </p>
+        )}
+        <PDFViewer
+          fileData={fileData}
+          allowDownload={link.allow_download}
+          onDownload={handleDownload}
+          onPageChange={(page) => {
+            pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
+            trackPageChange(page);
+          }}
+          watermarkText={watermarkTextRef.current}
+        />
+      </div>
+
+      {!isChatOpen && (
+        <Button
+          type="button"
+          variant="default"
+          className="fixed right-4 bottom-4 shadow-lg"
+          onClick={() => setIsChatOpen(true)}
+        >
+          <MessageCircle className="mr-1 h-4 w-4" /> Perguntar sobre este
+          documento
+        </Button>
       )}
-      <PDFViewer
-        fileData={fileData}
-        allowDownload={link.allow_download}
-        onDownload={handleDownload}
-        onPageChange={(page) => {
-          pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
-          trackPageChange(page);
-        }}
-        watermarkText={watermarkTextRef.current}
-      />
+
+      {isChatOpen && (
+        <ChatPanel
+          token={token}
+          headers={chatHeaders}
+          onClose={() => setIsChatOpen(false)}
+        />
+      )}
     </div>
   );
 }

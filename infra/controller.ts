@@ -4,6 +4,7 @@ import {
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
+  ServiceError,
   TooManyRequestsError,
   UnauthorizedError,
   ValidationError,
@@ -45,6 +46,11 @@ function onErrorHandler(
   }
 
   if (err instanceof TooManyRequestsError) {
+    response.status(err.statusCode).json(err);
+    return;
+  }
+
+  if (err instanceof ServiceError) {
     response.status(err.statusCode).json(err);
     return;
   }

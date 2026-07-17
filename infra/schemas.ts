@@ -207,6 +207,20 @@ export const linkViewCreateSchema = z.object({
   downloaded: z.boolean().optional(),
 });
 
+export const followupEmailCreateSchema = z.object({
+  viewer_fingerprint: z
+    .string()
+    .min(1, "O 'viewer_fingerprint' é obrigatório.")
+    .max(64, "O 'viewer_fingerprint' deve ter no máximo 64 caracteres."),
+});
+
+export const chatCreateSchema = z.object({
+  question: z
+    .string()
+    .min(1, "A 'question' é obrigatória.")
+    .max(2000, "A 'question' deve ter no máximo 2000 caracteres."),
+});
+
 // Used outside request-body validation (e.g. the X-Viewer-Email header on
 // the public share endpoints), where there's no Zod object schema to run.
 export function isValidEmail(value: string): boolean {

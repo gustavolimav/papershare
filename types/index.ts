@@ -42,12 +42,19 @@ export interface Document {
   size_bytes: number;
   page_count: number | null;
   user_id: string;
+  ai_summary: string | null;
+  ai_summary_generated_at: Date | null;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
 }
 
 export type DocumentResponse = Document;
+
+export interface DocumentSummaryResponse {
+  summary: string | null;
+  generated_at: Date | null;
+}
 
 export interface DocumentListResponse {
   documents: DocumentResponse[];
@@ -178,6 +185,11 @@ export interface PageBreakdown {
 // aggregated across all of their visits — a viewer can have more than one
 // link_views row if they return after the 30-min dedup window closes.
 export interface ViewerEngagement {
+  // A hashed per-browser fingerprint, not sensitive to the document owner
+  // who already sees the rest of this viewer's activity — surfaced so the
+  // frontend can reference a specific viewer (e.g. to request a follow-up
+  // email suggestion for them) without a separate persisted "viewer" id.
+  viewer_fingerprint: string | null;
   viewer_email: string | null;
   viewer_name: string | null;
   total_time_on_page: number;
@@ -190,6 +202,12 @@ export interface ViewerEngagement {
   // visits / download — see models/linkView.ts#computeEngagementScore for
   // the exact weights and rationale.
   engagement_score: number;
+}
+
+export interface FollowUpEmailSuggestion {
+  subject: string;
+  body: string;
+  viewer_email: string | null;
 }
 
 // Only on the per-link response: a page-by-page breakdown (and the
@@ -208,6 +226,18 @@ export interface TopLink {
 
 export interface DocumentAnalyticsResponse extends LinkViewAnalytics {
   top_links: TopLink[];
+}
+
+export interface Suggestion {
+  type: "drop_off" | "engagement";
+  message: string;
+  page_number: number | null;
+}
+
+export interface AnalyticsInsightResponse {
+  insight: string | null;
+  suggestions: Suggestion[];
+  generated_at: Date | null;
 }
 
 // Input Types
@@ -411,6 +441,7 @@ export interface DocumentModel {
     input: DocumentUpdateInput,
   ): Promise<DocumentResponse>;
   deleteById(id: string, userId: string): Promise<{ storage_key: string }>;
+  updateSummary(id: string, summary: string): Promise<DocumentSummaryResponse>;
 }
 
 export interface ShareLinkModel {
@@ -461,6 +492,12 @@ export interface LinkViewModel {
   getAnalyticsByDocumentId(
     documentId: string,
   ): Promise<DocumentAnalyticsResponse>;
+  getPageBreakdownByDocumentId(documentId: string): Promise<PageBreakdown[]>;
+  getViewerByFingerprint(
+    linkId: string,
+    fingerprint: string,
+    pageCount: number | null,
+  ): Promise<ViewerEngagement | null>;
 }
 
 export interface StorageModel {
