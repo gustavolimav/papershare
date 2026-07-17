@@ -25,7 +25,7 @@ describe("GET /api/v1/documents/[id]/summary", () => {
       { headers: { Cookie: attackerCookie } },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("With a nonexistent document", async () => {
@@ -75,7 +75,7 @@ describe("POST /api/v1/documents/[id]/summary", () => {
       { method: "POST", headers: { Cookie: attackerCookie } },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("With a nonexistent document", async () => {

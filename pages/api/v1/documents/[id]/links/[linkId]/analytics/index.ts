@@ -32,7 +32,7 @@ async function getHandler(
   const linkId = request.query.linkId as string;
 
   const doc = await document.findOneById(documentId, request.user!.id);
-  await shareLink.findOneById(linkId, documentId);
+  await shareLink.findOneById(linkId, documentId, request.user!.id);
 
   const analytics = await linkView.getAnalyticsByLinkId(linkId, doc.page_count);
 

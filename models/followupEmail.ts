@@ -5,6 +5,7 @@ import shareLink from "./shareLink";
 import linkView from "./linkView";
 import aiUsage from "./aiUsage";
 import user from "./user";
+import workspace from "./workspace";
 import type { FollowUpEmailSuggestion } from "../types/index";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -24,7 +25,7 @@ async function generateSuggestion(
   // would get the same 503 as a legitimate owner, leaking nothing useful
   // but also masking a real 403/404 behind an unrelated error.
   const doc = await document.findOneById(documentId, userId);
-  await shareLink.findOneById(linkId, documentId);
+  await shareLink.findOneById(linkId, documentId, userId);
 
   const viewer = await linkView.getViewerByFingerprint(
     linkId,
@@ -50,7 +51,10 @@ async function generateSuggestion(
   // Synchronous, user-initiated action — a missing API key should surface
   // as a clear error, not a silent no-op like the fire-and-forget
   // summarization/insights jobs. Checked last, right before the actual call.
-  const apiKey = await user.getAiApiKey(userId);
+  // Bring-your-own-key: resolved via the workspace's creator, not userId —
+  // the acting member might not be the one who configured a key.
+  const creatorId = await workspace.getCreatorIdForDocument(documentId);
+  const apiKey = creatorId ? await user.getAiApiKey(creatorId) : null;
   ai.requireApiKey(apiKey);
 
   const data = JSON.stringify({

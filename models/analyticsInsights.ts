@@ -1,6 +1,7 @@
 import database from "../infra/database";
 import ai from "../infra/ai";
 import document from "./document";
+import workspace from "./workspace";
 import linkView from "./linkView";
 import aiUsage from "./aiUsage";
 import user from "./user";
@@ -62,7 +63,11 @@ async function getInsights(
   );
 
   const pageBreakdown = await linkView.getPageBreakdownByDocumentId(documentId);
-  const apiKey = await user.getAiApiKey(userId);
+  // Bring-your-own-key: resolved via the workspace's creator (its single AI
+  // identity), not the requesting userId — a non-creator member viewing
+  // insights on a shared document must not fall back to their own key.
+  const creatorId = await workspace.getCreatorIdForDocument(documentId);
+  const apiKey = creatorId ? await user.getAiApiKey(creatorId) : null;
   const generated = await generateInsight(
     apiKey,
     doc.title,

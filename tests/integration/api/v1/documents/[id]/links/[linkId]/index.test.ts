@@ -52,7 +52,7 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
       },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("With a nonexistent link", async () => {
@@ -366,7 +366,7 @@ describe("DELETE /api/v1/documents/[id]/links/[linkId]", () => {
       { method: "DELETE", headers: { Cookie: attackerCookie } },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("With a nonexistent link", async () => {

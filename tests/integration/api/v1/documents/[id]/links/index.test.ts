@@ -38,7 +38,7 @@ describe("POST /api/v1/documents/[id]/links", () => {
       document.id,
     );
 
-    expect(responseBody.name).toBe("ForbiddenError");
+    expect(responseBody.name).toBe("NotFoundError");
   });
 
   test("With default options", async () => {
@@ -241,7 +241,7 @@ describe("GET /api/v1/documents/[id]/links", () => {
       { headers: { Cookie: attackerCookie } },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   test("Lists all links for the document ordered by created_at DESC", async () => {

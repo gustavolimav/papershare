@@ -48,6 +48,11 @@ export interface Workspace {
 
 export interface WorkspaceWithRole extends Workspace {
   role: WorkspaceRole;
+  member_count: number;
+  // Whether the workspace creator has an Anthropic key configured — same
+  // boolean-only pattern as AiKeyStatusResponse, just scoped to the
+  // workspace's AI identity (its creator) instead of the requester.
+  ai_configured: boolean;
 }
 
 export interface WorkspaceMember {
@@ -74,7 +79,10 @@ export interface Document {
   mime_type: string;
   size_bytes: number;
   page_count: number | null;
+  // Who uploaded it — audit/display field only ("Enviado por"); no longer
+  // consulted for authorization, which is workspace-scoped (see workspace_id).
   user_id: string;
+  workspace_id: string;
   ai_summary: string | null;
   ai_summary_generated_at: Date | null;
   created_at: Date;
@@ -84,13 +92,19 @@ export interface Document {
 
 export type DocumentResponse = Document;
 
+// Only the list endpoint joins the uploader's username in — a single
+// document fetch (findOneById) has no need for it.
+export interface DocumentListItem extends Document {
+  uploaded_by_username: string;
+}
+
 export interface DocumentSummaryResponse {
   summary: string | null;
   generated_at: Date | null;
 }
 
 export interface DocumentListResponse {
-  documents: DocumentResponse[];
+  documents: DocumentListItem[];
   total: number;
 }
 
@@ -304,6 +318,7 @@ export interface DocumentCreateInput {
   size_bytes: number;
   page_count: number | null;
   user_id: string;
+  workspace_id: string;
 }
 
 export interface DocumentUpdateInput {
@@ -475,8 +490,8 @@ export interface AuthenticationModel {
 
 export interface DocumentModel {
   create(input: DocumentCreateInput): Promise<DocumentResponse>;
-  findAllByUserId(
-    userId: string,
+  findAllByWorkspaceId(
+    workspaceId: string,
     pagination: { page: number; perPage: number },
   ): Promise<DocumentListResponse>;
   findOneById(id: string, userId: string): Promise<DocumentResponse>;
@@ -487,10 +502,6 @@ export interface DocumentModel {
   ): Promise<DocumentResponse>;
   deleteById(id: string, userId: string): Promise<{ storage_key: string }>;
   updateSummary(id: string, summary: string): Promise<DocumentSummaryResponse>;
-  // Internal use only, no ownership check — used by server-side code (the
-  // viewer chat) that needs to resolve a document's owner without an
-  // authenticated request of its own.
-  getOwnerId(id: string): Promise<string | null>;
 }
 
 export interface WorkspaceModel {
@@ -512,6 +523,11 @@ export interface WorkspaceModel {
   ): Promise<Workspace>;
   deleteById(workspaceId: string, userId: string): Promise<void>;
   activate(workspaceId: string, userId: string): Promise<Workspace>;
+  // Resolves the AI "identity" for any document in this workspace — whoever
+  // created the workspace, regardless of who uploaded the specific document
+  // or who's currently acting. Returns null if the document/workspace can't
+  // be resolved (e.g. a deleted document).
+  getCreatorIdForDocument(documentId: string): Promise<string | null>;
   listMembers(
     workspaceId: string,
     userId: string,
@@ -541,14 +557,26 @@ export interface ShareLinkModel {
     userId: string,
     input: ShareLinkCreateInput,
   ): Promise<ShareLinkResponse>;
-  findAllByDocumentId(documentId: string): Promise<ShareLinkResponse[]>;
-  findOneById(id: string, documentId: string): Promise<ShareLinkResponse>;
+  findAllByDocumentId(
+    documentId: string,
+    userId: string,
+  ): Promise<ShareLinkResponse[]>;
+  findOneById(
+    id: string,
+    documentId: string,
+    userId: string,
+  ): Promise<ShareLinkResponse>;
   updateById(
     id: string,
     documentId: string,
+    userId: string,
     input: ShareLinkUpdateInput,
   ): Promise<ShareLinkResponse>;
-  revokeById(id: string, documentId: string): Promise<ShareLinkResponse>;
+  revokeById(
+    id: string,
+    documentId: string,
+    userId: string,
+  ): Promise<ShareLinkResponse>;
   getByToken(
     token: string,
     password?: string,

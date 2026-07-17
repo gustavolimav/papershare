@@ -1,19 +1,16 @@
 "use client";
 
-import useSWR from "swr";
-import { useAuth } from "@/context/AuthContext";
-import { fetcher } from "@/lib/fetcher";
-import type { AiKeyStatusResponse } from "@/types/index";
+import { useWorkspaces } from "@/lib/useWorkspaces";
 
-// Shares the same SWR key as AiSettingsForm.tsx, so saving/removing a key
-// there invalidates this everywhere else it's read (dashboard, analytics,
-// viewer engagement list) without a dedicated global-state layer.
+// Checks the *active workspace's* AI configuration (its creator's key),
+// not the logged-in user's own — a viewer/editor in a team workspace whose
+// creator configured a key should still see AI features, even though they
+// never configured anything themselves. Shares useWorkspaces()'s SWR cache,
+// so saving/removing a key (which the creator does from their own
+// Configurações — AiSettingsForm's own key, unchanged by this hook) is
+// reflected here once that workspace entry is revalidated.
 export function useAiKeyConfigured(): boolean {
-  const { user } = useAuth();
-  const { data } = useSWR<AiKeyStatusResponse>(
-    user ? `/api/v1/users/${user.username}/ai-key` : null,
-    fetcher,
-  );
+  const { activeWorkspace } = useWorkspaces();
 
-  return data?.configured ?? false;
+  return activeWorkspace?.ai_configured ?? false;
 }

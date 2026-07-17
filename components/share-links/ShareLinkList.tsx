@@ -10,9 +10,10 @@ import type { ShareLinkResponse } from "@/types/index";
 
 interface ShareLinkListProps {
   documentId: string;
+  canEdit: boolean;
 }
 
-export function ShareLinkList({ documentId }: ShareLinkListProps) {
+export function ShareLinkList({ documentId, canEdit }: ShareLinkListProps) {
   const { data, error, isLoading, mutate } = useSWR<ShareLinkResponse[]>(
     `/api/v1/documents/${documentId}/links`,
     fetcher,
@@ -25,29 +26,33 @@ export function ShareLinkList({ documentId }: ShareLinkListProps) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Links de compartilhamento</h2>
-        <CreateShareLinkModal
-          documentId={documentId}
-          onCreated={() => mutate()}
-        />
+        {canEdit && (
+          <CreateShareLinkModal
+            documentId={documentId}
+            onCreated={() => mutate()}
+          />
+        )}
       </div>
 
       {/* key forces a remount (and fresh prefill-seeded state) whenever a
           different link is chosen to duplicate. */}
-      <CreateShareLinkModal
-        key={duplicateFrom?.id ?? "duplicate-none"}
-        documentId={documentId}
-        prefill={duplicateFrom ?? undefined}
-        open={duplicateFrom !== null}
-        onOpenChange={(open) => {
-          if (!open) {
+      {canEdit && (
+        <CreateShareLinkModal
+          key={duplicateFrom?.id ?? "duplicate-none"}
+          documentId={documentId}
+          prefill={duplicateFrom ?? undefined}
+          open={duplicateFrom !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDuplicateFrom(null);
+            }
+          }}
+          onCreated={() => {
+            mutate();
             setDuplicateFrom(null);
-          }
-        }}
-        onCreated={() => {
-          mutate();
-          setDuplicateFrom(null);
-        }}
-      />
+          }}
+        />
+      )}
 
       {isLoading && (
         <div className="space-y-3">
@@ -75,6 +80,7 @@ export function ShareLinkList({ documentId }: ShareLinkListProps) {
             <ShareLinkCard
               key={link.id}
               link={link}
+              canEdit={canEdit}
               onUpdated={() => mutate()}
               onRevoked={() => mutate()}
               onDuplicate={setDuplicateFrom}
