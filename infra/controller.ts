@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
+  ConflictError,
   ForbiddenError,
   InternalServerError,
   MethodNotAllowedError,
@@ -41,6 +42,11 @@ function onErrorHandler(
   }
 
   if (err instanceof ForbiddenError) {
+    response.status(err.statusCode).json(err);
+    return;
+  }
+
+  if (err instanceof ConflictError) {
     response.status(err.statusCode).json(err);
     return;
   }
