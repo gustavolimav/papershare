@@ -140,27 +140,27 @@ If Docker is not running, start it first with `npm run services:up` before runni
 
 ## Environment variables
 
-| Variable                    | Purpose                                                                                                                                                                                                                                |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POSTGRES_HOST`             | DB host                                                                                                                                                                                                                                |
-| `POSTGRES_PORT`             | DB port                                                                                                                                                                                                                                |
-| `POSTGRES_USER`             | DB user                                                                                                                                                                                                                                |
-| `POSTGRES_DB`               | DB name                                                                                                                                                                                                                                |
-| `POSTGRES_PASSWORD`         | DB password                                                                                                                                                                                                                            |
-| `DATABASE_URL`              | Full connection string                                                                                                                                                                                                                 |
-| `PEPPER`                    | Password hashing pepper (never change in prod)                                                                                                                                                                                         |
-| `NODE_ENV`                  | `development` / `production` / `test`                                                                                                                                                                                                  |
-| `MIGRATIONS_SECRET`         | Shared secret required via `x-migrations-secret` header on `/api/v1/migrations`                                                                                                                                                        |
-| `STORAGE_ENDPOINT`          | S3-compatible endpoint (MinIO locally; unset for real AWS S3, R2 endpoint in prod)                                                                                                                                                     |
-| `STORAGE_REGION`            | S3 region (dummy value accepted by MinIO)                                                                                                                                                                                              |
-| `STORAGE_ACCESS_KEY_ID`     | S3-compatible access key                                                                                                                                                                                                               |
-| `STORAGE_SECRET_ACCESS_KEY` | S3-compatible secret key                                                                                                                                                                                                               |
-| `STORAGE_BUCKET`            | Bucket used for document uploads                                                                                                                                                                                                       |
-| `STORAGE_FORCE_PATH_STYLE`  | `true` for MinIO (path-style addressing); unset/`false` for AWS S3                                                                                                                                                                     |
-| `MAX_FILE_SIZE_MB`          | Max upload size in MB (set to `2` in `.env.development` for fast oversized-file tests; production should set its own higher value, e.g. 50)                                                                                            |
-| `RESEND_API_KEY`            | Resend API key for transactional email (view notifications); unset makes the mailer a silent no-op                                                                                                                                     |
-| `MAIL_FROM_ADDRESS`         | Sender address for outgoing email; unset falls back to Resend's shared test domain (`onboarding@resend.dev`)                                                                                                                           |
-| `ANTHROPIC_API_KEY`         | Claude API key for AI features (summarization, insights, viewer chat, follow-up email drafts); unset makes fire-and-forget features (summarization, insights) a silent no-op and synchronous ones (chat, follow-up email) return `503` |
+| Variable                    | Purpose                                                                                                                                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POSTGRES_HOST`             | DB host                                                                                                                                                                                                                              |
+| `POSTGRES_PORT`             | DB port                                                                                                                                                                                                                              |
+| `POSTGRES_USER`             | DB user                                                                                                                                                                                                                              |
+| `POSTGRES_DB`               | DB name                                                                                                                                                                                                                              |
+| `POSTGRES_PASSWORD`         | DB password                                                                                                                                                                                                                          |
+| `DATABASE_URL`              | Full connection string                                                                                                                                                                                                               |
+| `PEPPER`                    | Password hashing pepper (never change in prod) — one-way, used only for password hashing, never decrypted                                                                                                                            |
+| `ENCRYPTION_KEY`            | 32-byte hex key for AES-256-GCM (`infra/encryption.ts`), used to encrypt/decrypt real reversible credentials at rest — currently each user's own Anthropic API key (never change in prod, or every stored key becomes undecryptable) |
+| `NODE_ENV`                  | `development` / `production` / `test`                                                                                                                                                                                                |
+| `MIGRATIONS_SECRET`         | Shared secret required via `x-migrations-secret` header on `/api/v1/migrations`                                                                                                                                                      |
+| `STORAGE_ENDPOINT`          | S3-compatible endpoint (MinIO locally; unset for real AWS S3, R2 endpoint in prod)                                                                                                                                                   |
+| `STORAGE_REGION`            | S3 region (dummy value accepted by MinIO)                                                                                                                                                                                            |
+| `STORAGE_ACCESS_KEY_ID`     | S3-compatible access key                                                                                                                                                                                                             |
+| `STORAGE_SECRET_ACCESS_KEY` | S3-compatible secret key                                                                                                                                                                                                             |
+| `STORAGE_BUCKET`            | Bucket used for document uploads                                                                                                                                                                                                     |
+| `STORAGE_FORCE_PATH_STYLE`  | `true` for MinIO (path-style addressing); unset/`false` for AWS S3                                                                                                                                                                   |
+| `MAX_FILE_SIZE_MB`          | Max upload size in MB (set to `2` in `.env.development` for fast oversized-file tests; production should set its own higher value, e.g. 50)                                                                                          |
+| `RESEND_API_KEY`            | Resend API key for transactional email (view notifications); unset makes the mailer a silent no-op                                                                                                                                   |
+| `MAIL_FROM_ADDRESS`         | Sender address for outgoing email; unset falls back to Resend's shared test domain (`onboarding@resend.dev`)                                                                                                                         |
 
 ---
 
@@ -179,8 +179,13 @@ heatmaps, composite engagement score, NDA gate, watermarking, email
 allow-list, custom branding, OG meta tags, duplicate-link-settings), and
 Phase 8 (AI features: auto-summarization, summary endpoint, viewer chat
 (RAG) with SSE streaming, analytics insights, drop-off suggestions,
-AI-drafted follow-up email suggestions — all behind a shared `infra/ai.ts`
-Anthropic client that no-ops without `ANTHROPIC_API_KEY`).
+AI-drafted follow-up email suggestions — bring-your-own-key model, each
+document owner pastes their own Anthropic API key in Settings
+(encrypted at rest via `infra/encryption.ts`/`ENCRYPTION_KEY`), and every
+AI feature on their documents runs against that key; features degrade
+gracefully — fire-and-forget ones (summarization, insights) silently
+no-op, synchronous ones (chat, follow-up email) return a clear `503` —
+when the owner hasn't configured one).
 Next up: Phase 9 (team workspaces & data rooms) or Phase 10
 (monetization) — see `TODO.md` for the full phased roadmap and
 `user-stories/phase-6-frontend/` for the per-block Phase 6 specs (each has

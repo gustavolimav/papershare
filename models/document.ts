@@ -207,6 +207,23 @@ async function updateSummary(
   return { summary: row.ai_summary, generated_at: row.ai_summary_generated_at };
 }
 
+async function getOwnerId(id: string): Promise<string | null> {
+  const results = await database.query<{ user_id: string }>({
+    text: `
+        SELECT
+          user_id
+        FROM
+          documents
+        WHERE
+          id = $1
+          AND deleted_at IS NULL
+        ;`,
+    values: [id],
+  });
+
+  return results.rows[0]?.user_id ?? null;
+}
+
 const document: DocumentModel = {
   create,
   findAllByUserId,
@@ -214,6 +231,7 @@ const document: DocumentModel = {
   updateById,
   deleteById,
   updateSummary,
+  getOwnerId,
 };
 
 export default document;

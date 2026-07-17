@@ -221,6 +221,13 @@ export const chatCreateSchema = z.object({
     .max(2000, "A 'question' deve ter no máximo 2000 caracteres."),
 });
 
+export const aiKeyUpdateSchema = z.object({
+  api_key: z
+    .string()
+    .min(20, "A chave informada parece inválida.")
+    .max(200, "A chave informada é muito longa."),
+});
+
 // Used outside request-body validation (e.g. the X-Viewer-Email header on
 // the public share endpoints), where there's no Zod object schema to run.
 export function isValidEmail(value: string): boolean {

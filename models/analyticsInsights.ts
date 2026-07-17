@@ -3,6 +3,7 @@ import ai from "../infra/ai";
 import document from "./document";
 import linkView from "./linkView";
 import aiUsage from "./aiUsage";
+import user from "./user";
 import type {
   AnalyticsInsightResponse,
   DocumentAnalyticsResponse,
@@ -61,7 +62,9 @@ async function getInsights(
   );
 
   const pageBreakdown = await linkView.getPageBreakdownByDocumentId(documentId);
+  const apiKey = await user.getAiApiKey(userId);
   const generated = await generateInsight(
+    apiKey,
     doc.title,
     doc.page_count,
     analytics,
@@ -69,7 +72,7 @@ async function getInsights(
   );
 
   if (!generated) {
-    // AI unavailable (no key configured, or NODE_ENV=test) — fall back to
+    // AI unavailable (owner hasn't configured a key) — fall back to
     // whatever is cached (possibly all null) rather than throwing, since
     // this is a read-mostly endpoint the analytics page polls.
     return {
@@ -108,6 +111,7 @@ function sameTimestamp(a: Date | null, b: Date | null): boolean {
 }
 
 async function generateInsight(
+  apiKey: string | null,
   documentTitle: string,
   pageCount: number | null,
   analytics: DocumentAnalyticsResponse,
@@ -128,6 +132,7 @@ async function generateInsight(
   });
 
   const raw = await ai.complete({
+    apiKey,
     system: `Você é um assistente de analytics para donos de documentos compartilhados. Responda sempre em português do Brasil (pt-BR), como JSON válido e apenas o JSON, no formato exato: {"insight": string, "suggestions": Array<{"type": "drop_off" | "engagement", "message": string, "page_number": number | null}>}. O campo "insight" deve ter de 3 a 5 frases resumindo as métricas de forma natural, destacando as tendências mais notáveis (pico de atividade, link com mais tráfego, tempo médio de leitura comparado ao esperado). ${
       hasEnoughForSuggestions
         ? 'O campo "suggestions" deve conter até 3 sugestões acionáveis baseadas em "page_breakdown" (onde os leitores param de ler) e no tempo médio de leitura — use "type": "drop_off" quando a sugestão for sobre abandono em uma página específica (preencha "page_number") e "type": "engagement" quando for sobre tempo de leitura baixo ("page_number": null).'
