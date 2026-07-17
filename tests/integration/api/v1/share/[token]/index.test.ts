@@ -84,6 +84,7 @@ describe("GET /api/v1/share/[token]", () => {
       nda_text: null,
       brand_accent_color: null,
       brand_welcome_message: null,
+      ai_chat_available: false,
       document: {
         id: document.id,
         title: "Public doc",
@@ -93,6 +94,24 @@ describe("GET /api/v1/share/[token]", () => {
         page_count: document.page_count,
       },
     });
+  });
+
+  test("With an AI key configured by the document owner", async () => {
+    const { user, cookie } = await orchestrator.createUserSession();
+    await fetch(`http://localhost:3000/api/v1/users/${user.username}/ai-key`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Cookie: cookie },
+      body: JSON.stringify({ api_key: "sk-ant-api03-fake-key-value-here" }),
+    });
+    const document = await orchestrator.uploadDocument(cookie);
+    const link = await orchestrator.createShareLink(cookie, document.id);
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/share/${link.token}`,
+    );
+
+    const responseBody = await response.json();
+    expect(responseBody.ai_chat_available).toBe(true);
   });
 
   test("With a password set, no password provided", async () => {

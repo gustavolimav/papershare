@@ -122,6 +122,10 @@ export interface ShareLinkWithDocument {
   nda_text: string | null;
   brand_accent_color: string | null;
   brand_welcome_message: string | null;
+  // Whether the document owner has an Anthropic key configured — tells the
+  // viewer whether to show the chat toggle at all, without exposing
+  // anything about the key itself.
+  ai_chat_available: boolean;
   document: {
     id: string;
     title: string;

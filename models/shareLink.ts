@@ -36,6 +36,7 @@ interface ShareLinkTokenRow {
   has_allow_list: boolean;
   email_is_allowed: boolean;
   link_created_at: Date;
+  ai_chat_available: boolean;
   document_id: string;
   title: string;
   description: string | null;
@@ -388,11 +389,18 @@ async function fetchAndValidateTokenRow(
           d.size_bytes,
           d.page_count,
           d.storage_key,
-          d.deleted_at AS document_deleted_at
+          d.deleted_at AS document_deleted_at,
+          -- The viewer chat needs the document owner's own Anthropic key
+          -- (bring-your-own-key) — this tells the frontend whether to show
+          -- the chat toggle at all, without exposing anything about the
+          -- key itself.
+          (u.ai_api_key_encrypted IS NOT NULL) AS ai_chat_available
         FROM
           share_links sl
         JOIN
           documents d ON d.id = sl.document_id
+        JOIN
+          users u ON u.id = d.user_id
         WHERE
           sl.token = $1
         LIMIT
@@ -512,6 +520,7 @@ async function getByToken(
     nda_text: row.nda_text,
     brand_accent_color: row.brand_accent_color,
     brand_welcome_message: row.brand_welcome_message,
+    ai_chat_available: row.ai_chat_available,
     document: {
       id: row.document_id,
       title: row.title,

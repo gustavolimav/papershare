@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SuggestionList } from "@/components/analytics/SuggestionList";
+import { useAiKeyConfigured } from "@/lib/useAiKeyConfigured";
 import type { AnalyticsInsightResponse } from "@/types/index";
 
 interface InsightCardProps {
@@ -12,12 +13,13 @@ interface InsightCardProps {
 }
 
 export function InsightCard({ documentId }: InsightCardProps) {
+  const aiConfigured = useAiKeyConfigured();
   const { data, isLoading } = useSWR<AnalyticsInsightResponse>(
-    `/api/v1/documents/${documentId}/analytics/insights`,
+    aiConfigured ? `/api/v1/documents/${documentId}/analytics/insights` : null,
     fetcher,
   );
 
-  if (isLoading || !data?.insight) {
+  if (!aiConfigured || isLoading || !data?.insight) {
     return null;
   }
 

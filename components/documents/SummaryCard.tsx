@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAiKeyConfigured } from "@/lib/useAiKeyConfigured";
 import type { DocumentResponse } from "@/types/index";
 
 interface SummaryCardProps {
@@ -12,8 +13,13 @@ interface SummaryCardProps {
 }
 
 export function SummaryCard({ doc, onUpdated }: SummaryCardProps) {
+  const aiConfigured = useAiKeyConfigured();
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (!aiConfigured) {
+    return null;
+  }
 
   async function handleRegenerate() {
     setIsRegenerating(true);

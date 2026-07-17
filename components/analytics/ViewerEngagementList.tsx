@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, Mail, Copy } from "lucide-react";
 import { formatDuration, formatDate } from "@/lib/formatters";
+import { useAiKeyConfigured } from "@/lib/useAiKeyConfigured";
 import type { FollowUpEmailSuggestion, ViewerEngagement } from "@/types/index";
 
 interface ViewerEngagementListProps {
@@ -28,6 +29,8 @@ export function ViewerEngagementList({
   linkId,
   viewers,
 }: ViewerEngagementListProps) {
+  const aiConfigured = useAiKeyConfigured();
+
   if (viewers.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">Nenhum visitante ainda.</p>
@@ -46,6 +49,7 @@ export function ViewerEngagementList({
           documentId={documentId}
           linkId={linkId}
           viewer={viewer}
+          aiConfigured={aiConfigured}
         />
       ))}
     </div>
@@ -56,9 +60,15 @@ interface ViewerRowProps {
   documentId: string;
   linkId: string;
   viewer: ViewerEngagement;
+  aiConfigured: boolean;
 }
 
-function ViewerRow({ documentId, linkId, viewer }: ViewerRowProps) {
+function ViewerRow({
+  documentId,
+  linkId,
+  viewer,
+  aiConfigured,
+}: ViewerRowProps) {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestion, setSuggestion] = useState<FollowUpEmailSuggestion | null>(
     null,
@@ -139,7 +149,7 @@ function ViewerRow({ documentId, linkId, viewer }: ViewerRowProps) {
         </Badge>
       </div>
 
-      {viewer.viewer_fingerprint && (
+      {aiConfigured && viewer.viewer_fingerprint && (
         <div className="mt-2">
           {!suggestion && (
             <Button
