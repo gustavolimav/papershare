@@ -28,11 +28,11 @@ export class ServiceError extends Error {
   public readonly action: string;
   public readonly statusCode = 503;
 
-  constructor({ cause, message }: ErrorConstructorOptions = {}) {
+  constructor({ cause, message, action }: ErrorConstructorOptions = {}) {
     super(message || "Serviço indisponível no momento.", {
       cause,
     });
-    this.action = "Verifique se o serviço está disponível.";
+    this.action = action || "Verifique se o serviço está disponível.";
   }
 
   toJSON() {

@@ -4,6 +4,7 @@ import document from "./document";
 import shareLink from "./shareLink";
 import linkView from "./linkView";
 import aiUsage from "./aiUsage";
+import user from "./user";
 import type { FollowUpEmailSuggestion } from "../types/index";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -49,7 +50,8 @@ async function generateSuggestion(
   // Synchronous, user-initiated action — a missing API key should surface
   // as a clear error, not a silent no-op like the fire-and-forget
   // summarization/insights jobs. Checked last, right before the actual call.
-  ai.requireAvailable();
+  const apiKey = await user.getAiApiKey(userId);
+  ai.requireApiKey(apiKey);
 
   const data = JSON.stringify({
     document_title: doc.title,
@@ -64,6 +66,7 @@ async function generateSuggestion(
   });
 
   const raw = await ai.complete({
+    apiKey,
     system:
       'Você é um assistente que ajuda donos de documentos a escrever e-mails de follow-up curtos e naturais, em português do Brasil, baseados em dados reais de engajamento do leitor. Nunca invente informações que não estão nos dados fornecidos. Cite pelo menos um dado concreto (ex: até qual página leu, se baixou o arquivo, quantas vezes visitou). Responda como JSON válido e apenas o JSON, no formato exato: {"subject": string, "body": string}.',
     prompt: `Dados de engajamento do visitante:\n\n${data}`,

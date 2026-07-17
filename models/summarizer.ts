@@ -1,6 +1,7 @@
 import storage from "../infra/storage";
 import ai from "../infra/ai";
 import document from "./document";
+import user from "./user";
 import { extractText } from "./textExtraction";
 import type { DocumentResponse } from "../types/index";
 
@@ -29,7 +30,9 @@ async function summarizeDocument(
       return;
     }
 
+    const apiKey = await user.getAiApiKey(doc.user_id);
     const summary = await ai.complete({
+      apiKey,
       system:
         "Você resume documentos de forma concisa e objetiva, em 2 a 5 frases. Responda no mesmo idioma do texto original.",
       prompt: `Resuma o seguinte documento em 2 a 5 frases:\n\n${extracted.fullText.slice(0, MAX_PROMPT_CHARS)}`,

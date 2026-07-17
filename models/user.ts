@@ -1,5 +1,6 @@
 import database from "../infra/database";
 import { ValidationError, NotFoundError, ServiceError } from "../infra/errors";
+import { encrypt, decrypt } from "../infra/encryption";
 import password from "./password";
 import type {
   User,
@@ -295,6 +296,66 @@ async function deleteByUsername(username: string): Promise<void> {
   });
 }
 
+// Bring-your-own-key: every AI feature runs against the document owner's
+// own Anthropic key rather than one the platform pays for. Encrypted at
+// rest (infra/encryption.ts) since, unlike a password, this must be
+// recoverable to actually call the Anthropic API.
+async function setAiApiKey(
+  userId: string,
+  apiKey: string | null,
+): Promise<void> {
+  await database.query({
+    text: `
+        UPDATE
+          users
+        SET
+          ai_api_key_encrypted = $1,
+          updated_at = NOW()
+        WHERE
+          id = $2
+        ;`,
+    values: [apiKey ? encrypt(apiKey) : null, userId],
+  });
+}
+
+async function hasAiApiKey(userId: string): Promise<boolean> {
+  const results = await database.query<{
+    ai_api_key_encrypted: string | null;
+  }>({
+    text: `
+        SELECT
+          ai_api_key_encrypted
+        FROM
+          users
+        WHERE
+          id = $1
+        ;`,
+    values: [userId],
+  });
+
+  return !!results.rows[0]?.ai_api_key_encrypted;
+}
+
+async function getAiApiKey(userId: string): Promise<string | null> {
+  const results = await database.query<{
+    ai_api_key_encrypted: string | null;
+  }>({
+    text: `
+        SELECT
+          ai_api_key_encrypted
+        FROM
+          users
+        WHERE
+          id = $1
+        ;`,
+    values: [userId],
+  });
+
+  const encrypted = results.rows[0]?.ai_api_key_encrypted;
+
+  return encrypted ? decrypt(encrypted) : null;
+}
+
 const user: UserModel = {
   create,
   findOneById,
@@ -302,6 +363,9 @@ const user: UserModel = {
   findOneByEmail,
   updateByUsername,
   deleteByUsername,
+  setAiApiKey,
+  hasAiApiKey,
+  getAiApiKey,
 };
 
 export default user;

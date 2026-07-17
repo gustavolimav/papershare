@@ -409,6 +409,14 @@ export interface UserModel {
     userInput: UserUpdateInput,
   ): Promise<UserPublic>;
   deleteByUsername(username: string): Promise<void>;
+  setAiApiKey(userId: string, apiKey: string | null): Promise<void>;
+  hasAiApiKey(userId: string): Promise<boolean>;
+  // Internal use only (decrypted plaintext) — never returned over the API.
+  getAiApiKey(userId: string): Promise<string | null>;
+}
+
+export interface AiKeyStatusResponse {
+  configured: boolean;
 }
 
 export interface PasswordModel {
@@ -442,6 +450,10 @@ export interface DocumentModel {
   ): Promise<DocumentResponse>;
   deleteById(id: string, userId: string): Promise<{ storage_key: string }>;
   updateSummary(id: string, summary: string): Promise<DocumentSummaryResponse>;
+  // Internal use only, no ownership check — used by server-side code (the
+  // viewer chat) that needs to resolve a document's owner without an
+  // authenticated request of its own.
+  getOwnerId(id: string): Promise<string | null>;
 }
 
 export interface ShareLinkModel {
