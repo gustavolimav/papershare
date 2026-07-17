@@ -146,6 +146,31 @@ export class ForbiddenError extends Error {
   }
 }
 
+export class ConflictError extends Error {
+  public readonly name = "ConflictError";
+  public readonly action: string;
+  public readonly statusCode = 409;
+
+  constructor({ cause, message, action }: ErrorConstructorOptions = {}) {
+    super(
+      message || "O recurso já existe ou está em conflito com o estado atual.",
+      {
+        cause,
+      },
+    );
+    this.action = action || "Verifique os dados e tente novamente.";
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status: this.statusCode,
+    };
+  }
+}
+
 export class UnauthorizedError extends Error {
   public readonly name = "UnauthorizedError";
   public readonly action: string;

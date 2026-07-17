@@ -457,9 +457,9 @@ it's sequenced after the lower-effort wins above.
         `users.active_workspace_id`). See CHANGELOG for details.
   - [x] US-29 — Workspace CRUD + switching (create/list/rename/delete,
         `.../activate`). See CHANGELOG for details.
-  - [ ] US-30 — Member invitation & role management (invite by email —
+  - [x] US-30 — Member invitation & role management (invite by email —
         existing accounts only, no token/accept flow — role change,
-        remove/leave, last-owner protection)
+        remove/leave, last-owner protection). See CHANGELOG for details.
   - [ ] US-31 — Document & share-link authorization migrates from direct
         `user_id` ownership to workspace role checks
   - [ ] US-32 — AI features resolve the workspace creator's key instead of

@@ -180,6 +180,21 @@ export const workspaceCreateSchema = z.object({
 
 export const workspaceUpdateSchema = workspaceCreateSchema;
 
+export const workspaceMemberInviteSchema = z.object({
+  email: z.string().email("O 'email' informado não é válido."),
+  // Can't directly invite as owner — role changes to owner go through
+  // PATCH .../members/[userId] instead.
+  role: z.enum(["editor", "viewer"], {
+    message: "O 'role' deve ser 'editor' ou 'viewer'.",
+  }),
+});
+
+export const workspaceMemberRoleUpdateSchema = z.object({
+  role: z.enum(["owner", "editor", "viewer"], {
+    message: "O 'role' deve ser 'owner', 'editor' ou 'viewer'.",
+  }),
+});
+
 export const linkViewCreateSchema = z.object({
   viewer_fingerprint: z
     .string()

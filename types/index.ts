@@ -57,6 +57,14 @@ export interface WorkspaceMember {
   created_at: Date;
 }
 
+export interface WorkspaceMemberResponse {
+  user_id: string;
+  username: string;
+  email: string;
+  role: WorkspaceRole;
+  created_at: Date;
+}
+
 export interface Document {
   id: string;
   title: string;
@@ -504,6 +512,27 @@ export interface WorkspaceModel {
   ): Promise<Workspace>;
   deleteById(workspaceId: string, userId: string): Promise<void>;
   activate(workspaceId: string, userId: string): Promise<Workspace>;
+  listMembers(
+    workspaceId: string,
+    userId: string,
+  ): Promise<WorkspaceMemberResponse[]>;
+  inviteMember(
+    workspaceId: string,
+    actingUserId: string,
+    email: string,
+    role: "editor" | "viewer",
+  ): Promise<WorkspaceMemberResponse>;
+  updateMemberRole(
+    workspaceId: string,
+    actingUserId: string,
+    targetUserId: string,
+    newRole: WorkspaceRole,
+  ): Promise<WorkspaceMemberResponse>;
+  removeMember(
+    workspaceId: string,
+    actingUserId: string,
+    targetUserId: string,
+  ): Promise<void>;
 }
 
 export interface ShareLinkModel {

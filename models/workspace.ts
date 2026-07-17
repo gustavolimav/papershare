@@ -1,9 +1,11 @@
 import database from "../infra/database";
-import { NotFoundError, ForbiddenError } from "../infra/errors";
+import { NotFoundError, ForbiddenError, ConflictError } from "../infra/errors";
+import user from "./user";
 import type {
   Workspace,
   WorkspaceRole,
   WorkspaceWithRole,
+  WorkspaceMemberResponse,
   WorkspaceModel,
 } from "../types/index";
 
@@ -243,6 +245,267 @@ async function assertNotPersonal(
   }
 }
 
+async function listMembers(
+  workspaceId: string,
+  userId: string,
+): Promise<WorkspaceMemberResponse[]> {
+  await requireRole(workspaceId, userId, "viewer");
+
+  const results = await database.query<WorkspaceMemberResponse>({
+    text: `
+        SELECT
+          workspace_members.user_id,
+          users.username,
+          users.email,
+          workspace_members.role,
+          workspace_members.created_at
+        FROM
+          workspace_members
+        JOIN
+          users ON users.id = workspace_members.user_id
+        WHERE
+          workspace_members.workspace_id = $1
+        ORDER BY
+          workspace_members.created_at ASC
+        ;`,
+    values: [workspaceId],
+  });
+
+  return results.rows;
+}
+
+async function inviteMember(
+  workspaceId: string,
+  actingUserId: string,
+  email: string,
+  role: "editor" | "viewer",
+): Promise<WorkspaceMemberResponse> {
+  await requireRole(workspaceId, actingUserId, "owner");
+  await assertNotPersonal(
+    workspaceId,
+    "Não é possível convidar membros para o workspace pessoal.",
+  );
+
+  let invitedUser;
+
+  try {
+    invitedUser = await user.findOneByEmail(email);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw new NotFoundError({
+        message:
+          "Nenhuma conta encontrada com esse email. A pessoa precisa se cadastrar no Papershare antes de ser convidada.",
+        action:
+          "Peça para a pessoa criar uma conta no Papershare e tente novamente.",
+      });
+    }
+
+    throw error;
+  }
+
+  const existingMembership = await database.query({
+    text: `
+        SELECT
+          1
+        FROM
+          workspace_members
+        WHERE
+          workspace_id = $1
+          AND user_id = $2
+        ;`,
+    values: [workspaceId, invitedUser.id],
+  });
+
+  if (existingMembership.rowCount) {
+    throw new ConflictError({
+      message: "Este usuário já é membro deste workspace.",
+      action: "Verifique a lista de membros atual.",
+    });
+  }
+
+  const results = await database.query<{
+    user_id: string;
+    role: WorkspaceRole;
+    created_at: Date;
+  }>({
+    text: `
+        INSERT INTO
+          workspace_members (workspace_id, user_id, role)
+        VALUES
+          ($1, $2, $3)
+        RETURNING
+          user_id, role, created_at
+        ;`,
+    values: [workspaceId, invitedUser.id, role],
+  });
+
+  const member = results.rows[0]!;
+
+  return {
+    user_id: member.user_id,
+    username: invitedUser.username,
+    email: invitedUser.email,
+    role: member.role,
+    created_at: member.created_at,
+  };
+}
+
+async function getMemberRole(
+  workspaceId: string,
+  userId: string,
+): Promise<WorkspaceRole> {
+  const results = await database.query<{ role: WorkspaceRole }>({
+    text: `
+        SELECT
+          role
+        FROM
+          workspace_members
+        WHERE
+          workspace_id = $1
+          AND user_id = $2
+        ;`,
+    values: [workspaceId, userId],
+  });
+
+  const role = results.rows[0]?.role;
+
+  if (!role) {
+    throw new NotFoundError({
+      message: "O membro informado não faz parte deste workspace.",
+      action: "Verifique se o identificador está correto.",
+    });
+  }
+
+  return role;
+}
+
+// Only relevant when the target member currently holds "owner" — checked
+// against every OTHER owner in the workspace, so a no-op reassignment
+// (owner staying owner) never trips this even for the sole owner.
+async function assertNotLastOwner(
+  workspaceId: string,
+  currentRole: WorkspaceRole,
+  targetUserId: string,
+  message: string,
+): Promise<void> {
+  if (currentRole !== "owner") {
+    return;
+  }
+
+  const results = await database.query<{ count: number }>({
+    text: `
+        SELECT
+          COUNT(*)::int AS count
+        FROM
+          workspace_members
+        WHERE
+          workspace_id = $1
+          AND role = 'owner'
+          AND user_id != $2
+        ;`,
+    values: [workspaceId, targetUserId],
+  });
+
+  if (results.rows[0]?.count === 0) {
+    throw new ForbiddenError({
+      message,
+      action: "Promova outro membro a owner antes de continuar.",
+    });
+  }
+}
+
+async function updateMemberRole(
+  workspaceId: string,
+  actingUserId: string,
+  targetUserId: string,
+  newRole: WorkspaceRole,
+): Promise<WorkspaceMemberResponse> {
+  await requireRole(workspaceId, actingUserId, "owner");
+  await assertNotPersonal(
+    workspaceId,
+    "Não é possível alterar papéis no workspace pessoal.",
+  );
+
+  const currentRole = await getMemberRole(workspaceId, targetUserId);
+
+  if (newRole !== "owner") {
+    await assertNotLastOwner(
+      workspaceId,
+      currentRole,
+      targetUserId,
+      "Não é possível rebaixar o único owner deste workspace.",
+    );
+  }
+
+  const results = await database.query<{
+    user_id: string;
+    role: WorkspaceRole;
+    created_at: Date;
+  }>({
+    text: `
+        UPDATE
+          workspace_members
+        SET
+          role = $1
+        WHERE
+          workspace_id = $2
+          AND user_id = $3
+        RETURNING
+          user_id, role, created_at
+        ;`,
+    values: [newRole, workspaceId, targetUserId],
+  });
+
+  const member = results.rows[0]!;
+  const targetUser = await user.findOneById(targetUserId);
+
+  return {
+    user_id: member.user_id,
+    username: targetUser.username,
+    email: targetUser.email,
+    role: member.role,
+    created_at: member.created_at,
+  };
+}
+
+async function removeMember(
+  workspaceId: string,
+  actingUserId: string,
+  targetUserId: string,
+): Promise<void> {
+  const isSelf = actingUserId === targetUserId;
+
+  await requireRole(workspaceId, actingUserId, isSelf ? "viewer" : "owner");
+  await assertNotPersonal(
+    workspaceId,
+    isSelf
+      ? "Não é possível sair do workspace pessoal."
+      : "Não é possível remover membros do workspace pessoal.",
+  );
+
+  const currentRole = await getMemberRole(workspaceId, targetUserId);
+
+  await assertNotLastOwner(
+    workspaceId,
+    currentRole,
+    targetUserId,
+    isSelf
+      ? "Você é o único owner deste workspace — promova outro membro a owner ou exclua o workspace antes de sair."
+      : "Não é possível remover o único owner deste workspace.",
+  );
+
+  await database.query({
+    text: `
+        DELETE FROM
+          workspace_members
+        WHERE
+          workspace_id = $1
+          AND user_id = $2
+        ;`,
+    values: [workspaceId, targetUserId],
+  });
+}
+
 const workspace: WorkspaceModel = {
   create,
   findAllByUserId,
@@ -250,6 +513,10 @@ const workspace: WorkspaceModel = {
   updateById,
   deleteById,
   activate,
+  listMembers,
+  inviteMember,
+  updateMemberRole,
+  removeMember,
 };
 
 export default workspace;
