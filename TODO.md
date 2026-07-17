@@ -481,37 +481,39 @@ it's sequenced after the lower-effort wins above.
 
 ## Phase 10 — Monetization ⏳
 
-**Goal:** Gate premium features behind a paid plan. Tier boundaries below
-are a first pass based on how the rest of this competitive set (DocSend,
-Papermark, PandaDoc) segments free vs. paid — refine before building.
+**Goal:** Gate premium features behind a paid plan, scoped per workspace
+(not per user) since documents/links already belong to `workspace_id`
+since Phase 9.
 
-> **Tools:** Stripe for subscriptions and one-time payments. Open SaaS (wasp-lang) has a ready integration as reference.
+> Design validated with the user 2026-07-17:
+> `docs/plans/2026-07-17-monetization-design.md` (key decisions +
+> rationale) and `user-stories/phase-10-monetization/US-35` through
+> `US-38` (implementation-ready specs).
 
-### Infrastructure
+> **Tools:** Stripe for subscriptions (Checkout + Customer Portal, BRL). Real billing launch, not just infrastructure — no grandfathering needed since there are no paying users yet.
 
-- [ ] Stripe account + webhook setup
-- [ ] Migration: `subscriptions` table (`user_id`, `stripe_customer_id`, `plan`, `status`, `current_period_end`)
-- [ ] Stripe webhook handler (`POST /api/v1/webhooks/stripe`) — update subscription status on events
+- [ ] US-35 — Billing infrastructure: `subscriptions` table
+      (`workspace_id`-scoped), `infra/stripe.ts`, `models/subscription.ts`,
+      checkout/portal endpoints, signed webhook handler.
+- [ ] US-36 — Plan gating: Free capped at 10 documents/10 active links;
+      watermark/NDA/allow-list/branding/engagement-score become Pro-only;
+      downgrades keep existing data working, just block new creation.
+- [ ] US-37 — Frontend: "Faturamento" settings tab, usage display,
+      upgrade/manage-subscription buttons, disabled states on
+      gated fields/actions instead of dead-end submits.
+- [ ] US-38 — Homepage revamp: replace the Phase-6-era 3-card grid with a
+      full themed feature showcase (covering everything shipped through
+      Phase 9) plus a Free/Pro/Business pricing table.
 
-### Plans (first-pass draft, refine before building)
+### Plans
 
-- [ ] **Free** — current feature set, capped documents/active links,
-      Papershare branding on the viewer
-- [ ] **Pro** — watermarking, NDA gate, email allow-list, custom branding,
-      engagement scoring, unlimited share links
-- [ ] **Business** — team workspaces, data rooms, custom domain
-- [ ] Enforce plan limits in relevant model functions (e.g. max documents, max share links)
-
-### API
-
-- [ ] `POST /api/v1/billing/checkout` — Create Stripe Checkout session
-- [ ] `GET /api/v1/billing/portal` — Redirect to Stripe Customer Portal (manage/cancel)
-- [ ] `GET /api/v1/billing/subscription` — Current user's plan and status
-
-### Tests
-
-- [ ] Webhook events correctly update subscription state
-- [ ] Plan-gated endpoints return 402 when limit exceeded
+- **Free** — 10 documents, 10 active share links per workspace, no
+  watermark/NDA/allow-list/branding/engagement score.
+- **Pro** — R$29/mês — unlimited documents/links, watermarking, NDA
+  gate, email allow-list, custom branding, engagement scoring.
+- **Business** — R$99/mês — everything in Pro + team workspaces (already
+  built); data rooms and custom domain fold in automatically once those
+  ship in a later slice, no billing rework needed then.
 
 ---
 

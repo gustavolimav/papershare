@@ -80,6 +80,17 @@ Stories are ordered by recommended implementation sequence within each phase. Te
 
 ---
 
+## Phase 10 — Monetization
+
+| ID                                                                      | Title                            | One-sentence description                                                                                                          |
+| ----------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [US-35](./phase-10-monetization/US-35-billing-infrastructure.md)        | Billing Infrastructure           | Add the `subscriptions` table, `infra/stripe.ts`, and workspace-scoped checkout/portal/webhook endpoints.                         |
+| [US-36](./phase-10-monetization/US-36-plan-gating.md)                   | Plan Gating                      | Enforce Free-tier document/link limits and gate watermark/NDA/allow-list/branding/engagement-score behind Pro.                    |
+| [US-37](./phase-10-monetization/US-37-frontend-billing-and-usage-ui.md) | Frontend: Faturamento & Usage UI | Build the "Faturamento" settings tab and make gated UI (upload, create-link, feature toggles) match the current plan.             |
+| [US-38](./phase-10-monetization/US-38-homepage-revamp.md)               | Homepage Revamp                  | Replace the Phase-6-era feature grid with a full themed showcase of every shipped feature plus a Free/Pro/Business pricing table. |
+
+---
+
 ## Technical Debt
 
 | ID                                                       | Title                         | One-sentence description                                                                                            |
@@ -107,5 +118,6 @@ For a single developer or agent working sequentially:
 5. **Phase 6 (frontend):** US-06 → US-07 → US-08 → US-09 → US-10 → US-13 → US-11 → US-12
 6. **Phase 7 (AI):** US-14 → US-15 → US-17 → US-18 → US-16
 7. **Phase 9 (team workspaces):** US-28 → US-29 → US-30 → US-31 → US-32 → US-33 (strictly sequential — each story's endpoints/migrations are consumed by the next)
+8. **Phase 10 (monetization):** US-35 → US-36 → US-37, with US-38 (homepage) buildable any time after the design is settled (no code dependency, just needs the final pricing numbers)
 
-For parallel teams: Phase 5 and Phase 6 (up to US-11) can be built concurrently. Phase 7 requires US-14 before any other AI story. Phase 9 does not parallelize well — US-31 in particular depends on every model/endpoint from US-28-30 existing first, and US-33 needs US-31/US-32 to have something real to render.
+For parallel teams: Phase 5 and Phase 6 (up to US-11) can be built concurrently. Phase 7 requires US-14 before any other AI story. Phase 9 does not parallelize well — US-31 in particular depends on every model/endpoint from US-28-30 existing first, and US-33 needs US-31/US-32 to have something real to render. Phase 10's US-38 (homepage) can run in parallel with US-35/36/37 — it's copy-only, no shared code.
