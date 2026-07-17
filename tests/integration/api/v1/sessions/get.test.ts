@@ -31,7 +31,9 @@ describe("GET /api/v1/sessions", () => {
       created_at: responseBody.created_at,
       updated_at: responseBody.updated_at,
       is_superadmin: user.is_superadmin,
+      active_workspace_id: user.active_workspace_id,
     });
+    expect(responseBody.active_workspace_id).not.toBeNull();
     expect(responseBody.password).toBeUndefined();
   });
 });

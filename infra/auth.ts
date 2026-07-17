@@ -53,7 +53,8 @@ async function findUserById(userId: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, password, created_at, updated_at, is_superadmin
+          id, username, email, password, created_at, updated_at, is_superadmin,
+          active_workspace_id
         FROM
           users
         WHERE

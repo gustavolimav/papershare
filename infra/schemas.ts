@@ -171,6 +171,15 @@ export const shareLinkUpdateSchema = z
     message: "Pelo menos um campo deve ser fornecido para atualização.",
   });
 
+export const workspaceCreateSchema = z.object({
+  name: z
+    .string()
+    .min(1, "O 'name' é obrigatório.")
+    .max(120, "O 'name' deve ter no máximo 120 caracteres."),
+});
+
+export const workspaceUpdateSchema = workspaceCreateSchema;
+
 export const linkViewCreateSchema = z.object({
   viewer_fingerprint: z
     .string()

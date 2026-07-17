@@ -55,7 +55,8 @@ async function findOneById(id: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, password, created_at, updated_at, deleted_at, is_superadmin
+          id, username, email, password, created_at, updated_at, deleted_at, is_superadmin,
+          active_workspace_id
         FROM
           users
         WHERE
@@ -81,7 +82,8 @@ async function findOneByUsername(username: string): Promise<User> {
   const results = await database.query<User>({
     text: `
         SELECT
-          id, username, email, created_at, updated_at, deleted_at, password, is_superadmin
+          id, username, email, created_at, updated_at, deleted_at, password, is_superadmin,
+          active_workspace_id
         FROM
           users
         WHERE
@@ -204,7 +206,8 @@ async function runUpdateQuery(userWithNewValues: User, username: string) {
         WHERE
           LOWER(username) = LOWER($4)
         RETURNING
-          id, username, email, created_at, updated_at, is_superadmin
+          id, username, email, created_at, updated_at, is_superadmin,
+          active_workspace_id
         ;`,
       values: [
         userWithNewValues.username,
@@ -286,7 +289,9 @@ async function runInsertQuery(
 
     await client.query("COMMIT");
 
-    return newUser;
+    // newUser.active_workspace_id is still null from the INSERT above —
+    // the UPDATE that sets it happens afterward in this same transaction.
+    return { ...newUser, active_workspace_id: workspaceId };
   } catch (error) {
     await client.query("ROLLBACK");
     throwUniqueViolationAsValidationError(error);
