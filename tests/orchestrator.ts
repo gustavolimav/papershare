@@ -231,6 +231,34 @@ async function countLinkViews(shareLinkId: string): Promise<number> {
   return Number(result.rows[0]!.count);
 }
 
+// Inserts an active subscriptions row directly — bypasses Stripe entirely,
+// same spirit as promoteToSuperadmin mirroring the real (manual) promotion
+// path. Needed by any test that exercises a Pro/Business-only feature
+// (watermark, NDA, allow-list, branding, engagement score, unlimited
+// documents/links) — those are all gated to Free by default since US-36.
+async function activateSubscription(
+  workspaceId: string,
+  plan: "pro" | "business" = "pro",
+): Promise<void> {
+  await database.query({
+    text: `
+        INSERT INTO
+          subscriptions (
+            workspace_id, stripe_customer_id, stripe_subscription_id, plan,
+            status, current_period_end
+          )
+        VALUES
+          ($1, $2, $3, $4, 'active', NOW() + INTERVAL '30 days')
+        ;`,
+    values: [
+      workspaceId,
+      `cus_test_${workspaceId}`,
+      `sub_test_${workspaceId}`,
+      plan,
+    ],
+  });
+}
+
 interface Orchestrator {
   waitForAllServices(): Promise<void>;
   cleanDatabase(): Promise<void>;
@@ -307,6 +335,12 @@ interface Orchestrator {
   ): Promise<void>;
   // eslint-disable-next-line no-unused-vars
   countLinkViews(shareLinkId: string): Promise<number>;
+  activateSubscription(
+    // eslint-disable-next-line no-unused-vars
+    workspaceId: string,
+    // eslint-disable-next-line no-unused-vars
+    plan?: "pro" | "business",
+  ): Promise<void>;
 }
 
 const orchestrator: Orchestrator = {
@@ -324,6 +358,7 @@ const orchestrator: Orchestrator = {
   recordView,
   pushBackLinkViewCreatedAt,
   countLinkViews,
+  activateSubscription,
 };
 
 export default orchestrator;

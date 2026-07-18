@@ -1,9 +1,14 @@
 import crypto from "crypto";
 import database from "../infra/database";
-import { NotFoundError, ForbiddenError } from "../infra/errors";
+import {
+  NotFoundError,
+  ForbiddenError,
+  PaymentRequiredError,
+} from "../infra/errors";
 import { isValidEmail } from "../infra/schemas";
 import password from "./password";
 import workspace from "./workspace";
+import subscription from "./subscription";
 import type {
   ShareLink,
   ShareLinkResponse,
@@ -12,6 +17,7 @@ import type {
   ShareLinkWithDocument,
   ShareLinkNotificationInfo,
   ShareLinkModel,
+  SubscriptionPlan,
 } from "../types/index";
 
 const SHARE_LINK_COLUMNS = `
@@ -197,6 +203,99 @@ async function findLinkRow(
   return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
 
+// Free-plan workspaces are capped at the free tier's maxActiveLinks limit
+// (counted across every document in the workspace, not just this one) —
+// Pro/Business have no limit. Revoking a link frees up a slot, since only
+// is_active = true links count.
+async function assertWithinActiveLinkLimit(workspaceId: string): Promise<void> {
+  const plan = await subscription.getPlanForWorkspace(workspaceId);
+  const { maxActiveLinks } = subscription.PLAN_LIMITS[plan];
+
+  if (maxActiveLinks === null) {
+    return;
+  }
+
+  const results = await database.query<{ count: string }>({
+    text: `
+        SELECT
+          COUNT(*)::text AS count
+        FROM
+          share_links sl
+        JOIN
+          documents d ON d.id = sl.document_id
+        WHERE
+          d.workspace_id = $1
+          AND sl.is_active = true
+        ;`,
+    values: [workspaceId],
+  });
+
+  if (Number(results.rows[0]!.count) >= maxActiveLinks) {
+    throw new PaymentRequiredError({
+      message: `Limite de ${maxActiveLinks} links ativos do plano Free atingido.`,
+      action: "Faça upgrade do workspace para o plano Pro para continuar.",
+    });
+  }
+}
+
+interface GatedFeatureInput {
+  watermark_enabled?: boolean;
+  nda_text?: string | null;
+  allowed_emails?: string[] | null;
+  brand_accent_color?: string | null;
+  brand_welcome_message?: string | null;
+}
+
+// Only checks fields actually present in the input (undefined = not being
+// touched — never gated, so editing an unrelated field on a link that
+// already has e.g. watermark_enabled from a since-downgraded Pro period
+// still succeeds). Turning a feature OFF (false/null/empty) is never
+// gated either — only newly enabling one is.
+function assertGatedFeaturesAllowed(
+  plan: SubscriptionPlan,
+  input: GatedFeatureInput,
+): void {
+  if (plan !== "free") {
+    return;
+  }
+
+  function gated(message: string): never {
+    throw new PaymentRequiredError({
+      message,
+      action: "Faça upgrade do workspace para o plano Pro para continuar.",
+    });
+  }
+
+  if (input.watermark_enabled === true) {
+    gated("Marca d'água é um recurso do plano Pro.");
+  }
+
+  if (
+    input.nda_text !== undefined &&
+    input.nda_text !== null &&
+    input.nda_text.trim().length > 0
+  ) {
+    gated("Gate de NDA é um recurso do plano Pro.");
+  }
+
+  if (
+    input.allowed_emails !== undefined &&
+    input.allowed_emails !== null &&
+    input.allowed_emails.length > 0
+  ) {
+    gated("Lista de emails permitidos é um recurso do plano Pro.");
+  }
+
+  if (
+    (input.brand_accent_color !== undefined &&
+      input.brand_accent_color !== null) ||
+    (input.brand_welcome_message !== undefined &&
+      input.brand_welcome_message !== null)
+  ) {
+    gated("Branding customizado é um recurso do plano Pro.");
+  }
+}
+
 async function create(
   documentId: string,
   userId: string,
@@ -204,6 +303,10 @@ async function create(
 ): Promise<ShareLinkResponse> {
   const workspaceId = await getDocumentWorkspaceId(documentId);
   await workspace.requireRole(workspaceId, userId, "editor");
+
+  const plan = await subscription.getPlanForWorkspace(workspaceId);
+  await assertWithinActiveLinkLimit(workspaceId);
+  assertGatedFeaturesAllowed(plan, input);
 
   const id = crypto.randomUUID();
   const passwordHash = input.password
@@ -296,6 +399,9 @@ async function updateById(
   const workspaceId = await getDocumentWorkspaceId(documentId);
   await workspace.requireRole(workspaceId, userId, "editor");
   await findLinkRow(id, documentId);
+
+  const plan = await subscription.getPlanForWorkspace(workspaceId);
+  assertGatedFeaturesAllowed(plan, input);
 
   const setClauses: string[] = [];
   const values: unknown[] = [];

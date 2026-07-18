@@ -81,7 +81,24 @@ async function findAllByUserId(userId: string): Promise<WorkspaceWithRole[]> {
           (
             SELECT creator.ai_api_key_encrypted IS NOT NULL FROM users creator
             WHERE creator.id = workspaces.created_by
-          ) AS ai_configured
+          ) AS ai_configured,
+          COALESCE(
+            (
+              SELECT CASE WHEN s.status = 'active' THEN s.plan ELSE 'free' END
+              FROM subscriptions s
+              WHERE s.workspace_id = workspaces.id
+            ),
+            'free'
+          ) AS plan,
+          (
+            SELECT COUNT(*)::int FROM documents doc2
+            WHERE doc2.workspace_id = workspaces.id AND doc2.deleted_at IS NULL
+          ) AS document_count,
+          (
+            SELECT COUNT(*)::int FROM share_links sl2
+            JOIN documents doc3 ON doc3.id = sl2.document_id
+            WHERE doc3.workspace_id = workspaces.id AND sl2.is_active = true
+          ) AS active_link_count
         FROM
           workspaces
         JOIN

@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import database from "../infra/database";
-import { NotFoundError } from "../infra/errors";
+import { NotFoundError, PaymentRequiredError } from "../infra/errors";
 import workspace from "./workspace";
+import subscription from "./subscription";
 import type {
   Document,
   DocumentCreateInput,
@@ -18,11 +19,45 @@ const DOCUMENT_COLUMNS = `
   ai_summary_generated_at, created_at, updated_at, deleted_at
 `;
 
+// Free-plan workspaces are capped at the free tier's maxDocuments limit;
+// Pro/Business have no limit (maxDocuments === null). Existing documents past
+// the cap (e.g. after a downgrade) are left untouched — only creating a
+// new one is blocked.
+async function assertWithinDocumentLimit(workspaceId: string): Promise<void> {
+  const plan = await subscription.getPlanForWorkspace(workspaceId);
+  const { maxDocuments } = subscription.PLAN_LIMITS[plan];
+
+  if (maxDocuments === null) {
+    return;
+  }
+
+  const results = await database.query<{ count: string }>({
+    text: `
+        SELECT
+          COUNT(*)::text AS count
+        FROM
+          documents
+        WHERE
+          workspace_id = $1
+          AND deleted_at IS NULL
+        ;`,
+    values: [workspaceId],
+  });
+
+  if (Number(results.rows[0]!.count) >= maxDocuments) {
+    throw new PaymentRequiredError({
+      message: `Limite de ${maxDocuments} documentos do plano Free atingido.`,
+      action: "Faça upgrade do workspace para o plano Pro para continuar.",
+    });
+  }
+}
+
 async function create(input: DocumentCreateInput): Promise<DocumentResponse> {
   // input.user_id is always the acting/authenticated user (the uploader),
   // never someone else's id on their behalf — same value doubles as the
   // audit field on the inserted row and the identity checked here.
   await workspace.requireRole(input.workspace_id, input.user_id, "editor");
+  await assertWithinDocumentLimit(input.workspace_id);
 
   const id = crypto.randomUUID();
 
