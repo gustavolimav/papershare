@@ -500,12 +500,14 @@ since Phase 9.
       watermark/NDA/allow-list/branding/engagement-score become Pro-only;
       downgrades keep existing data working, just block new creation. See
       CHANGELOG for details.
-- [ ] US-37 — Frontend: "Faturamento" settings tab, usage display,
+- [x] US-37 — Frontend: "Faturamento" settings tab, usage display,
       upgrade/manage-subscription buttons, disabled states on
-      gated fields/actions instead of dead-end submits.
-- [ ] US-38 — Homepage revamp: replace the Phase-6-era 3-card grid with a
+      gated fields/actions instead of dead-end submits. See CHANGELOG for
+      details.
+- [x] US-38 — Homepage revamp: replace the Phase-6-era 3-card grid with a
       full themed feature showcase (covering everything shipped through
-      Phase 9) plus a Free/Pro/Business pricing table.
+      Phase 9) plus a Free/Pro/Business pricing table. See CHANGELOG for
+      details.
 
 ### Plans
 

@@ -35,6 +35,8 @@ export function DocumentList() {
   const { activeWorkspace } = useWorkspaces();
   const showUploader = (activeWorkspace?.member_count ?? 0) > 1;
   const canEdit = activeWorkspace?.role !== "viewer";
+  const atDocumentLimit =
+    activeWorkspace?.plan === "free" && activeWorkspace.document_count >= 10;
 
   async function handleConfirmDelete() {
     if (!documentToDelete) {
@@ -58,7 +60,15 @@ export function DocumentList() {
 
   return (
     <div className="space-y-6">
-      {canEdit && <UploadZone onUploaded={() => mutate()} />}
+      {canEdit && atDocumentLimit && (
+        <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+          Limite de 10 documentos do plano Free atingido. Faça upgrade em
+          Configurações → Faturamento.
+        </p>
+      )}
+      {canEdit && !atDocumentLimit && (
+        <UploadZone onUploaded={() => mutate()} />
+      )}
 
       {isLoading && (
         <div className="space-y-3">

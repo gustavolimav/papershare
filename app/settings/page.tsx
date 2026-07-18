@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server";
 import { Header } from "@/components/layout/Header";
@@ -5,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { AiSettingsForm } from "@/components/settings/AiSettingsForm";
 import { TeamSettingsForm } from "@/components/workspaces/TeamSettingsForm";
+import { BillingSettingsForm } from "@/components/billing/BillingSettingsForm";
 import { DangerZone } from "@/components/settings/DangerZone";
 import { Separator } from "@/components/ui/separator";
 
@@ -52,6 +54,15 @@ export default async function SettingsPage() {
         <div>
           <h2 className="mb-3 text-lg font-semibold">Equipe</h2>
           <TeamSettingsForm />
+        </div>
+
+        <Separator />
+
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Faturamento</h2>
+          <Suspense fallback={null}>
+            <BillingSettingsForm />
+          </Suspense>
         </div>
 
         <Separator />
