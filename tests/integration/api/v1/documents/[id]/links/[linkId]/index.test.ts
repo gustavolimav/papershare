@@ -160,7 +160,8 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
   });
 
   test("Setting allowed_emails then clearing with an empty array", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
@@ -198,7 +199,8 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
   });
 
   test("Toggling watermark_enabled on", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
@@ -220,7 +222,8 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
   });
 
   test("Setting nda_text then clearing it with null", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
@@ -254,7 +257,8 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
   });
 
   test("Setting brand_accent_color then clearing it with null", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
@@ -288,7 +292,8 @@ describe("PATCH /api/v1/documents/[id]/links/[linkId]", () => {
   });
 
   test("Setting brand_welcome_message then clearing it with null", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 

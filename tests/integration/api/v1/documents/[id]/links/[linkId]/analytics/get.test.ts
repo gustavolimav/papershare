@@ -43,7 +43,8 @@ describe("GET /api/v1/documents/[id]/links/[linkId]/analytics", () => {
   });
 
   test("With no views yet", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);
 
@@ -175,7 +176,8 @@ describe("GET /api/v1/documents/[id]/links/[linkId]/analytics", () => {
   });
 
   test("Returns per-viewer engagement scores, sorted highest first", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     // sample.pdf has page_count: 1, so pages_viewed: 1 is 100% of the document.
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id);

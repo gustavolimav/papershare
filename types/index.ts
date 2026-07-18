@@ -53,6 +53,11 @@ export interface WorkspaceWithRole extends Workspace {
   // boolean-only pattern as AiKeyStatusResponse, just scoped to the
   // workspace's AI identity (its creator) instead of the requester.
   ai_configured: boolean;
+  // Resolved the same way as models/subscription.ts#getPlanForWorkspace —
+  // "free" when there's no subscriptions row or it isn't currently active.
+  plan: SubscriptionPlan;
+  document_count: number;
+  active_link_count: number;
 }
 
 export type SubscriptionPlan = "free" | "pro" | "business";
@@ -316,7 +321,10 @@ export interface FollowUpEmailSuggestion {
 // not aggregated across a document's links.
 export interface LinkAnalyticsResponse extends LinkViewAnalytics {
   page_breakdown: PageBreakdown[];
-  viewers: ViewerEngagement[];
+  // null on a Free-plan workspace — engagement scoring is a Pro feature
+  // (see models/subscription.ts#PLAN_LIMITS); every other field here is
+  // unaffected, since only this one is gated.
+  viewers: ViewerEngagement[] | null;
 }
 
 export interface TopLink {

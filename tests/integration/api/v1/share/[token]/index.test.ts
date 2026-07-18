@@ -261,7 +261,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an allow-list, no email provided", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       allowed_emails: ["approved@example.com"],
@@ -278,7 +279,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an allow-list, an email not on the list", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       allowed_emails: ["approved@example.com"],
@@ -296,7 +298,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an allow-list, the approved email (case-insensitive)", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       allowed_emails: ["Approved@Example.com"],
@@ -311,7 +314,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an allow-list but require_email off, email is still required", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       allowed_emails: ["approved@example.com"],
@@ -327,7 +331,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With watermark_enabled, no email provided", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       watermark_enabled: true,
@@ -344,7 +349,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With watermark_enabled, valid email provided", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       watermark_enabled: true,
@@ -362,7 +368,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an NDA configured, no email/name provided", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",
@@ -379,7 +386,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an NDA configured, email provided but no name", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",
@@ -397,7 +405,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With an NDA configured, email and name provided", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",
@@ -420,7 +429,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With both an NDA and an allow-list, email/name valid but not on the list", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",
@@ -444,7 +454,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With both an NDA and an allow-list, approved email but no name", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",
@@ -463,7 +474,8 @@ describe("GET /api/v1/share/[token]", () => {
   });
 
   test("With both an NDA and an allow-list, approved email and name provided", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",

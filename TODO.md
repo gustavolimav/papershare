@@ -496,9 +496,10 @@ since Phase 9.
       (`workspace_id`-scoped), `infra/stripe.ts`, `models/subscription.ts`,
       checkout/portal endpoints, signed webhook handler. See CHANGELOG for
       details.
-- [ ] US-36 — Plan gating: Free capped at 10 documents/10 active links;
+- [x] US-36 — Plan gating: Free capped at 10 documents/10 active links;
       watermark/NDA/allow-list/branding/engagement-score become Pro-only;
-      downgrades keep existing data working, just block new creation.
+      downgrades keep existing data working, just block new creation. See
+      CHANGELOG for details.
 - [ ] US-37 — Frontend: "Faturamento" settings tab, usage display,
       upgrade/manage-subscription buttons, disabled states on
       gated fields/actions instead of dead-end submits.

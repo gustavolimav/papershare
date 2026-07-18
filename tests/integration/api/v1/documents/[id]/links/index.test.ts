@@ -102,7 +102,8 @@ describe("POST /api/v1/documents/[id]/links", () => {
   });
 
   test("With allowed_emails, dedupes case-insensitively", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
 
     const responseBody = await orchestrator.createShareLink(
@@ -124,7 +125,8 @@ describe("POST /api/v1/documents/[id]/links", () => {
   });
 
   test("With watermark_enabled", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
 
     const responseBody = await orchestrator.createShareLink(
@@ -137,7 +139,8 @@ describe("POST /api/v1/documents/[id]/links", () => {
   });
 
   test("With nda_text", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
 
     const responseBody = await orchestrator.createShareLink(
@@ -154,7 +157,8 @@ describe("POST /api/v1/documents/[id]/links", () => {
   });
 
   test("With brand_accent_color", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
 
     const responseBody = await orchestrator.createShareLink(
@@ -180,7 +184,8 @@ describe("POST /api/v1/documents/[id]/links", () => {
   });
 
   test("With brand_welcome_message", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
 
     const responseBody = await orchestrator.createShareLink(

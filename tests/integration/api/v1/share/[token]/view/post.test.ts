@@ -91,7 +91,8 @@ describe("POST /api/v1/share/[token]/view", () => {
   });
 
   test("With a viewer_name, persists it on the view", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",

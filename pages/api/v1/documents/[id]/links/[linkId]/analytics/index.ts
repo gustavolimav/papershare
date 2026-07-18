@@ -5,6 +5,7 @@ import { authMiddleware } from "../../../../../../../../infra/auth";
 import document from "../../../../../../../../models/document";
 import shareLink from "../../../../../../../../models/shareLink";
 import linkView from "../../../../../../../../models/linkView";
+import subscription from "../../../../../../../../models/subscription";
 import type {
   AuthenticatedNextApiRequest,
   LinkAnalyticsResponse,
@@ -35,6 +36,14 @@ async function getHandler(
   await shareLink.findOneById(linkId, documentId, request.user!.id);
 
   const analytics = await linkView.getAnalyticsByLinkId(linkId, doc.page_count);
+
+  // Engagement scoring is a Pro feature — everything else in this response
+  // (aggregate stats, page breakdown) isn't gated, so only this field is
+  // nulled out instead of blocking the whole endpoint.
+  const plan = await subscription.getPlanForWorkspace(doc.workspace_id);
+  if (plan === "free") {
+    analytics.viewers = null;
+  }
 
   return response.status(200).json(analytics);
 }

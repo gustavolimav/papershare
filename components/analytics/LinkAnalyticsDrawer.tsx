@@ -70,16 +70,18 @@ export function LinkAnalyticsDrawer({
                   <PageHeatmapChart data={data.page_breakdown} />
                 </div>
               )}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold">
-                  Engajamento por visitante
-                </h3>
-                <ViewerEngagementList
-                  documentId={documentId}
-                  linkId={linkId!}
-                  viewers={data.viewers}
-                />
-              </div>
+              {data.viewers && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold">
+                    Engajamento por visitante
+                  </h3>
+                  <ViewerEngagementList
+                    documentId={documentId}
+                    linkId={linkId!}
+                    viewers={data.viewers}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

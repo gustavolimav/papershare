@@ -34,7 +34,8 @@ describe("GET /api/v1/share/[token]/nda", () => {
   });
 
   test("With a link that has an NDA configured, no password/email/name needed", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       password: "secret123",
@@ -52,7 +53,8 @@ describe("GET /api/v1/share/[token]/nda", () => {
   });
 
   test("With a revoked link", async () => {
-    const { cookie } = await orchestrator.createUserSession();
+    const { user, cookie } = await orchestrator.createUserSession();
+    await orchestrator.activateSubscription(user.active_workspace_id!);
     const document = await orchestrator.uploadDocument(cookie);
     const link = await orchestrator.createShareLink(cookie, document.id, {
       nda_text: "Keep this confidential.",
