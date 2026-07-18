@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { useWorkspaces } from "@/lib/useWorkspaces";
 import { ShareLinkCard } from "@/components/share-links/ShareLinkCard";
 import { CreateShareLinkModal } from "@/components/share-links/CreateShareLinkModal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,12 +22,21 @@ export function ShareLinkList({ documentId, canEdit }: ShareLinkListProps) {
   const [duplicateFrom, setDuplicateFrom] = useState<ShareLinkResponse | null>(
     null,
   );
+  const { activeWorkspace } = useWorkspaces();
+  const atLinkLimit =
+    activeWorkspace?.plan === "free" && activeWorkspace.active_link_count >= 10;
 
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Links de compartilhamento</h2>
-        {canEdit && (
+        {canEdit && atLinkLimit && (
+          <p className="text-sm text-muted-foreground">
+            Limite de 10 links ativos do plano Free atingido. Faça upgrade em
+            Configurações → Faturamento.
+          </p>
+        )}
+        {canEdit && !atLinkLimit && (
           <CreateShareLinkModal
             documentId={documentId}
             onCreated={() => mutate()}

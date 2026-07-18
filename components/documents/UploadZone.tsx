@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toastPaymentRequired } from "@/lib/toastPaymentRequired";
 
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
@@ -69,7 +70,10 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
 
       try {
         const body = JSON.parse(xhr.responseText);
-        setError(body?.message ?? "Não foi possível enviar o arquivo.");
+
+        if (!toastPaymentRequired(xhr.status, body)) {
+          setError(body?.message ?? "Não foi possível enviar o arquivo.");
+        }
       } catch {
         setError("Não foi possível enviar o arquivo.");
       }

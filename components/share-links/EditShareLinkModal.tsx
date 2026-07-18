@@ -15,7 +15,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { parseAllowedEmails } from "@/lib/parseAllowedEmails";
+import { useWorkspaces } from "@/lib/useWorkspaces";
+import { toastPaymentRequired } from "@/lib/toastPaymentRequired";
+import { ProFeatureHint } from "@/components/share-links/ProFeatureHint";
 import type { ShareLinkResponse, ShareLinkUpdateInput } from "@/types/index";
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
 
 interface EditShareLinkModalProps {
   link: ShareLinkResponse;
@@ -55,6 +62,16 @@ export function EditShareLinkModal({
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { activeWorkspace } = useWorkspaces();
+  const isFree = activeWorkspace?.plan === "free";
+  // Only disabled when currently off/empty — a link that already has one of
+  // these set (from before a downgrade) can still be turned off or cleared,
+  // matching the backend's "removal is never gated" rule.
+  const watermarkDisabled = isFree && !watermarkEnabled;
+  const allowedEmailsDisabled = isFree && allowedEmailsText.trim() === "";
+  const ndaDisabled = isFree && ndaText.trim() === "";
+  const brandAccentDisabled = isFree && !brandAccentColor;
+  const brandWelcomeDisabled = isFree && brandWelcomeMessage.trim() === "";
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -68,13 +85,44 @@ export function EditShareLinkModal({
         is_active: isActive,
         notify_on_view: notifyOnView,
         require_email: requireEmail,
-        allowed_emails: parseAllowedEmails(allowedEmailsText),
-        watermark_enabled: watermarkEnabled,
-        nda_text: ndaText || null,
-        brand_accent_color: brandAccentColor || null,
-        brand_welcome_message: brandWelcomeMessage || null,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
+
+      // On Free, only send the gated fields when they actually changed —
+      // otherwise re-submitting a link that already had one set (from
+      // before a downgrade) would resend its existing value and get
+      // rejected as a new attempt to enable a Pro-only feature, blocking
+      // edits that have nothing to do with the gated field itself.
+      const newAllowedEmails = parseAllowedEmails(allowedEmailsText);
+      const newNdaText = ndaText || null;
+      const newBrandAccentColor = brandAccentColor || null;
+      const newBrandWelcomeMessage = brandWelcomeMessage || null;
+
+      if (!isFree || watermarkEnabled !== link.watermark_enabled) {
+        body.watermark_enabled = watermarkEnabled;
+      }
+
+      if (!isFree || !arraysEqual(newAllowedEmails, link.allowed_emails)) {
+        body.allowed_emails = newAllowedEmails;
+      }
+
+      if (!isFree || newNdaText !== (link.nda_text ?? null)) {
+        body.nda_text = newNdaText;
+      }
+
+      if (
+        !isFree ||
+        newBrandAccentColor !== (link.brand_accent_color ?? null)
+      ) {
+        body.brand_accent_color = newBrandAccentColor;
+      }
+
+      if (
+        !isFree ||
+        newBrandWelcomeMessage !== (link.brand_welcome_message ?? null)
+      ) {
+        body.brand_welcome_message = newBrandWelcomeMessage;
+      }
 
       if (clearPassword) {
         body.password = null;
@@ -93,9 +141,13 @@ export function EditShareLinkModal({
 
       if (!response.ok) {
         const responseBody = await response.json().catch(() => null);
-        setError(
-          responseBody?.message ?? "Não foi possível salvar as alterações.",
-        );
+
+        if (!toastPaymentRequired(response.status, responseBody)) {
+          setError(
+            responseBody?.message ?? "Não foi possível salvar as alterações.",
+          );
+        }
+
         return;
       }
 
@@ -212,12 +264,17 @@ export function EditShareLinkModal({
                 onChange={(event) => setAllowedEmailsText(event.target.value)}
                 placeholder="um@exemplo.com&#10;outro@exemplo.com"
                 rows={3}
+                disabled={allowedEmailsDisabled}
               />
-              <p className="text-xs text-muted-foreground">
-                Um email por linha. Se preenchido, só esses emails poderão
-                acessar o link (mesmo com a senha correta). Deixe em branco para
-                não restringir.
-              </p>
+              {allowedEmailsDisabled ? (
+                <ProFeatureHint />
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Um email por linha. Se preenchido, só esses emails poderão
+                  acessar o link (mesmo com a senha correta). Deixe em branco
+                  para não restringir.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -225,11 +282,13 @@ export function EditShareLinkModal({
                 id="edit-watermarkEnabled"
                 checked={watermarkEnabled}
                 onCheckedChange={setWatermarkEnabled}
+                disabled={watermarkDisabled}
               />
               <Label htmlFor="edit-watermarkEnabled">
                 Marca d&apos;água com email do visitante
               </Label>
             </div>
+            {watermarkDisabled && <ProFeatureHint />}
 
             <div className="space-y-2">
               <Label htmlFor="edit-ndaText">Termo de confidencialidade</Label>
@@ -239,12 +298,17 @@ export function EditShareLinkModal({
                 onChange={(event) => setNdaText(event.target.value)}
                 placeholder="Cole aqui o texto que o visitante deve aceitar antes de ver o documento"
                 rows={4}
+                disabled={ndaDisabled}
               />
-              <p className="text-xs text-muted-foreground">
-                Se preenchido, o visitante precisa informar nome e email e
-                aceitar este termo antes de acessar o documento. Deixe em branco
-                para remover a exigência.
-              </p>
+              {ndaDisabled ? (
+                <ProFeatureHint />
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Se preenchido, o visitante precisa informar nome e email e
+                  aceitar este termo antes de acessar o documento. Deixe em
+                  branco para remover a exigência.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -256,6 +320,7 @@ export function EditShareLinkModal({
                   value={brandAccentColor || "#000000"}
                   onChange={(event) => setBrandAccentColor(event.target.value)}
                   className="h-9 w-14 p-1"
+                  disabled={brandAccentDisabled}
                 />
                 {brandAccentColor && (
                   <Button
@@ -268,13 +333,17 @@ export function EditShareLinkModal({
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Usada nos botões e destaques da página de visualização, no lugar
-                da cor padrão do Papershare — útil para combinar com a marca de
-                quem está enviando. Só aparece depois que o visitante
-                desbloqueia o documento, não nas telas de senha, email ou termo
-                de aceite.
-              </p>
+              {brandAccentDisabled ? (
+                <ProFeatureHint />
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Usada nos botões e destaques da página de visualização, no
+                  lugar da cor padrão do Papershare — útil para combinar com a
+                  marca de quem está enviando. Só aparece depois que o visitante
+                  desbloqueia o documento, não nas telas de senha, email ou
+                  termo de aceite.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -287,7 +356,9 @@ export function EditShareLinkModal({
                 onChange={(event) => setBrandWelcomeMessage(event.target.value)}
                 placeholder="Ex: Olá! Segue o contrato revisado, qualquer dúvida me chama."
                 rows={2}
+                disabled={brandWelcomeDisabled}
               />
+              {brandWelcomeDisabled && <ProFeatureHint />}
             </div>
 
             {error && (
