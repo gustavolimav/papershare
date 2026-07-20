@@ -284,7 +284,7 @@ foundation from day one. Reasons:
       `username varchar(30)` column limit and fails the insert
       intermittently. Bound/truncate the generated value to fit the schema.
 - [ ] `tests/e2e/` (Playwright, added alongside US-37) runs against `next
-    dev`, which occasionally serves a corrupted chunk under rapid
+dev`, which occasionally serves a corrupted chunk under rapid
       automated navigation — a page-crashing `SyntaxError` unrelated to
       application code. `playwright.config.ts` sets `retries: 2` to absorb
       it. Switching `npm run test:e2e` to `next build && next start` would
