@@ -283,6 +283,15 @@ foundation from day one. Reasons:
       `faker.internet.username()`, which occasionally exceeds the
       `username varchar(30)` column limit and fails the insert
       intermittently. Bound/truncate the generated value to fit the schema.
+- [ ] `tests/e2e/` (Playwright, added alongside US-37) runs against `next
+dev`, which occasionally serves a corrupted chunk under rapid
+      automated navigation — a page-crashing `SyntaxError` unrelated to
+      application code. `playwright.config.ts` sets `retries: 2` to absorb
+      it. Switching `npm run test:e2e` to `next build && next start` would
+      remove the root cause entirely, but needs `.env.development` loaded
+      under Next's production-mode env-file convention (`.env`/
+      `.env.production`, not `.env.development`) — deferred rather than
+      renaming/duplicating the project's env file for this alone.
 
 ---
 

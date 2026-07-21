@@ -27,9 +27,11 @@ export function ShareLinkList({ documentId, canEdit }: ShareLinkListProps) {
     activeWorkspace?.plan === "free" && activeWorkspace.active_link_count >= 10;
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" aria-labelledby="share-links-heading">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Links de compartilhamento</h2>
+        <h2 id="share-links-heading" className="text-lg font-semibold">
+          Links de compartilhamento
+        </h2>
         {canEdit && atLinkLimit && (
           <p className="text-sm text-muted-foreground">
             Limite de 10 links ativos do plano Free atingido. Faça upgrade em

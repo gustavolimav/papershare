@@ -11,6 +11,11 @@ const createJestConfig = nextJest({
 
 const jestConfig = {
   moduleDirectories: ["node_modules", "<rootDir>"],
+  // tests/e2e/*.spec.ts are Playwright specs (separate runner, see
+  // playwright.config.ts) — they'd otherwise match Jest's default
+  // testMatch and fail since they use Playwright's test()/expect(), not
+  // Jest's.
+  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/tests/e2e/"],
   testTimeout: 60000,
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   globals: {

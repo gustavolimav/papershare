@@ -108,6 +108,26 @@ Use the custom classes from `infra/errors.ts`. Never throw plain `Error` objects
 - Use `orchestrator.createUser()` for test fixtures. Never hardcode UUIDs or passwords.
 - Tests run with Docker + Next.js dev server. Start both before running: `npm test`.
 
+### End-to-end (Playwright)
+
+- `tests/e2e/*.spec.ts` — a second, separate suite (Playwright, not Jest)
+  covering plan-gating (Free/Pro/Business) end-to-end: real browser
+  interactions (disabled fields, inline upgrade messages, Faturamento tab)
+  alongside direct backend assertions (402 status codes), so UI and API
+  are checked together rather than the API alone. Run with `npm run
+test:e2e`. `tests/e2e/helpers.ts` reuses `tests/orchestrator.ts` directly
+  (same DB access, same `activateSubscription`) — Playwright tests run in
+  plain Node, so the same fixtures work in both suites.
+- `jest.config.js` excludes `tests/e2e/` (`testPathIgnorePatterns`) so Jest
+  doesn't try to run Playwright's `.spec.ts` files as its own tests.
+- Runs against `next dev` (on-demand compilation), not a production
+  build — occasionally serves a corrupted chunk under rapid automated
+  navigation (a known Next.js dev-mode HMR race, unrelated to application
+  code; manifests as a page-crashing `SyntaxError` with no stack).
+  `playwright.config.ts` sets `retries: 2` to absorb this — a test that
+  fails for a real, reproducible reason fails identically on every retry
+  too, so this doesn't mask genuine bugs.
+
 ---
 
 ## Key commands
@@ -115,6 +135,7 @@ Use the custom classes from `infra/errors.ts`. Never throw plain `Error` objects
 ```bash
 npm run dev              # Start Docker + run migrations + start Next.js
 npm test                 # Run full integration test suite
+npm run test:e2e         # Run the Playwright end-to-end suite
 npm run test:watch       # Watch mode
 npm run sf               # Auto-fix formatting (Prettier + ESLint)
 npm run lint:eslint:check # ESLint without fixing

@@ -7,6 +7,12 @@ uploads/
 .DS_Store
 .claude/
 
+# Playwright e2e artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
 # Real secrets (Stripe, etc.) go here, never in .env.development — that
 # file is committed and only ever holds dummy/local-only values.
 .env*.local
