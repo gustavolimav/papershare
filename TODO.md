@@ -7,16 +7,22 @@
 
 ## Status
 
-| Phase | Name                               | Status     |
-| ----- | ---------------------------------- | ---------- |
-| 1     | Foundation                         | ✅ Done    |
-| 2     | Authorization & Account Management | ✅ Done    |
-| 3     | Documents Core                     | ✅ Done    |
-| 4     | Share Links                        | ✅ Done    |
-| 5     | Analytics & Tracking               | ✅ Done    |
-| 6     | Frontend                           | ⏳ Planned |
-| 7     | AI Features                        | ⏳ Future  |
-| 8     | Monetization                       | ⏳ Future  |
+| Phase | Name                               | Status                                                                   |
+| ----- | ---------------------------------- | ------------------------------------------------------------------------ |
+| 1     | Foundation                         | ✅ Done                                                                  |
+| 2     | Authorization & Account Management | ✅ Done                                                                  |
+| 3     | Documents Core                     | ✅ Done                                                                  |
+| 4     | Share Links                        | ✅ Done                                                                  |
+| 5     | Analytics & Tracking               | ✅ Done                                                                  |
+| 6     | Frontend                           | ✅ Done                                                                  |
+| 7     | Engagement, Trust & Growth         | ✅ Done                                                                  |
+| 8     | AI Features                        | ✅ Done                                                                  |
+| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
+| 10    | Monetization                       | ✅ Done                                                                  |
+| 11    | Visual Identity & UI Redesign      | ⏳ Planned                                                               |
+| 12    | Activity Feed                      | ⏳ Planned                                                               |
+| 13    | Global Links Inventory             | ⏳ Planned                                                               |
+| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
 
 ---
 
@@ -564,6 +570,136 @@ whenever wanted, no code change either way.
 - **Business** — R$99/mês — everything in Pro + team workspaces (already
   built); data rooms and custom domain fold in automatically once those
   ship in a later slice, no billing rework needed then.
+
+---
+
+## Phase 11 — Visual Identity & UI Redesign ⏳
+
+**Goal:** Replace the current all-neutral shadcn default theme (grayscale
+only, stock Inter font, zero brand color — unchanged since Phase 6
+scaffolding) with a real visual identity, applied across every existing
+screen. This phase is a restyle only — no new functionality, no new
+endpoints, no schema changes. New features discovered alongside this
+design are scoped as their own phases below (12–14) so this phase stays
+mergeable on its own and doesn't block on unrelated backend work.
+
+> Source of truth: a Claude-generated design prototype
+> (`Papershare Standalone.html`, reviewed 2026-07-20) covering the
+> homepage, dashboard, document detail, analytics, activity, links,
+> contacts, settings, and public-viewer/error states. Key tokens pulled
+> from it: warm cream background + terracotta/rust accent (`oklch(0.58
+0.16 38)`, i.e. an accent hue around 38°), `Source Serif 4` for
+> headings paired with `Manrope` for body text (replacing `Inter`
+> everywhere), `0.5rem`–`0.625rem` corner radii. Full mapping from
+> prototype → this codebase's actual pages/components still needs to be
+> written up as implementation-ready stories before starting (see
+> "Not yet scoped" below).
+
+- [ ] **Design tokens** — replace `app/globals.css`'s neutral-only shadcn
+      theme with the new color system (background, accent, chart colors
+      all currently grayscale) and typography (`Source Serif 4` +
+      `Manrope`, replacing `next/font/google`'s `Inter`)
+- [ ] **App shell** — persistent left sidebar (workspace switcher +
+      Documentos/Atividade/Links/Contatos/Configurações nav) replacing
+      today's top-header-only nav, for every authenticated page — this is
+      the shell Phases 12–14's new pages will live in
+- [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
+      pricing table to the new visual language; hero copy/layout revamp
+- [ ] **Auth** (`/login`, `/register`) — restyle to match
+- [ ] **Dashboard** (`/dashboard`) — document list becomes a data table
+      (Nome/Visualizações/Links/Pontuação/Atualizado) with a per-document
+      aggregate score column, replacing the current card grid; add a
+      stat-card row (Documentos, Visualizações · 7 dias, Links ativos,
+      Engajamento médio) with trend deltas vs. the prior period
+- [ ] **Document detail & share-link manager** (`/documents/[id]`) —
+      restyle, no behavior change
+- [ ] **Analytics dashboard** (`/documents/[id]/analytics`) — restyle the
+      heatmap, per-viewer engagement list, and AI-insight callout
+- [ ] **Settings** (`/settings`) — restyle Perfil/Chave de IA/Equipe/
+      Faturamento/Zona de perigo to the new visual language (prototype
+      uses tab-based navigation instead of today's stacked sections)
+- [ ] **Public-facing pages** (`/view/[token]`) — restyle the viewer, the
+      password/NDA gates, and add a "Desenvolvido com Papershare" footer
+      (new: light product-attribution branding on pages seen by people
+      who aren't Papershare customers themselves)
+- [ ] **Error/empty states** — restyle (expired-link page confirmed in
+      the prototype; audit for other states — 404, revoked link, etc. —
+      while in there)
+
+**Not yet scoped:** this phase's checklist is sized from a first pass
+over the prototype, not implementation-ready user stories yet. Before
+starting, write `docs/plans/YYYY-MM-DD-visual-identity-design.md` +
+`user-stories/phase-11-visual-identity/US-NN-*.md` per the usual
+brainstorming → design doc → stories flow, breaking the checklist above
+into PR-sized slices (the app-shell sidebar is the one item every other
+page in this phase depends on, so it should land first).
+
+---
+
+## Phase 12 — Activity Feed ⏳
+
+**Goal:** One reverse-chronological, cross-document feed of everything
+happening in a workspace — views, NDA acceptances, link creation, blocked
+download attempts, revisits — grouped by day (Hoje/Ontem/Esta semana), so
+an owner doesn't have to open each document individually to know what
+just happened. Confirmed as a genuinely new capability (doesn't exist
+today) while reviewing the Phase 11 design prototype's "Atividade" page.
+
+- [ ] Aggregation query joining `link_views`, `share_links`, NDA
+      acceptances, and blocked-download attempts, scoped to a workspace
+      and ordered by `created_at desc`
+- [ ] `GET /api/v1/workspaces/[id]/activity` (paginated) — new endpoint,
+      new response shape (`types/index.ts`); no new tables expected, this
+      reads from data Phase 5/7 already record
+- [ ] Frontend: `/atividade` page grouped by day, one row per event with
+      an icon + description matching its type (view, NDA accept, link
+      created, download blocked, revisit)
+- [ ] Depends on Phase 11's app-shell sidebar (this is one of its nav
+      destinations)
+
+---
+
+## Phase 13 — Global Links Inventory ⏳
+
+**Goal:** One page listing every share link across every document in a
+workspace — label/document/view-count/status — instead of only being able
+to see a document's links from inside that document's own detail page.
+Confirmed as new (today's `ShareLinkList` is always scoped to a single
+document) while reviewing the prototype's "Links" page.
+
+- [ ] `GET /api/v1/workspaces/[id]/links` — new endpoint joining
+      `share_links` → `documents`, scoped to the workspace, returning
+      document title alongside each link's existing fields
+- [ ] Frontend: `/links` page — table (link, document, views, status) +
+      copy-link action per row
+- [ ] Depends on Phase 11's app-shell sidebar
+
+---
+
+## Phase 14 — Contacts / Viewer Directory ⏳
+
+**Goal:** Turn per-link viewer analytics (Phase 5/7, currently scoped to
+one link at a time) into a workspace-wide contact directory: group a
+recipient's activity by email across every document/link they've
+touched, showing document count, last-seen, and a blended engagement
+score — plus surface the existing AI follow-up-email suggestion (US-27)
+directly from this directory instead of only from a single link's
+analytics view. Confirmed as new (no cross-document viewer identity
+exists today — `ViewerEngagement` is always scoped to one link) while
+reviewing the prototype's "Contatos" page.
+
+- [ ] Aggregation query: group `link_views` by `viewer_email` across the
+      workspace, computing distinct-document count, most recent view,
+      and a blended engagement score across all their views
+- [ ] `GET /api/v1/workspaces/[id]/contacts` — new endpoint
+- [ ] Frontend: `/contatos` page — one row/card per contact, "Gerar
+      follow-up" wired to the existing follow-up-email endpoint (US-27)
+- [ ] Known limitation to call out in the design doc: a viewer only has
+      an email on file if the link required one (NDA gate or
+      `require_email`) — fingerprint-only anonymous viewers won't appear
+      here, so this directory is necessarily a subset of total viewers,
+      not everyone
+- [ ] Depends on Phase 11's app-shell sidebar
 
 ---
 
