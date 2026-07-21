@@ -175,8 +175,16 @@ export type DocumentResponse = Document;
 
 // Only the list endpoint joins the uploader's username in — a single
 // document fetch (findOneById) has no need for it.
+//
+// view_count/active_link_count/engagement_score are computed, read-only
+// aggregates added for the dashboard table (US-43) — same pattern as
+// WorkspaceWithRole's document_count/active_link_count (US-36). Additive
+// only: findOneById's DocumentResponse doesn't gain these fields.
 export interface DocumentListItem extends Document {
   uploaded_by_username: string;
+  view_count: number;
+  active_link_count: number;
+  engagement_score: number;
 }
 
 export interface DocumentSummaryResponse {
