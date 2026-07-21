@@ -7,22 +7,22 @@
 
 ## Status
 
-| Phase | Name                               | Status                                                                   |
-| ----- | ---------------------------------- | ------------------------------------------------------------------------ |
-| 1     | Foundation                         | ✅ Done                                                                  |
-| 2     | Authorization & Account Management | ✅ Done                                                                  |
-| 3     | Documents Core                     | ✅ Done                                                                  |
-| 4     | Share Links                        | ✅ Done                                                                  |
-| 5     | Analytics & Tracking               | ✅ Done                                                                  |
-| 6     | Frontend                           | ✅ Done                                                                  |
-| 7     | Engagement, Trust & Growth         | ✅ Done                                                                  |
-| 8     | AI Features                        | ✅ Done                                                                  |
-| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
-| 10    | Monetization                       | ✅ Done                                                                  |
-| 11    | Visual Identity & UI Redesign      | ⏳ In Progress (US-39–40 done; US-41–47 remaining)                       |
-| 12    | Activity Feed                      | ⏳ Planned                                                               |
-| 13    | Global Links Inventory             | ⏳ Planned                                                               |
-| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
+| Phase | Name                               | Status                                                                                                  |
+| ----- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 1     | Foundation                         | ✅ Done                                                                                                 |
+| 2     | Authorization & Account Management | ✅ Done                                                                                                 |
+| 3     | Documents Core                     | ✅ Done                                                                                                 |
+| 4     | Share Links                        | ✅ Done                                                                                                 |
+| 5     | Analytics & Tracking               | ✅ Done                                                                                                 |
+| 6     | Frontend                           | ✅ Done                                                                                                 |
+| 7     | Engagement, Trust & Growth         | ✅ Done                                                                                                 |
+| 8     | AI Features                        | ✅ Done                                                                                                 |
+| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred)                                |
+| 10    | Monetization                       | ✅ Done                                                                                                 |
+| 11    | Visual Identity & UI Redesign      | ⏳ US-39–47 done (PR #47 merging US-40–46 to `main`); US-48–49 (audit fixes + Superadmin reorg) planned |
+| 12    | Activity Feed                      | ⏳ Planned                                                                                              |
+| 13    | Global Links Inventory             | ⏳ Planned                                                                                              |
+| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                                                              |
 
 ---
 
@@ -642,13 +642,14 @@ mergeable on its own and doesn't block on unrelated backend work.
       Equipe/Faturamento/Zona de perigo to the new visual language
       (prototype uses tab-based navigation instead of today's stacked
       sections). See CHANGELOG.
-- [ ] **Public-facing pages** (`/view/[token]`) — restyle the viewer, the
-      password/NDA gates, and add a "Desenvolvido com Papershare" footer
-      (new: light product-attribution branding on pages seen by people
-      who aren't Papershare customers themselves)
-- [ ] **Error/empty states** — restyle (expired-link page confirmed in
-      the prototype; audit for other states — 404, revoked link, etc. —
-      while in there)
+- [x] **Public-facing pages** (`/view/[token]`) (US-47) — restyled the
+      viewer, the password/NDA gates, and added a "Desenvolvido com
+      Papershare" footer (light product-attribution branding on pages
+      seen by people who aren't Papershare customers themselves). See
+      CHANGELOG.
+- [x] **Error/empty states** (US-47) — restyled (expired-link page,
+      404, revoked link, and other gate/error states share the new
+      `ViewerCardShell`/`ViewerStateCard` pattern). See CHANGELOG.
 
 **Story breakdown** (see `user-stories/phase-11-visual-identity/`):
 US-39 (design tokens + finishing the dark-mode wiring) → US-40 (app
@@ -656,6 +657,23 @@ shell / sidebar — the one item every other page in this phase depends
 on) → US-41 through US-47 (homepage, auth, dashboard, document detail,
 analytics, settings, public viewer/error states — each independent of
 the others once US-40 lands).
+
+**Post-launch audit fixes** — a visual audit against the design
+prototype (2026-07-21, run after PRs #33/#39/#41/#46 turned out to have
+all merged into `feat/phase11-01-design-tokens` instead of `main`,
+opened as PR #47) found the restyle itself matches closely once PR #47
+merges. Two concrete gaps surfaced, scoped as their own stories rather
+than folded into the (already-merged) originals:
+
+- [ ] **Document detail responsive fix** (US-48) — the header
+      actions row and each share link's Editar/Revogar/Duplicar row
+      overflow instead of wrapping at narrow viewport widths (~530–700px),
+      clipping buttons off-screen. Isolated to two components; every
+      other restyled page already reflows correctly at the same widths.
+- [ ] **Superadmin as Settings subsection** (US-49) — per explicit
+      request, fold Migrations + Feature Flags into Configurações as
+      two more (superadmin-only) tabs, removing the separate top-level
+      "Superadmin" sidebar item and the `/superadmin/*` routes.
 
 ---
 
