@@ -8,6 +8,7 @@ import { ViewsChart } from "@/components/analytics/ViewsChart";
 import { TopLinksTable } from "@/components/analytics/TopLinksTable";
 import { LinkAnalyticsDrawer } from "@/components/analytics/LinkAnalyticsDrawer";
 import { InsightCard } from "@/components/analytics/InsightCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration } from "@/lib/formatters";
 import type { DocumentAnalyticsResponse, TopLink } from "@/types/index";
@@ -70,15 +71,23 @@ export function AnalyticsView({ documentId }: AnalyticsViewProps) {
 
       <InsightCard documentId={documentId} />
 
-      <div>
-        <h2 className="mb-3 text-lg font-semibold">Visualizações por dia</h2>
-        <ViewsChart data={data.views_by_day} />
-      </div>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Visualizações por dia</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ViewsChart data={data.views_by_day} />
+        </CardContent>
+      </Card>
 
-      <div>
-        <h2 className="mb-3 text-lg font-semibold">Top links</h2>
-        <TopLinksTable links={data.top_links} onLinkClick={setSelectedLink} />
-      </div>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Top links</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TopLinksTable links={data.top_links} onLinkClick={setSelectedLink} />
+        </CardContent>
+      </Card>
 
       <LinkAnalyticsDrawer
         documentId={documentId}

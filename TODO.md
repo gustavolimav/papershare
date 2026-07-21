@@ -633,8 +633,9 @@ mergeable on its own and doesn't block on unrelated backend work.
       Engajamento médio) with trend deltas vs. the prior period
 - [ ] **Document detail & share-link manager** (`/documents/[id]`) —
       restyle, no behavior change
-- [ ] **Analytics dashboard** (`/documents/[id]/analytics`) — restyle the
-      heatmap, per-viewer engagement list, and AI-insight callout
+- [x] **Analytics dashboard** (`/documents/[id]/analytics`, US-45) —
+      restyle the heatmap, per-viewer engagement list, and AI-insight
+      callout. See CHANGELOG.
 - [ ] **Settings** (`/settings`) — restyle Perfil/Chave de IA/Equipe/
       Faturamento/Zona de perigo to the new visual language (prototype
       uses tab-based navigation instead of today's stacked sections)

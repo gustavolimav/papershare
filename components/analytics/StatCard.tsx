@@ -8,13 +8,15 @@ interface StatCardProps {
 export function StatCard({ label, value }: StatCardProps) {
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+      <CardHeader className="pb-1">
+        <CardTitle className="font-sans text-xs font-medium tracking-wide text-muted-foreground uppercase">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold">{value}</p>
+        <p className="font-heading text-2xl font-semibold text-foreground">
+          {value}
+        </p>
       </CardContent>
     </Card>
   );

@@ -20,17 +20,27 @@ export default async function DocumentAnalyticsPage({
     const doc = await document.findOneById(params.id, user.id);
 
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <nav className="mb-6 text-sm text-muted-foreground">
-          <Link href="/dashboard" className="hover:underline">
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <nav className="mb-2 text-sm text-muted-foreground">
+          <Link
+            href="/dashboard"
+            className="hover:text-foreground hover:underline"
+          >
             Dashboard
           </Link>
-          {" → "}
-          <Link href={`/documents/${doc.id}`} className="hover:underline">
+          <span className="mx-1.5">/</span>
+          <Link
+            href={`/documents/${doc.id}`}
+            className="hover:text-foreground hover:underline"
+          >
             {doc.title}
           </Link>
-          {" → Analytics"}
+          <span className="mx-1.5">/</span>
+          <span className="text-foreground">Analytics</span>
         </nav>
+        <h1 className="mb-6 text-2xl font-semibold tracking-tight">
+          Analytics
+        </h1>
         <AnalyticsView documentId={doc.id} />
       </main>
     );
