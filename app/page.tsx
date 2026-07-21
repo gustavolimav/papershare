@@ -15,14 +15,18 @@ import {
   Users,
   Shield,
   Send,
+  Check,
+  PlayCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getServerUser } from "@/lib/auth-server";
@@ -39,20 +43,31 @@ export default async function HomePage() {
       <Header />
 
       <main>
-        <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Papershare
+        <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-20 text-center sm:py-28">
+          <Badge
+            variant="outline"
+            className="h-auto rounded-full border-primary/30 bg-primary/5 px-3 py-1 text-[0.7rem] font-semibold tracking-wide text-primary uppercase"
+          >
+            Compartilhamento de documentos, feito para gerar confiança
+          </Badge>
+          <h1 className="text-4xl leading-[1.1] font-semibold tracking-tight sm:text-6xl">
+            Envie. Veja o que
+            <br />
+            acontece depois.
           </h1>
           <p className="max-w-xl text-lg text-muted-foreground">
             Envie documentos, gere links configuráveis e acompanhe como as
             pessoas interagem com o seu conteúdo.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button size="lg" asChild>
-              <Link href="/register">Começar agora</Link>
+            <Button size="lg" className="h-11 px-6" asChild>
+              <Link href="/register">Começar grátis</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/login">Entrar</Link>
+            <Button size="lg" variant="outline" className="h-11 px-6" asChild>
+              <Link href="/login">
+                <PlayCircle className="h-4 w-4" />
+                Ver um visualizador ao vivo
+              </Link>
             </Button>
           </div>
         </section>
@@ -144,9 +159,9 @@ export default async function HomePage() {
           />
         </FeatureSection>
 
-        <section className="mx-auto max-w-5xl px-4 py-24">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight">Planos</h2>
+        <section className="mx-auto max-w-5xl px-4 py-20 sm:py-24">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-semibold tracking-tight">Planos</h2>
             <p className="mt-2 text-muted-foreground">
               Comece de graça. Faça upgrade quando precisar de mais.
             </p>
@@ -193,9 +208,13 @@ function FeatureSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className={tone === "muted" ? "bg-muted/30 py-16" : "py-16"}>
+    <section
+      className={
+        tone === "muted" ? "bg-muted/40 py-16 sm:py-20" : "py-16 sm:py-20"
+      }
+    >
       <div className="mx-auto max-w-5xl px-4">
-        <h2 className="mb-8 text-center text-2xl font-semibold tracking-tight">
+        <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight sm:text-3xl">
           {title}
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -216,9 +235,11 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <Card>
+    <Card className="border border-border shadow-none transition-colors hover:border-primary/40">
       <CardHeader>
-        <div className="mb-2 text-primary">{icon}</div>
+        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          {icon}
+        </div>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
@@ -238,13 +259,26 @@ function PricingCard({
   highlighted?: boolean;
 }) {
   return (
-    <Card className={highlighted ? "border-primary shadow-md" : undefined}>
+    <Card
+      className={cn(
+        "relative border shadow-none",
+        highlighted ? "border-primary shadow-md" : "border-border",
+      )}
+    >
+      {highlighted && (
+        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[0.65rem] font-semibold tracking-wide uppercase">
+          Mais popular
+        </Badge>
+      )}
       <CardHeader>
         <CardTitle>{name}</CardTitle>
-        <p className="text-2xl font-semibold">{price}</p>
-        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+        <p className="text-3xl font-semibold">{price}</p>
+        <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
           {features.map((feature) => (
-            <li key={feature}>{feature}</li>
+            <li key={feature} className="flex items-start gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span>{feature}</span>
+            </li>
           ))}
         </ul>
         <Button
