@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { ViewerCardShell } from "@/components/viewer/ViewerCardShell";
 
 interface EmailGateProps {
   onSubmit: (email: string) => void;
@@ -20,31 +29,42 @@ export function EmailGate({ onSubmit, error, isSubmitting }: EmailGateProps) {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-4 px-4">
-      <h1 className="text-xl font-semibold">Antes de continuar</h1>
-      <p className="text-center text-sm text-muted-foreground">
-        Informe seu email para visualizar este documento.
-      </p>
-      <form onSubmit={handleSubmit} className="w-full space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="viewer-email">Email</Label>
-          <Input
-            id="viewer-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            autoFocus
-          />
-        </div>
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Verificando..." : "Acessar documento"}
-        </Button>
-      </form>
-    </div>
+    <ViewerCardShell>
+      <Card>
+        <CardHeader className="items-center gap-2 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Mail className="h-5 w-5" />
+          </div>
+          <CardTitle className="font-heading text-xl">
+            Antes de continuar
+          </CardTitle>
+          <CardDescription>
+            Informe seu email para visualizar este documento.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="viewer-email">Email</Label>
+              <Input
+                id="viewer-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoFocus
+              />
+            </div>
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Verificando..." : "Acessar documento"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </ViewerCardShell>
   );
 }

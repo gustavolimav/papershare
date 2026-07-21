@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { FileWarning } from "lucide-react";
 import { ViewerControls } from "@/components/viewer/ViewerControls";
 
 const PDFJS_VERSION = "5.4.296";
@@ -141,14 +142,17 @@ export function PDFViewer({
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        {error}
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <FileWarning className="h-6 w-6" />
+        </div>
+        <p className="text-sm text-muted-foreground">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       <ViewerControls
         currentPage={currentPage}
         totalPages={totalPages || 1}
@@ -170,7 +174,7 @@ export function PDFViewer({
             : { pointerEvents: "none", userSelect: "none" }
         }
       >
-        <canvas ref={canvasRef} className="shadow-lg" />
+        <canvas ref={canvasRef} className="rounded-sm shadow-lg" />
       </div>
     </div>
   );

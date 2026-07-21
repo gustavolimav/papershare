@@ -637,13 +637,14 @@ mergeable on its own and doesn't block on unrelated backend work.
 - [ ] **Settings** (`/settings`) — restyle Perfil/Chave de IA/Equipe/
       Faturamento/Zona de perigo to the new visual language (prototype
       uses tab-based navigation instead of today's stacked sections)
-- [ ] **Public-facing pages** (`/view/[token]`) — restyle the viewer, the
-      password/NDA gates, and add a "Desenvolvido com Papershare" footer
+- [x] **Public-facing pages** (`/view/[token]`) (US-47) — restyle the viewer,
+      the password/NDA gates, and add a "Desenvolvido com Papershare" footer
       (new: light product-attribution branding on pages seen by people
-      who aren't Papershare customers themselves)
-- [ ] **Error/empty states** — restyle (expired-link page confirmed in
-      the prototype; audit for other states — 404, revoked link, etc. —
-      while in there)
+      who aren't Papershare customers themselves). See CHANGELOG.
+- [x] **Error/empty states** (US-47) — restyle (expired-link page confirmed
+      in the prototype; audited for other states — 404, revoked link,
+      generic fallback, corrupted-PDF load failure, unsupported-file-type
+      preview — while in there). See CHANGELOG.
 
 **Story breakdown** (see `user-stories/phase-11-visual-identity/`):
 US-39 (design tokens + finishing the dark-mode wiring) → US-40 (app
