@@ -66,7 +66,7 @@ test.describe("Faturamento tab", () => {
     ).toBeVisible();
   });
 
-  test("Clicking 'Assinar Pro' surfaces the backend's 503 as a toast (Stripe isn't configured in this environment)", async ({
+  test("With billing_stripe off (default), clicking 'Assinar Pro' routes to /em-breve instead of calling the API", async ({
     page,
     context,
   }) => {
@@ -75,9 +75,24 @@ test.describe("Faturamento tab", () => {
     await page.goto("/settings");
     await page.getByRole("button", { name: "Assinar Pro" }).click();
 
+    await expect(page).toHaveURL(/\/em-breve$/);
+    await expect(page.getByText("Em breve", { exact: true })).toBeVisible();
+  });
+
+  test("With billing_stripe on, clicking 'Assinar Pro' surfaces the backend's 503 as a toast (Stripe isn't configured in this environment)", async ({
+    page,
+    context,
+  }) => {
+    await loginOnPlan(context, "free");
+    await orchestrator.enableFeatureFlag("billing_stripe");
+
+    await page.goto("/settings");
+    await page.getByRole("button", { name: "Assinar Pro" }).click();
+
     await expect(
       page.getByText("Cobrança indisponível no momento."),
     ).toBeVisible();
+    await expect(page).toHaveURL(/\/settings$/);
   });
 
   test("Non-owner (editor) sees the same plan/usage info but no billing buttons at all", async ({
