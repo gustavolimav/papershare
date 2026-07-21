@@ -259,6 +259,25 @@ async function activateSubscription(
   });
 }
 
+// Bypasses the superadmin-only PATCH endpoint entirely — same spirit as
+// activateSubscription/promoteToSuperadmin. Needed by any test that
+// exercises a feature gated behind a flag (billing_stripe, off by default
+// since it hides checkout/portal behind a superadmin switch).
+async function enableFeatureFlag(key: string): Promise<void> {
+  await database.query({
+    text: `
+        INSERT INTO
+          feature_flags (key, enabled)
+        VALUES
+          ($1, TRUE)
+        ON CONFLICT (key) DO UPDATE
+        SET
+          enabled = TRUE
+        ;`,
+    values: [key],
+  });
+}
+
 interface Orchestrator {
   waitForAllServices(): Promise<void>;
   cleanDatabase(): Promise<void>;
@@ -341,6 +360,8 @@ interface Orchestrator {
     // eslint-disable-next-line no-unused-vars
     plan?: "pro" | "business",
   ): Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  enableFeatureFlag(key: string): Promise<void>;
 }
 
 const orchestrator: Orchestrator = {
@@ -359,6 +380,7 @@ const orchestrator: Orchestrator = {
   pushBackLinkViewCreatedAt,
   countLinkViews,
   activateSubscription,
+  enableFeatureFlag,
 };
 
 export default orchestrator;

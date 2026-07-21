@@ -103,10 +103,10 @@ describe("POST /api/v1/workspaces/[id]/billing/portal", () => {
     expect(body.name).toBe("NotFoundError");
   });
 
-  // See CLAUDE.md — STRIPE_SECRET_KEY is never configured locally/in CI,
-  // so the owner-authorized, subscription-exists path reaches the Stripe
-  // call and degrades to 503.
-  test("As the owner, with a subscription but Stripe not configured, returns 503", async () => {
+  // billing_stripe is off by default (no row = disabled) — a superadmin
+  // has to turn it on via /superadmin/feature-flags before the portal
+  // ever reaches Stripe.
+  test("As the owner, with a subscription but the billing_stripe feature flag disabled (default), returns 503", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const workspace = await createTeamWorkspace(cookie);
     await insertSubscription(workspace.id);
@@ -115,5 +115,22 @@ describe("POST /api/v1/workspaces/[id]/billing/portal", () => {
 
     expect(status).toBe(503);
     expect(body.name).toBe("ServiceError");
+    expect(body.message).toBe("Esse recurso ainda não está disponível.");
+  });
+
+  // See CLAUDE.md — STRIPE_SECRET_KEY is never configured locally/in CI,
+  // so with the feature flag enabled, the owner-authorized,
+  // subscription-exists path reaches the Stripe call and degrades to 503.
+  test("As the owner, with the flag enabled but Stripe not configured, returns 503", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const workspace = await createTeamWorkspace(cookie);
+    await insertSubscription(workspace.id);
+    await orchestrator.enableFeatureFlag("billing_stripe");
+
+    const { status, body } = await portal(cookie, workspace.id);
+
+    expect(status).toBe(503);
+    expect(body.name).toBe("ServiceError");
+    expect(body.message).toBe("Cobrança indisponível no momento.");
   });
 });

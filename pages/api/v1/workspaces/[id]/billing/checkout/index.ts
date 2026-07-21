@@ -9,6 +9,7 @@ import {
 } from "../../../../../../../infra/schemas";
 import stripeInfra from "../../../../../../../infra/stripe";
 import workspace from "../../../../../../../models/workspace";
+import featureFlag from "../../../../../../../models/featureFlag";
 import type {
   AuthenticatedNextApiRequest,
   CheckoutSessionResponse,
@@ -52,6 +53,7 @@ async function postHandler(
     });
   }
 
+  await featureFlag.requireEnabled("billing_stripe");
   const stripe = stripeInfra.requireStripeConfigured();
   const baseUrl = getBaseUrl(request);
 

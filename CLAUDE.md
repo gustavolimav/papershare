@@ -56,6 +56,16 @@ tests/          → Integration tests only (hit the live server + real DB)
   ```sql
   UPDATE users SET is_superadmin = true WHERE email = 'you@example.com';
   ```
+- `/superadmin/feature-flags` — a superadmin-only kill switch for features
+  that aren't ready for every user yet. `feature_flags` (`key`, `enabled`)
+  works like `subscriptions`: absence of a row for a key means disabled,
+  so shipping a new flag never needs a seed migration.
+  `models/featureFlag.ts#requireEnabled(key)` throws the same
+  `ServiceError` (503) shape as an unconfigured external service
+  (`infra/stripe.ts`, `infra/ai.ts`) when a flag is off. Currently gates
+  `billing_stripe` (checkout/portal) — off by default, so the Faturamento
+  tab's subscribe/manage buttons redirect to `/em-breve` instead of
+  calling the API, until a superadmin turns it on.
 
 ---
 

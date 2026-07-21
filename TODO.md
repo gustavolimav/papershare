@@ -517,6 +517,43 @@ since Phase 9.
       full themed feature showcase (covering everything shipped through
       Phase 9) plus a Free/Pro/Business pricing table. See CHANGELOG for
       details.
+- [x] Soft-launch safety switch: real billing isn't ready to expose to
+      every user yet (see the production checklist below), so US-35–38's
+      checkout/portal are gated behind a new `billing_stripe` feature flag
+      (`/superadmin/feature-flags`, superadmin-only, off by default) — the
+      Faturamento tab's action buttons route to `/em-breve` instead of
+      calling the API until a superadmin turns it on. See CHANGELOG for
+      details.
+
+### Production checklist — before enabling `billing_stripe`
+
+All Dashboard/Vercel setup, no code changes:
+
+- [ ] Finish Stripe account activation in **live mode** (business details,
+      bank account for payouts) — Stripe won't process real charges until
+      this is done
+- [ ] Create the Pro and Business Price objects in **live mode**
+      (separate from the test-mode ones used in `.env.development`) —
+      note the new `price_...` IDs
+- [ ] Register a **live** webhook endpoint (Dashboard → Developers →
+      Webhooks) at `https://<domínio>/api/v1/webhooks/stripe`, subscribed
+      to at least `customer.subscription.created`/`.updated`/`.deleted`
+      and `invoice.payment_failed` — copy the signing secret
+- [ ] Configure the **Customer Portal** (Settings → Billing → Customer
+      portal) — business info/logo, which plans customers can switch
+      between, cancellation policy — the "Gerenciar assinatura" button
+      needs this configured at least once
+- [ ] Set `STRIPE_SECRET_KEY` (`sk_live_...`), `STRIPE_WEBHOOK_SECRET`,
+      `STRIPE_PRICE_ID_PRO`, `STRIPE_PRICE_ID_BUSINESS` on Vercel's
+      **Production** environment specifically (Preview can keep the
+      test-mode values)
+- [ ] Only then, flip `billing_stripe` on via `/superadmin/feature-flags`
+
+**Deliberately still deferred** (not blockers for the above): Stripe
+Tax/`automatic_tax` — no registration yet, enabling it without one
+silently collects R$0 tax (see the Stripe follow-ups note below). Boleto
+and PIX are a one-click optional add (Settings → Payment methods)
+whenever wanted, no code change either way.
 
 ### Plans
 

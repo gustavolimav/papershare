@@ -201,6 +201,10 @@ export const billingCheckoutSchema = z.object({
   }),
 });
 
+export const featureFlagUpdateSchema = z.object({
+  enabled: z.boolean({ message: "O 'enabled' deve ser um booleano." }),
+});
+
 export const linkViewCreateSchema = z.object({
   viewer_fingerprint: z
     .string()
