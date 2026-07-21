@@ -33,8 +33,8 @@ export function ViewerControls({
   onDownload,
 }: ViewerControlsProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 border-b bg-background/95 px-4 py-2 backdrop-blur">
-      <div className="flex items-center gap-1">
+    <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 border-b border-border bg-card/95 px-4 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      <div className="flex items-center gap-1 rounded-full bg-muted/60 p-1">
         <Button
           type="button"
           variant="ghost"
@@ -45,7 +45,7 @@ export function ViewerControls({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm tabular-nums">
+        <span className="min-w-14 text-center text-sm tabular-nums text-foreground">
           {currentPage} / {totalPages}
         </span>
         <Button
@@ -60,7 +60,7 @@ export function ViewerControls({
         </Button>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 rounded-full bg-muted/60 p-1">
         <Button
           type="button"
           variant="ghost"
@@ -70,7 +70,9 @@ export function ViewerControls({
         >
           <ZoomOut className="h-4 w-4" />
         </Button>
-        <span className="text-sm tabular-nums">{Math.round(scale * 100)}%</span>
+        <span className="min-w-12 text-center text-sm tabular-nums text-foreground">
+          {Math.round(scale * 100)}%
+        </span>
         <Button
           type="button"
           variant="ghost"

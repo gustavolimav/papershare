@@ -6,7 +6,16 @@ import { EmailGate } from "@/components/viewer/EmailGate";
 import { NdaGate } from "@/components/viewer/NdaGate";
 import { PDFViewer } from "@/components/viewer/PDFViewer";
 import { ChatPanel } from "@/components/viewer/ChatPanel";
-import { MessageCircle } from "lucide-react";
+import { ViewerCardShell } from "@/components/viewer/ViewerCardShell";
+import { ViewerStateCard } from "@/components/viewer/ViewerStateCard";
+import { ViewerFooter } from "@/components/viewer/ViewerFooter";
+import {
+  MessageCircle,
+  FileQuestion,
+  Ban,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getViewerFingerprint } from "@/lib/fingerprint";
 import type { ShareLinkWithDocument } from "@/types/index";
@@ -15,13 +24,28 @@ interface ViewerPageProps {
   token: string;
 }
 
+// Distinguishes the flavor of a terminal error/empty state purely for
+// presentation (icon + heading) — the underlying message shown as the
+// description always comes from the server response, unchanged.
+type ErrorKind = "not-found" | "revoked" | "expired" | "generic";
+
 type LoadState =
   | { status: "loading" }
   | { status: "password-required"; error?: string }
   | { status: "email-required"; error?: string }
   | { status: "nda-required"; ndaText: string; error?: string }
-  | { status: "error"; message: string }
+  | { status: "error"; kind: ErrorKind; message: string }
   | { status: "ready"; link: ShareLinkWithDocument; fileData: ArrayBuffer };
+
+const ERROR_PRESENTATION: Record<
+  ErrorKind,
+  { icon: typeof FileQuestion; title: string }
+> = {
+  "not-found": { icon: FileQuestion, title: "Link não encontrado" },
+  revoked: { icon: Ban, title: "Link revogado" },
+  expired: { icon: Clock, title: "Link expirado" },
+  generic: { icon: AlertCircle, title: "Não foi possível abrir o documento" },
+};
 
 const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   "application/pdf": ".pdf",
@@ -113,7 +137,11 @@ export function ViewerPage({ token }: ViewerPageProps) {
       const linkResponse = await fetch(`/api/v1/share/${token}`, { headers });
 
       if (linkResponse.status === 404) {
-        setState({ status: "error", message: "Este link não foi encontrado." });
+        setState({
+          status: "error",
+          kind: "not-found",
+          message: "Este link não foi encontrado.",
+        });
         return;
       }
 
@@ -156,6 +184,12 @@ export function ViewerPage({ token }: ViewerPageProps) {
 
         setState({
           status: "error",
+          kind:
+            message === "Este link foi revogado."
+              ? "revoked"
+              : message === "Este link expirou."
+                ? "expired"
+                : "generic",
           message: message || "Este link não está mais disponível.",
         });
         return;
@@ -164,6 +198,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
       if (!linkResponse.ok) {
         setState({
           status: "error",
+          kind: "generic",
           message: "Não foi possível carregar o documento.",
         });
         return;
@@ -183,6 +218,7 @@ export function ViewerPage({ token }: ViewerPageProps) {
       if (!fileResponse.ok) {
         setState({
           status: "error",
+          kind: "generic",
           message: "Não foi possível carregar o arquivo.",
         });
         return;
@@ -294,9 +330,11 @@ export function ViewerPage({ token }: ViewerPageProps) {
 
   if (state.status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        Carregando...
-      </div>
+      <ViewerCardShell>
+        <p className="text-center text-sm text-muted-foreground">
+          Carregando...
+        </p>
+      </ViewerCardShell>
     );
   }
 
@@ -344,10 +382,16 @@ export function ViewerPage({ token }: ViewerPageProps) {
   }
 
   if (state.status === "error") {
+    const { icon, title } = ERROR_PRESENTATION[state.kind];
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 text-center text-muted-foreground">
-        {state.message}
-      </div>
+      <ViewerCardShell>
+        <ViewerStateCard
+          icon={icon}
+          title={title}
+          description={state.message}
+          cta={{ label: "Conhecer o Papershare", href: "/" }}
+        />
+      </ViewerCardShell>
     );
   }
 
@@ -363,28 +407,28 @@ export function ViewerPage({ token }: ViewerPageProps) {
 
   if (link.document.mime_type !== "application/pdf") {
     return (
-      <div
-        className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
-        style={accentStyle}
-      >
-        {link.brand_welcome_message && (
-          <p className="max-w-md text-sm text-muted-foreground">
-            {link.brand_welcome_message}
-          </p>
-        )}
-        <p className="text-muted-foreground">
-          Pré-visualização não disponível para este tipo de arquivo.
-        </p>
-        {link.allow_download && (
-          <button
-            type="button"
-            onClick={handleDownload}
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            Baixar arquivo
-          </button>
-        )}
-      </div>
+      <ViewerCardShell style={accentStyle}>
+        <div className="flex flex-col items-center gap-4">
+          {link.brand_welcome_message && (
+            <p className="max-w-md text-center text-sm text-muted-foreground">
+              {link.brand_welcome_message}
+            </p>
+          )}
+          <ViewerStateCard
+            icon={FileQuestion}
+            title="Pré-visualização não disponível"
+            description="Este tipo de arquivo não pode ser exibido diretamente no navegador."
+            cta={
+              link.allow_download
+                ? {
+                    label: "Baixar arquivo",
+                    onClick: handleDownload,
+                  }
+                : undefined
+            }
+          />
+        </div>
+      </ViewerCardShell>
     );
   }
 
@@ -395,44 +439,48 @@ export function ViewerPage({ token }: ViewerPageProps) {
   };
 
   return (
-    <div className="flex h-screen" style={accentStyle}>
-      <div className="flex min-w-0 flex-1 flex-col">
-        {link.brand_welcome_message && (
-          <p className="border-b bg-muted/30 px-4 py-2 text-center text-sm text-muted-foreground">
-            {link.brand_welcome_message}
-          </p>
+    <div className="flex h-screen flex-col bg-background" style={accentStyle}>
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
+          {link.brand_welcome_message && (
+            <p className="border-b border-border bg-muted/30 px-4 py-2 text-center text-sm text-muted-foreground">
+              {link.brand_welcome_message}
+            </p>
+          )}
+          <PDFViewer
+            fileData={fileData}
+            allowDownload={link.allow_download}
+            onDownload={handleDownload}
+            onPageChange={(page) => {
+              pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
+              trackPageChange(page);
+            }}
+            watermarkText={watermarkTextRef.current}
+          />
+        </div>
+
+        {link.ai_chat_available && !isChatOpen && (
+          <Button
+            type="button"
+            variant="default"
+            className="fixed right-4 bottom-16 shadow-lg"
+            onClick={() => setIsChatOpen(true)}
+          >
+            <MessageCircle className="mr-1 h-4 w-4" /> Perguntar sobre este
+            documento
+          </Button>
         )}
-        <PDFViewer
-          fileData={fileData}
-          allowDownload={link.allow_download}
-          onDownload={handleDownload}
-          onPageChange={(page) => {
-            pagesViewedRef.current = Math.max(pagesViewedRef.current, page);
-            trackPageChange(page);
-          }}
-          watermarkText={watermarkTextRef.current}
-        />
+
+        {link.ai_chat_available && isChatOpen && (
+          <ChatPanel
+            token={token}
+            headers={chatHeaders}
+            onClose={() => setIsChatOpen(false)}
+          />
+        )}
       </div>
 
-      {link.ai_chat_available && !isChatOpen && (
-        <Button
-          type="button"
-          variant="default"
-          className="fixed right-4 bottom-4 shadow-lg"
-          onClick={() => setIsChatOpen(true)}
-        >
-          <MessageCircle className="mr-1 h-4 w-4" /> Perguntar sobre este
-          documento
-        </Button>
-      )}
-
-      {link.ai_chat_available && isChatOpen && (
-        <ChatPanel
-          token={token}
-          headers={chatHeaders}
-          onClose={() => setIsChatOpen(false)}
-        />
-      )}
+      <ViewerFooter />
     </div>
   );
 }
