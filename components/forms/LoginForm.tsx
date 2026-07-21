@@ -62,12 +62,13 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
         <Input
           id="email"
           type="email"
+          className="h-10"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required
@@ -89,6 +90,7 @@ export function LoginForm() {
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
+            className="h-10 pr-9"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
@@ -97,7 +99,7 @@ export function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword((value) => !value)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
           >
             {showPassword ? (
@@ -115,7 +117,12 @@ export function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Entrando..." : "Entrar"}
       </Button>
 
@@ -123,7 +130,7 @@ export function LoginForm() {
         Não tem uma conta?{" "}
         <Link
           href="/register"
-          className="text-primary underline-offset-4 hover:underline"
+          className="font-medium text-primary underline-offset-4 hover:underline"
         >
           Cadastre-se
         </Link>

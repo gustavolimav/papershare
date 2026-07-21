@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -22,10 +23,16 @@ export default async function LoginPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto flex max-w-md flex-col justify-center px-4 py-16">
-        <Card>
-          <CardHeader>
-            <CardTitle>Entrar</CardTitle>
+      <main className="flex flex-col items-center px-4 py-16 sm:py-24">
+        <Link
+          href="/"
+          className="mb-8 font-heading text-2xl font-semibold tracking-tight"
+        >
+          Papershare
+        </Link>
+        <Card className="w-full max-w-md shadow-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Bem-vindo de volta</CardTitle>
             <CardDescription>
               Acesse sua conta para gerenciar seus documentos.
             </CardDescription>
