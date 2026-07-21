@@ -623,8 +623,9 @@ mergeable on its own and doesn't block on unrelated backend work.
       Phases 12–14 ship) replacing today's top-header-only nav, for every
       authenticated page — this is the shell those phases' new pages will
       live in. See CHANGELOG.
-- [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
-      pricing table to the new visual language; hero copy/layout revamp
+- [x] **Marketing homepage** (`/`, US-41) — restyle the US-38 feature
+      sections + pricing table to the new visual language; hero
+      copy/layout revamp. See CHANGELOG.
 - [ ] **Auth** (`/login`, `/register`) — restyle to match
 - [ ] **Dashboard** (`/dashboard`) — document list becomes a data table
       (Nome/Visualizações/Links/Pontuação/Atualizado) with a per-document
