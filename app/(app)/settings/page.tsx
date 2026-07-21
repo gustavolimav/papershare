@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { AiSettingsForm } from "@/components/settings/AiSettingsForm";
 import { TeamSettingsForm } from "@/components/workspaces/TeamSettingsForm";
@@ -31,45 +29,41 @@ export default async function SettingsPage() {
   };
 
   return (
-    <>
-      <Header />
-      <main className="mx-auto max-w-xl space-y-8 px-4 py-10">
-        <div>
-          <h1 className="mb-6 text-2xl font-semibold tracking-tight">
-            Configurações
-          </h1>
-          <h2 className="mb-3 text-lg font-semibold">Perfil</h2>
-          <ProfileForm user={publicUser} />
-        </div>
+    <main className="mx-auto max-w-xl space-y-8 px-4 py-10">
+      <div>
+        <h1 className="mb-6 text-2xl font-semibold tracking-tight">
+          Configurações
+        </h1>
+        <h2 className="mb-3 text-lg font-semibold">Perfil</h2>
+        <ProfileForm user={publicUser} />
+      </div>
 
-        <Separator />
+      <Separator />
 
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">IA</h2>
-          <AiSettingsForm username={publicUser.username} />
-        </div>
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">IA</h2>
+        <AiSettingsForm username={publicUser.username} />
+      </div>
 
-        <Separator />
+      <Separator />
 
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">Equipe</h2>
-          <TeamSettingsForm />
-        </div>
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Equipe</h2>
+        <TeamSettingsForm />
+      </div>
 
-        <Separator />
+      <Separator />
 
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">Faturamento</h2>
-          <Suspense fallback={null}>
-            <BillingSettingsForm />
-          </Suspense>
-        </div>
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Faturamento</h2>
+        <Suspense fallback={null}>
+          <BillingSettingsForm />
+        </Suspense>
+      </div>
 
-        <Separator />
+      <Separator />
 
-        <DangerZone user={publicUser} />
-      </main>
-      <Footer />
-    </>
+      <DangerZone user={publicUser} />
+    </main>
   );
 }

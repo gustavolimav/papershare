@@ -19,7 +19,7 @@
 | 8     | AI Features                        | ✅ Done                                                                  |
 | 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
 | 10    | Monetization                       | ✅ Done                                                                  |
-| 11    | Visual Identity & UI Redesign      | ⏳ In Progress (US-39 done; US-40–47 remaining)                          |
+| 11    | Visual Identity & UI Redesign      | ⏳ In Progress (US-39–40 done; US-41–47 remaining)                       |
 | 12    | Activity Feed                      | ⏳ Planned                                                               |
 | 13    | Global Links Inventory             | ⏳ Planned                                                               |
 | 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
@@ -618,10 +618,11 @@ mergeable on its own and doesn't block on unrelated backend work.
       colors all currently grayscale) and typography (`Source Serif 4` +
       `Manrope`, replacing `next/font/google`'s `Inter`); also finishes
       the previously-half-installed dark mode wiring. See CHANGELOG.
-- [ ] **App shell** — persistent left sidebar (workspace switcher +
-      Documentos/Atividade/Links/Contatos/Configurações nav) replacing
-      today's top-header-only nav, for every authenticated page — this is
-      the shell Phases 12–14's new pages will live in
+- [x] **App shell** (US-40) — persistent left sidebar (workspace switcher +
+      Documentos/Configurações nav, Atividade/Links/Contatos added when
+      Phases 12–14 ship) replacing today's top-header-only nav, for every
+      authenticated page — this is the shell those phases' new pages will
+      live in. See CHANGELOG.
 - [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
       pricing table to the new visual language; hero copy/layout revamp
 - [ ] **Auth** (`/login`, `/register`) — restyle to match
