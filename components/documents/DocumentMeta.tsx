@@ -34,7 +34,9 @@ export function DocumentMeta({ doc, onUpdated, canEdit }: DocumentMetaProps) {
     <div className="space-y-2">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{doc.title}</h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            {doc.title}
+          </h1>
           {doc.description && (
             <p className="mt-1 text-muted-foreground">{doc.description}</p>
           )}

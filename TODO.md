@@ -631,8 +631,8 @@ mergeable on its own and doesn't block on unrelated backend work.
       aggregate score column, replacing the current card grid; add a
       stat-card row (Documentos, Visualizações · 7 dias, Links ativos,
       Engajamento médio) with trend deltas vs. the prior period
-- [ ] **Document detail & share-link manager** (`/documents/[id]`) —
-      restyle, no behavior change
+- [x] **Document detail & share-link manager** (`/documents/[id]`) (US-44) —
+      restyle, no behavior change. See CHANGELOG.
 - [x] **Analytics dashboard** (`/documents/[id]/analytics`, US-45) —
       restyle the heatmap, per-viewer engagement list, and AI-insight
       callout. See CHANGELOG.
