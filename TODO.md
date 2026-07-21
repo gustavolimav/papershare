@@ -625,7 +625,7 @@ mergeable on its own and doesn't block on unrelated backend work.
       live in. See CHANGELOG.
 - [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
       pricing table to the new visual language; hero copy/layout revamp
-- [ ] **Auth** (`/login`, `/register`) — restyle to match
+- [x] **Auth** (`/login`, `/register`) — restyle to match (US-42). See CHANGELOG.
 - [ ] **Dashboard** (`/dashboard`) — document list becomes a data table
       (Nome/Visualizações/Links/Pontuação/Atualizado) with a per-document
       aggregate score column, replacing the current card grid; add a

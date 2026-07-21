@@ -97,7 +97,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         </p>
         <Link
           href="/forgot-password"
-          className="text-sm text-primary underline-offset-4 hover:underline"
+          className="text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
           Solicitar um novo link
         </Link>
@@ -106,13 +106,14 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div className="space-y-2">
         <Label htmlFor="password">Nova senha</Label>
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
+            className="h-10 pr-9"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             aria-invalid={!!fieldErrors.password}
@@ -124,7 +125,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           <button
             type="button"
             onClick={() => setShowPassword((value) => !value)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
           >
             {showPassword ? (
@@ -150,6 +151,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         <Input
           id="confirmPassword"
           type={showPassword ? "text" : "password"}
+          className="h-10"
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
           aria-invalid={!!fieldErrors.confirmPassword}
@@ -175,7 +177,12 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Salvando..." : "Redefinir senha"}
       </Button>
     </form>
