@@ -110,6 +110,24 @@ export interface CheckoutSessionResponse {
   url: string;
 }
 
+// Every flag the app currently gates on. Absence of a `feature_flags` row
+// for a key means disabled — same "no row = off" pattern as a workspace
+// with no `subscriptions` row resolving to the Free plan — so shipping a
+// new flag never needs a seed migration, just an entry here.
+export const FEATURE_FLAG_KEYS = ["billing_stripe"] as const;
+
+export type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];
+
+export interface FeatureFlag {
+  id: string;
+  key: FeatureFlagKey;
+  enabled: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export type FeatureFlagsResponse = Record<FeatureFlagKey, boolean>;
+
 export interface WorkspaceMember {
   workspace_id: string;
   user_id: string;
@@ -619,6 +637,13 @@ export interface SubscriptionModel {
   markCanceled(stripeSubscriptionId: string): Promise<void>;
   markPastDue(stripeSubscriptionId: string): Promise<void>;
   PLAN_LIMITS: Record<SubscriptionPlan, PlanLimits>;
+}
+
+export interface FeatureFlagModel {
+  isEnabled(key: FeatureFlagKey): Promise<boolean>;
+  requireEnabled(key: FeatureFlagKey): Promise<void>;
+  setEnabled(key: FeatureFlagKey, enabled: boolean): Promise<FeatureFlag>;
+  getAll(): Promise<FeatureFlagsResponse>;
 }
 
 export interface ShareLinkModel {

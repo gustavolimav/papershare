@@ -114,6 +114,28 @@ export async function migrationsAuthMiddleware(
   });
 }
 
+// Strict superadmin-only gate (no shared-secret bypass, unlike
+// migrationsAuthMiddleware — that one exists so CI can run migrations
+// without a session; this one is a pure app-level admin action). Same
+// single-status-for-either-failure-reason shape as migrationsAuthMiddleware
+// (401 whether there's no session at all or a non-superadmin one), rather
+// than splitting into 401/403 — consistent with that existing precedent.
+export async function requireSuperadminMiddleware(
+  request: NextApiRequest,
+  _response: NextApiResponse,
+  next: () => void | Promise<void>,
+): Promise<void> {
+  if (await isAuthenticatedAsSuperadmin(request)) {
+    await next();
+    return;
+  }
+
+  throw new UnauthorizedError({
+    message: "Acesso restrito a superadmins.",
+    action: "Entre com uma conta de superadmin para continuar.",
+  });
+}
+
 async function isAuthenticatedAsSuperadmin(
   request: NextApiRequest,
 ): Promise<boolean> {
