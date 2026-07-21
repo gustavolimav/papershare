@@ -3,6 +3,7 @@
 import {
   Bar,
   BarChart,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -10,6 +11,12 @@ import {
 } from "recharts";
 import { formatDuration } from "@/lib/formatters";
 import type { PageBreakdown } from "@/types/index";
+
+// Lowest opacity a bar can have — keeps the least-attended page visibly a
+// tinted version of --primary rather than fading to nothing, while the
+// most-attended page(s) render at full strength (opacity 1). Same hue
+// throughout, just a lighter tint for lower attention, per US-45.
+const MIN_BAR_OPACITY = 0.25;
 
 interface PageHeatmapChartProps {
   data: PageBreakdown[];
@@ -41,6 +48,8 @@ function PageHeatmapTooltip({
 }
 
 export function PageHeatmapChart({ data }: PageHeatmapChartProps) {
+  const maxTime = Math.max(...data.map((point) => point.avg_time_seconds), 0);
+
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -60,7 +69,14 @@ export function PageHeatmapChart({ data }: PageHeatmapChartProps) {
             dataKey="avg_time_seconds"
             fill="var(--color-primary)"
             radius={[4, 4, 0, 0]}
-          />
+          >
+            {data.map((point) => {
+              const ratio = maxTime > 0 ? point.avg_time_seconds / maxTime : 1;
+              const opacity = MIN_BAR_OPACITY + (1 - MIN_BAR_OPACITY) * ratio;
+
+              return <Cell key={point.page_number} fillOpacity={opacity} />;
+            })}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
