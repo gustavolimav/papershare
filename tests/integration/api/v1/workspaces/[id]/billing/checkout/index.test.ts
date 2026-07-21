@@ -101,11 +101,11 @@ describe("POST /api/v1/workspaces/[id]/billing/checkout", () => {
     expect(body.name).toBe("ValidationError");
   });
 
-  // Local dev/CI never configure STRIPE_SECRET_KEY (see CLAUDE.md) — the
-  // owner-authorized, valid-plan path reaches the Stripe call and degrades
-  // to 503, same as every other unconfigured-external-service path in
-  // this app (infra/ai.ts, infra/mailer.ts).
-  test("As the owner, with a valid plan but Stripe not configured, returns 503", async () => {
+  // billing_stripe is off by default (no row = disabled, same "absence
+  // means off" pattern as a workspace with no subscriptions row resolving
+  // to Free) — a superadmin has to turn it on via
+  // /superadmin/feature-flags before checkout ever reaches Stripe.
+  test("As the owner, with the billing_stripe feature flag disabled (default), returns 503", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const workspace = await createTeamWorkspace(cookie);
 
@@ -115,5 +115,25 @@ describe("POST /api/v1/workspaces/[id]/billing/checkout", () => {
 
     expect(status).toBe(503);
     expect(body.name).toBe("ServiceError");
+    expect(body.message).toBe("Esse recurso ainda não está disponível.");
+  });
+
+  // Local dev/CI never configure STRIPE_SECRET_KEY (see CLAUDE.md) — with
+  // the feature flag enabled, the owner-authorized, valid-plan path
+  // reaches the Stripe call and degrades to 503, same as every other
+  // unconfigured-external-service path in this app (infra/ai.ts,
+  // infra/mailer.ts).
+  test("As the owner, with the flag enabled but Stripe not configured, returns 503", async () => {
+    const { cookie } = await orchestrator.createUserSession();
+    const workspace = await createTeamWorkspace(cookie);
+    await orchestrator.enableFeatureFlag("billing_stripe");
+
+    const { status, body } = await checkout(cookie, workspace.id, {
+      plan: "pro",
+    });
+
+    expect(status).toBe(503);
+    expect(body.name).toBe("ServiceError");
+    expect(body.message).toBe("Cobrança indisponível no momento.");
   });
 });

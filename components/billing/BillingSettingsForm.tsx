@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { mutate } from "swr";
 import { toast } from "sonner";
 import { useWorkspaces, WORKSPACES_KEY } from "@/lib/useWorkspaces";
+import { useFeatureFlags } from "@/lib/useFeatureFlags";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -20,11 +21,13 @@ const PLAN_LABELS = {
 
 export function BillingSettingsForm() {
   const { activeWorkspace } = useWorkspaces();
+  const { flags } = useFeatureFlags();
   const [pendingAction, setPendingAction] = useState<
     PaidSubscriptionPlan | "portal" | null
   >(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const billingEnabled = flags?.billing_stripe === true;
 
   useEffect(() => {
     const checkout = searchParams?.get("checkout");
@@ -50,6 +53,15 @@ export function BillingSettingsForm() {
     action: PaidSubscriptionPlan | "portal",
     body?: object,
   ) {
+    // Stripe-backed billing actions are behind a flag a superadmin has to
+    // turn on (see /superadmin/feature-flags) — off by default, so these
+    // buttons send people to a "work in progress" page instead of ever
+    // reaching the checkout/portal API, which would 503 the same way.
+    if (!billingEnabled) {
+      router.push("/em-breve");
+      return;
+    }
+
     setPendingAction(action);
 
     try {

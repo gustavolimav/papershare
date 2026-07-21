@@ -6,6 +6,7 @@ import { NotFoundError } from "../../../../../../../infra/errors";
 import stripeInfra from "../../../../../../../infra/stripe";
 import workspace from "../../../../../../../models/workspace";
 import subscription from "../../../../../../../models/subscription";
+import featureFlag from "../../../../../../../models/featureFlag";
 import type {
   AuthenticatedNextApiRequest,
   CheckoutSessionResponse,
@@ -41,6 +42,7 @@ async function postHandler(
     });
   }
 
+  await featureFlag.requireEnabled("billing_stripe");
   const stripe = stripeInfra.requireStripeConfigured();
   const baseUrl = getBaseUrl(request);
 
