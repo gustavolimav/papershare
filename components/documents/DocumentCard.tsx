@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { FileText, FileType, Presentation, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatFileSize, formatDate } from "@/lib/formatters";
+import { Badge } from "@/components/ui/badge";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/formatters";
 import type { DocumentListItem, DocumentResponse } from "@/types/index";
 
 const MIME_ICONS: Record<string, typeof FileText> = {
@@ -13,7 +15,31 @@ const MIME_ICONS: Record<string, typeof FileText> = {
     Presentation,
 };
 
-interface DocumentCardProps {
+const MIME_LABELS: Record<string, string> = {
+  "application/pdf": "PDF",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "DOC",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    "PPT",
+};
+
+// Thresholds for the score badge color: >=80 good, 50-79 warn, <50 critical.
+// Matches the acceptance criteria's suggested cutoffs — engagement_score is
+// a 0-100 proxy (see models/document.ts), so these bands read the same way
+// regardless of which formula ultimately produces the number.
+function getScoreBadgeClassName(score: number): string {
+  if (score >= 80) {
+    return "bg-score-good text-score-good-foreground";
+  }
+
+  if (score >= 50) {
+    return "bg-score-warn text-score-warn-foreground";
+  }
+
+  return "bg-score-critical text-score-critical-foreground";
+}
+
+interface DocumentRowProps {
   doc: DocumentListItem;
   // Only meaningful in a shared workspace — hidden entirely for a personal
   // workspace or one where every visible document has the same uploader.
@@ -24,38 +50,47 @@ interface DocumentCardProps {
   onDeleteRequest: (doc: DocumentResponse) => void;
 }
 
-export function DocumentCard({
+export function DocumentRow({
   doc,
   showUploader,
   canEdit,
   onDeleteRequest,
-}: DocumentCardProps) {
+}: DocumentRowProps) {
   const Icon = MIME_ICONS[doc.mime_type] ?? FileText;
+  const mimeLabel = MIME_LABELS[doc.mime_type] ?? "ARQ";
 
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 py-4">
-        <Icon className="h-8 w-8 shrink-0 text-primary" />
-
-        <div className="min-w-0 flex-1">
-          <Link
-            href={`/documents/${doc.id}`}
-            className="truncate font-medium hover:underline"
-          >
-            {doc.title}
-          </Link>
-          <p className="text-sm text-muted-foreground">
-            {formatFileSize(doc.size_bytes)}
-            {doc.page_count !== null && ` · ${doc.page_count} páginas`}
-            {` · ${formatDate(doc.created_at)}`}
-          </p>
-          {showUploader && (
-            <p className="text-xs text-muted-foreground">
-              Enviado por {doc.uploaded_by_username}
+    <TableRow>
+      <TableCell>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <Icon className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <Link
+              href={`/documents/${doc.id}`}
+              className="block truncate font-medium hover:underline"
+            >
+              {doc.title}
+            </Link>
+            <p className="truncate text-xs text-muted-foreground">
+              {mimeLabel}
+              {showUploader && ` · Enviado por ${doc.uploaded_by_username}`}
             </p>
-          )}
+          </div>
         </div>
-
+      </TableCell>
+      <TableCell className="tabular-nums">{doc.view_count}</TableCell>
+      <TableCell className="tabular-nums">{doc.active_link_count}</TableCell>
+      <TableCell>
+        <Badge className={cn(getScoreBadgeClassName(doc.engagement_score))}>
+          {doc.engagement_score}
+        </Badge>
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-muted-foreground">
+        {formatDate(doc.updated_at)}
+      </TableCell>
+      <TableCell>
         {canEdit && (
           <Button
             type="button"
@@ -67,7 +102,7 @@ export function DocumentCard({
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
-      </CardContent>
-    </Card>
+      </TableCell>
+    </TableRow>
   );
 }

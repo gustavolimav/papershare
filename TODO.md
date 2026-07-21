@@ -626,11 +626,12 @@ mergeable on its own and doesn't block on unrelated backend work.
 - [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
       pricing table to the new visual language; hero copy/layout revamp
 - [ ] **Auth** (`/login`, `/register`) — restyle to match
-- [ ] **Dashboard** (`/dashboard`) — document list becomes a data table
-      (Nome/Visualizações/Links/Pontuação/Atualizado) with a per-document
-      aggregate score column, replacing the current card grid; add a
-      stat-card row (Documentos, Visualizações · 7 dias, Links ativos,
-      Engajamento médio) with trend deltas vs. the prior period
+- [x] **Dashboard** (`/dashboard`) (US-43) — document list becomes a data
+      table (Nome/Visualizações/Links/Pontuação/Atualizado) with a
+      per-document aggregate score column, replacing the current card
+      grid; added a stat-card row (Documentos, Links ativos, Engajamento
+      médio, Visualizações totais) — raw numbers only, no trend deltas
+      (need historical snapshots this phase doesn't have). See CHANGELOG.
 - [ ] **Document detail & share-link manager** (`/documents/[id]`) —
       restyle, no behavior change
 - [x] **Analytics dashboard** (`/documents/[id]/analytics`, US-45) —

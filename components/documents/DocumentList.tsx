@@ -4,10 +4,17 @@ import { useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useWorkspaces } from "@/lib/useWorkspaces";
-import { DocumentCard } from "@/components/documents/DocumentCard";
+import { DocumentRow } from "@/components/documents/DocumentCard";
 import { UploadZone } from "@/components/documents/UploadZone";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -91,16 +98,32 @@ export function DocumentList() {
       )}
 
       {data && data.documents.length > 0 && (
-        <div className="space-y-3">
-          {data.documents.map((doc) => (
-            <DocumentCard
-              key={doc.id}
-              doc={doc}
-              showUploader={showUploader}
-              canEdit={canEdit}
-              onDeleteRequest={setDocumentToDelete}
-            />
-          ))}
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Visualizações</TableHead>
+                <TableHead>Links</TableHead>
+                <TableHead>Pontuação</TableHead>
+                <TableHead>Atualizado</TableHead>
+                <TableHead>
+                  <span className="sr-only">Ações</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.documents.map((doc) => (
+                <DocumentRow
+                  key={doc.id}
+                  doc={doc}
+                  showUploader={showUploader}
+                  canEdit={canEdit}
+                  onDeleteRequest={setDocumentToDelete}
+                />
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
