@@ -17,6 +17,7 @@ test.describe("Faturamento tab", () => {
     await seedDocuments(cookie, 3);
 
     await page.goto("/settings");
+    await page.getByRole("button", { name: "Faturamento" }).click();
 
     await expect(page.getByText("Plano atual:")).toBeVisible();
     await expect(page.getByText("Free", { exact: true })).toBeVisible();
@@ -41,6 +42,7 @@ test.describe("Faturamento tab", () => {
     await loginOnPlan(context, "pro");
 
     await page.goto("/settings");
+    await page.getByRole("button", { name: "Faturamento" }).click();
 
     await expect(page.getByText("Pro", { exact: true })).toBeVisible();
     await expect(page.getByText(/de 10 documentos/)).toHaveCount(0);
@@ -59,6 +61,7 @@ test.describe("Faturamento tab", () => {
     await loginOnPlan(context, "business");
 
     await page.goto("/settings");
+    await page.getByRole("button", { name: "Faturamento" }).click();
 
     await expect(page.getByText("Business", { exact: true })).toBeVisible();
     await expect(
@@ -73,6 +76,7 @@ test.describe("Faturamento tab", () => {
     await loginOnPlan(context, "free");
 
     await page.goto("/settings");
+    await page.getByRole("button", { name: "Faturamento" }).click();
     await page.getByRole("button", { name: "Assinar Pro" }).click();
 
     await expect(page).toHaveURL(/\/em-breve$/);
@@ -87,6 +91,7 @@ test.describe("Faturamento tab", () => {
     await orchestrator.enableFeatureFlag("billing_stripe");
 
     await page.goto("/settings");
+    await page.getByRole("button", { name: "Faturamento" }).click();
     await page.getByRole("button", { name: "Assinar Pro" }).click();
 
     await expect(
@@ -136,6 +141,7 @@ test.describe("Faturamento tab", () => {
 
     await attachSession(context, editorSession.cookie);
     await page.goto("/settings");
+    await page.getByRole("button", { name: "Faturamento" }).click();
 
     await expect(page.getByText("Plano atual:")).toBeVisible();
     await expect(page.getByRole("button", { name: "Assinar Pro" })).toHaveCount(
@@ -165,11 +171,13 @@ test.describe("Homepage pricing & feature sections", () => {
       await expect(page.getByRole("heading", { name: heading })).toBeVisible();
     }
 
-    await expect(page.getByText("Grátis")).toBeVisible();
+    // exact: true — the hero's "Começar grátis" CTA also contains "grátis"
+    // as a substring, so a loose match resolves to both elements.
+    await expect(page.getByText("Grátis", { exact: true })).toBeVisible();
     await expect(page.getByText("R$29/mês")).toBeVisible();
     await expect(page.getByText("R$99/mês")).toBeVisible();
 
-    // Header's "Cadastrar" + hero "Começar agora" + one per pricing card.
+    // Header's "Cadastrar" + hero "Começar grátis" + one per pricing card.
     const registerLinks = page.locator('a[href="/register"]');
     await expect(registerLinks).toHaveCount(5);
   });

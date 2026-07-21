@@ -47,14 +47,16 @@ export function ForgotPasswordForm() {
   if (isSubmitted) {
     return (
       <div className="flex flex-col items-center gap-3 py-4 text-center">
-        <MailCheck className="h-8 w-8 text-muted-foreground" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <MailCheck className="h-6 w-6" />
+        </div>
         <p className="text-sm text-muted-foreground">
           Se houver uma conta com o e-mail <strong>{email}</strong>, enviamos um
           link para redefinir a senha. Confira sua caixa de entrada.
         </p>
         <Link
           href="/login"
-          className="text-sm text-primary underline-offset-4 hover:underline"
+          className="text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
           Voltar para o login
         </Link>
@@ -63,12 +65,13 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
         <Input
           id="email"
           type="email"
+          className="h-10"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required
@@ -82,7 +85,12 @@ export function ForgotPasswordForm() {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Enviando..." : "Enviar link de redefinição"}
       </Button>
 
@@ -90,7 +98,7 @@ export function ForgotPasswordForm() {
         Lembrou sua senha?{" "}
         <Link
           href="/login"
-          className="text-primary underline-offset-4 hover:underline"
+          className="font-medium text-primary underline-offset-4 hover:underline"
         >
           Entrar
         </Link>

@@ -623,23 +623,25 @@ mergeable on its own and doesn't block on unrelated backend work.
       Phases 12–14 ship) replacing today's top-header-only nav, for every
       authenticated page — this is the shell those phases' new pages will
       live in. See CHANGELOG.
-- [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
-      pricing table to the new visual language; hero copy/layout revamp
-- [ ] **Auth** (`/login`, `/register`) — restyle to match
+- [x] **Marketing homepage** (`/`, US-41) — restyle the US-38 feature
+      sections + pricing table to the new visual language; hero
+      copy/layout revamp. See CHANGELOG.
+- [x] **Auth** (`/login`, `/register`) — restyle to match (US-42). See CHANGELOG.
 - [x] **Dashboard** (`/dashboard`) (US-43) — document list becomes a data
       table (Nome/Visualizações/Links/Pontuação/Atualizado) with a
       per-document aggregate score column, replacing the current card
       grid; added a stat-card row (Documentos, Links ativos, Engajamento
       médio, Visualizações totais) — raw numbers only, no trend deltas
       (need historical snapshots this phase doesn't have). See CHANGELOG.
-- [ ] **Document detail & share-link manager** (`/documents/[id]`) —
-      restyle, no behavior change
+- [x] **Document detail & share-link manager** (`/documents/[id]`) (US-44) —
+      restyle, no behavior change. See CHANGELOG.
 - [x] **Analytics dashboard** (`/documents/[id]/analytics`, US-45) —
       restyle the heatmap, per-viewer engagement list, and AI-insight
       callout. See CHANGELOG.
-- [ ] **Settings** (`/settings`) — restyle Perfil/Chave de IA/Equipe/
-      Faturamento/Zona de perigo to the new visual language (prototype
-      uses tab-based navigation instead of today's stacked sections)
+- [x] **Settings** (`/settings`) (US-46) — restyle Perfil/Chave de IA/
+      Equipe/Faturamento/Zona de perigo to the new visual language
+      (prototype uses tab-based navigation instead of today's stacked
+      sections). See CHANGELOG.
 - [ ] **Public-facing pages** (`/view/[token]`) — restyle the viewer, the
       password/NDA gates, and add a "Desenvolvido com Papershare" footer
       (new: light product-attribution branding on pages seen by people
