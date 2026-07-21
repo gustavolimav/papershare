@@ -19,7 +19,7 @@
 | 8     | AI Features                        | ✅ Done                                                                  |
 | 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
 | 10    | Monetization                       | ✅ Done                                                                  |
-| 11    | Visual Identity & UI Redesign      | ⏳ Planned                                                               |
+| 11    | Visual Identity & UI Redesign      | ⏳ In Progress (US-39 done; US-40–47 remaining)                          |
 | 12    | Activity Feed                      | ⏳ Planned                                                               |
 | 13    | Global Links Inventory             | ⏳ Planned                                                               |
 | 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
@@ -602,15 +602,22 @@ mergeable on its own and doesn't block on unrelated backend work.
 > from it: warm cream background + terracotta/rust accent (`oklch(0.58
 0.16 38)`, i.e. an accent hue around 38°), `Source Serif 4` for
 > headings paired with `Manrope` for body text (replacing `Inter`
-> everywhere), `0.5rem`–`0.625rem` corner radii. Full mapping from
-> prototype → this codebase's actual pages/components still needs to be
-> written up as implementation-ready stories before starting (see
-> "Not yet scoped" below).
+> everywhere), `0.5rem`–`0.625rem` corner radii.
+>
+> Design validated and detailed stories written 2026-07-21:
+> `docs/plans/2026-07-21-visual-identity-design.md` (key decisions +
+> rationale, including the full color/typography spec) and
+> `user-stories/phase-11-visual-identity/US-39` through `US-47`
+> (implementation-ready specs). Sidebar nav ships with only
+> Documentos/Configurações for now — Atividade/Links/Contatos are added
+> by Phases 12–14 respectively, not built as placeholders here. No
+> Google OAuth (the prototype's login button is decorative only).
 
-- [ ] **Design tokens** — replace `app/globals.css`'s neutral-only shadcn
-      theme with the new color system (background, accent, chart colors
-      all currently grayscale) and typography (`Source Serif 4` +
-      `Manrope`, replacing `next/font/google`'s `Inter`)
+- [x] **Design tokens** (US-39) — replace `app/globals.css`'s neutral-only
+      shadcn theme with the new color system (background, accent, chart
+      colors all currently grayscale) and typography (`Source Serif 4` +
+      `Manrope`, replacing `next/font/google`'s `Inter`); also finishes
+      the previously-half-installed dark mode wiring. See CHANGELOG.
 - [ ] **App shell** — persistent left sidebar (workspace switcher +
       Documentos/Atividade/Links/Contatos/Configurações nav) replacing
       today's top-header-only nav, for every authenticated page — this is
@@ -638,13 +645,12 @@ mergeable on its own and doesn't block on unrelated backend work.
       the prototype; audit for other states — 404, revoked link, etc. —
       while in there)
 
-**Not yet scoped:** this phase's checklist is sized from a first pass
-over the prototype, not implementation-ready user stories yet. Before
-starting, write `docs/plans/YYYY-MM-DD-visual-identity-design.md` +
-`user-stories/phase-11-visual-identity/US-NN-*.md` per the usual
-brainstorming → design doc → stories flow, breaking the checklist above
-into PR-sized slices (the app-shell sidebar is the one item every other
-page in this phase depends on, so it should land first).
+**Story breakdown** (see `user-stories/phase-11-visual-identity/`):
+US-39 (design tokens + finishing the dark-mode wiring) → US-40 (app
+shell / sidebar — the one item every other page in this phase depends
+on) → US-41 through US-47 (homepage, auth, dashboard, document detail,
+analytics, settings, public viewer/error states — each independent of
+the others once US-40 lands).
 
 ---
 
