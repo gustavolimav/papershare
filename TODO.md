@@ -636,9 +636,10 @@ mergeable on its own and doesn't block on unrelated backend work.
 - [x] **Analytics dashboard** (`/documents/[id]/analytics`, US-45) —
       restyle the heatmap, per-viewer engagement list, and AI-insight
       callout. See CHANGELOG.
-- [ ] **Settings** (`/settings`) — restyle Perfil/Chave de IA/Equipe/
-      Faturamento/Zona de perigo to the new visual language (prototype
-      uses tab-based navigation instead of today's stacked sections)
+- [x] **Settings** (`/settings`) (US-46) — restyle Perfil/Chave de IA/
+      Equipe/Faturamento/Zona de perigo to the new visual language
+      (prototype uses tab-based navigation instead of today's stacked
+      sections). See CHANGELOG.
 - [ ] **Public-facing pages** (`/view/[token]`) — restyle the viewer, the
       password/NDA gates, and add a "Desenvolvido com Papershare" footer
       (new: light product-attribution branding on pages seen by people
