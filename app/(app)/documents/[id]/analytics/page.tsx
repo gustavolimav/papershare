@@ -3,8 +3,6 @@ import Link from "next/link";
 import { getServerUser } from "@/lib/auth-server";
 import document from "@/models/document";
 import { ForbiddenError, NotFoundError } from "@/infra/errors";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
 
 export default async function DocumentAnalyticsPage({
@@ -22,23 +20,19 @@ export default async function DocumentAnalyticsPage({
     const doc = await document.findOneById(params.id, user.id);
 
     return (
-      <>
-        <Header />
-        <main className="mx-auto max-w-4xl px-4 py-10">
-          <nav className="mb-6 text-sm text-muted-foreground">
-            <Link href="/dashboard" className="hover:underline">
-              Dashboard
-            </Link>
-            {" → "}
-            <Link href={`/documents/${doc.id}`} className="hover:underline">
-              {doc.title}
-            </Link>
-            {" → Analytics"}
-          </nav>
-          <AnalyticsView documentId={doc.id} />
-        </main>
-        <Footer />
-      </>
+      <main className="mx-auto max-w-4xl px-4 py-10">
+        <nav className="mb-6 text-sm text-muted-foreground">
+          <Link href="/dashboard" className="hover:underline">
+            Dashboard
+          </Link>
+          {" → "}
+          <Link href={`/documents/${doc.id}`} className="hover:underline">
+            {doc.title}
+          </Link>
+          {" → Analytics"}
+        </nav>
+        <AnalyticsView documentId={doc.id} />
+      </main>
     );
   } catch (error) {
     const message =
@@ -49,13 +43,9 @@ export default async function DocumentAnalyticsPage({
           : "Não foi possível carregar o documento.";
 
     return (
-      <>
-        <Header />
-        <main className="mx-auto max-w-3xl px-4 py-24 text-center">
-          <p className="text-muted-foreground">{message}</p>
-        </main>
-        <Footer />
-      </>
+      <main className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <p className="text-muted-foreground">{message}</p>
+      </main>
     );
   }
 }

@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server";
 import document from "@/models/document";
 import { ForbiddenError, NotFoundError } from "@/infra/errors";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { DocumentDetailView } from "@/components/documents/DocumentDetailView";
 
 export default async function DocumentDetailPage({
@@ -21,13 +19,9 @@ export default async function DocumentDetailPage({
     const doc = await document.findOneById(params.id, user.id);
 
     return (
-      <>
-        <Header />
-        <main className="mx-auto max-w-3xl px-4 py-10">
-          <DocumentDetailView initialDocument={doc} />
-        </main>
-        <Footer />
-      </>
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <DocumentDetailView initialDocument={doc} />
+      </main>
     );
   } catch (error) {
     const message =
@@ -38,13 +32,9 @@ export default async function DocumentDetailPage({
           : "Não foi possível carregar o documento.";
 
     return (
-      <>
-        <Header />
-        <main className="mx-auto max-w-3xl px-4 py-24 text-center">
-          <p className="text-muted-foreground">{message}</p>
-        </main>
-        <Footer />
-      </>
+      <main className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <p className="text-muted-foreground">{message}</p>
+      </main>
     );
   }
 }
