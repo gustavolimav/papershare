@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +12,19 @@ import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutateUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams?.get("password-reset") === "success") {
+      toast.success("Senha redefinida com sucesso. Faça login novamente.");
+    }
+  }, [searchParams]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -68,7 +76,15 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Senha</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Senha</Label>
+          <Link
+            href="/forgot-password"
+            className="text-sm text-primary underline-offset-4 hover:underline"
+          >
+            Esqueceu sua senha?
+          </Link>
+        </div>
         <div className="relative">
           <Input
             id="password"

@@ -1,5 +1,9 @@
 import { Resend } from "resend";
-import type { MailerModel, ViewNotificationInput } from "../types/index";
+import type {
+  MailerModel,
+  ViewNotificationInput,
+  PasswordResetEmailInput,
+} from "../types/index";
 
 const DEFAULT_FROM_ADDRESS = "Papershare <onboarding@resend.dev>";
 
@@ -64,8 +68,45 @@ async function sendViewNotification(
   });
 }
 
+async function sendPasswordResetEmail(
+  input: PasswordResetEmailInput,
+): Promise<void> {
+  if (process.env.NODE_ENV === "test" || !client) {
+    return;
+  }
+
+  await client.emails.send({
+    from: process.env.MAIL_FROM_ADDRESS ?? DEFAULT_FROM_ADDRESS,
+    to: input.to,
+    subject: "Redefinição de senha - Papershare",
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <p>Olá,</p>
+        <p>
+          Recebemos um pedido para redefinir a senha da sua conta no
+          Papershare. Se foi você, clique no botão abaixo para escolher uma
+          nova senha:
+        </p>
+        <p>
+          <a
+            href="${input.resetUrl}"
+            style="display: inline-block; padding: 10px 18px; background: #14181f; color: #ffffff; text-decoration: none; border-radius: 4px;"
+          >
+            Redefinir senha
+          </a>
+        </p>
+        <p style="color: #7a8090; font-size: 13px;">
+          Este link expira em 1 hora. Se você não pediu essa redefinição,
+          pode ignorar este e-mail — sua senha permanece a mesma.
+        </p>
+      </div>
+    `,
+  });
+}
+
 const mailer: MailerModel = {
   sendViewNotification,
+  sendPasswordResetEmail,
 };
 
 export default mailer;

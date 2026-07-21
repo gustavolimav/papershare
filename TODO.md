@@ -68,6 +68,18 @@ Core authentication infrastructure. All items delivered.
 - [x] Forbidden: user A cannot PATCH user B's profile
 - [x] Account deletion: user gone, sessions invalidated
 
+### Password Recovery
+
+- [x] `POST /api/v1/password-reset` — request a reset link by email; always
+      `204` regardless of whether the email is registered (no enumeration),
+      rate-limited. `password_reset_tokens` migration (`031`) +
+      `models/passwordReset.ts`, same hashed-token-at-rest shape as `sessions`.
+- [x] `PATCH /api/v1/password-reset/[token]` — consume the (single-use,
+      1-hour) token, set a new password via `models/user.ts#resetPassword`,
+      then invalidate every existing session for that user.
+- [x] `/forgot-password` and `/reset-password/[token]` frontend pages;
+      "Esqueceu sua senha?" link on the login form.
+
 ---
 
 ## Phase 3 — Documents Core ✅

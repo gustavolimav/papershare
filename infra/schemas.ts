@@ -262,6 +262,17 @@ export const aiKeyUpdateSchema = z.object({
     .max(200, "A chave informada é muito longa."),
 });
 
+export const passwordResetRequestSchema = z.object({
+  email: z
+    .string()
+    .email("O 'email' informado não é válido.")
+    .max(254, "O 'email' deve ter no máximo 254 caracteres."),
+});
+
+export const passwordResetSchema = z.object({
+  password: z.string().min(8, "A 'password' deve ter no mínimo 8 caracteres."),
+});
+
 // Used outside request-body validation (e.g. the X-Viewer-Email header on
 // the public share endpoints), where there's no Zod object schema to run.
 export function isValidEmail(value: string): boolean {

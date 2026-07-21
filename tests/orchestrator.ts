@@ -187,6 +187,16 @@ async function expireShareLink(linkId: string): Promise<void> {
   });
 }
 
+// Mirrors models/passwordReset.ts's own hashing — the raw token is only
+// ever held by the caller (it's never re-derivable from the stored hash),
+// so tests need this to reach the same row by its hashed value.
+async function expirePasswordResetToken(token: string): Promise<void> {
+  await database.query({
+    text: "UPDATE password_reset_tokens SET expires_at = $1 WHERE token = $2",
+    values: [new Date(Date.now() - 1000), hashSessionToken(token)],
+  });
+}
+
 async function recordView(
   token: string,
   body?: {
@@ -332,6 +342,8 @@ interface Orchestrator {
   ): Promise<any>;
   // eslint-disable-next-line no-unused-vars
   expireShareLink(linkId: string): Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  expirePasswordResetToken(token: string): Promise<void>;
   recordView(
     // eslint-disable-next-line no-unused-vars
     token: string,
@@ -376,6 +388,7 @@ const orchestrator: Orchestrator = {
   uploadDocument,
   createShareLink,
   expireShareLink,
+  expirePasswordResetToken,
   recordView,
   pushBackLinkViewCreatedAt,
   countLinkViews,
