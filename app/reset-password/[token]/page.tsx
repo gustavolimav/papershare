@@ -1,8 +1,6 @@
-import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { LoginForm } from "@/components/forms/LoginForm";
+import { ResetPasswordForm } from "@/components/forms/ResetPasswordForm";
 import {
   Card,
   CardHeader,
@@ -10,30 +8,25 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { getServerUser } from "@/lib/auth-server";
 
-export default async function LoginPage() {
-  const user = await getServerUser();
+interface PageProps {
+  params: { token: string };
+}
 
-  if (user) {
-    redirect("/dashboard");
-  }
-
+export default function ResetPasswordPage({ params }: PageProps) {
   return (
     <>
       <Header />
       <main className="mx-auto flex max-w-md flex-col justify-center px-4 py-16">
         <Card>
           <CardHeader>
-            <CardTitle>Entrar</CardTitle>
+            <CardTitle>Redefinir senha</CardTitle>
             <CardDescription>
-              Acesse sua conta para gerenciar seus documentos.
+              Escolha uma nova senha para sua conta.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={null}>
-              <LoginForm />
-            </Suspense>
+            <ResetPasswordForm token={params.token} />
           </CardContent>
         </Card>
       </main>

@@ -34,6 +34,14 @@ export interface Session {
   updated_at: Date;
 }
 
+export interface PasswordResetToken {
+  id: string;
+  token: string;
+  user_id: string;
+  expires_at: Date;
+  created_at: Date;
+}
+
 export type WorkspaceRole = "owner" | "editor" | "viewer";
 
 export interface Workspace {
@@ -457,6 +465,11 @@ export interface ViewNotificationInput {
   viewerEmail?: string | null;
 }
 
+export interface PasswordResetEmailInput {
+  to: string;
+  resetUrl: string;
+}
+
 // Database Query Types
 export interface DatabaseQuery {
   text: string;
@@ -541,6 +554,7 @@ export interface UserModel {
   hasAiApiKey(userId: string): Promise<boolean>;
   // Internal use only (decrypted plaintext) — never returned over the API.
   getAiApiKey(userId: string): Promise<string | null>;
+  resetPassword(userId: string, newPassword: string): Promise<void>;
 }
 
 export interface AiKeyStatusResponse {
@@ -558,6 +572,13 @@ export interface SessionModel {
   deleteByToken(token: string): Promise<void>;
   deleteByUserId(userId: string): Promise<void>;
   EXPIRATION_IN_MILLISECONDS: number;
+}
+
+export interface PasswordResetModel {
+  create(userId: string): Promise<PasswordResetToken>;
+  findValidByToken(token: string): Promise<PasswordResetToken | null>;
+  deleteByToken(token: string): Promise<void>;
+  deleteByUserId(userId: string): Promise<void>;
 }
 
 export interface AuthenticationModel {
@@ -725,6 +746,7 @@ export interface StorageModel {
 
 export interface MailerModel {
   sendViewNotification(input: ViewNotificationInput): Promise<void>;
+  sendPasswordResetEmail(input: PasswordResetEmailInput): Promise<void>;
 }
 
 export interface MigratorModel {

@@ -1,8 +1,7 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { LoginForm } from "@/components/forms/LoginForm";
+import { ForgotPasswordForm } from "@/components/forms/ForgotPasswordForm";
 import {
   Card,
   CardHeader,
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { getServerUser } from "@/lib/auth-server";
 
-export default async function LoginPage() {
+export default async function ForgotPasswordPage() {
   const user = await getServerUser();
 
   if (user) {
@@ -25,15 +24,14 @@ export default async function LoginPage() {
       <main className="mx-auto flex max-w-md flex-col justify-center px-4 py-16">
         <Card>
           <CardHeader>
-            <CardTitle>Entrar</CardTitle>
+            <CardTitle>Esqueceu sua senha?</CardTitle>
             <CardDescription>
-              Acesse sua conta para gerenciar seus documentos.
+              Informe seu e-mail e enviaremos um link para você escolher uma
+              nova senha.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={null}>
-              <LoginForm />
-            </Suspense>
+            <ForgotPasswordForm />
           </CardContent>
         </Card>
       </main>

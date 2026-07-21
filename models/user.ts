@@ -365,6 +365,29 @@ async function deleteByUsername(username: string): Promise<void> {
 // own Anthropic key rather than one the platform pays for. Encrypted at
 // rest (infra/encryption.ts) since, unlike a password, this must be
 // recoverable to actually call the Anthropic API.
+// Used by the password-reset flow: the caller already holds a validated
+// token (see models/passwordReset.ts), so this sets the password directly
+// by id rather than going through updateByUsername's current-user lookup.
+async function resetPassword(
+  userId: string,
+  newPassword: string,
+): Promise<void> {
+  const hashedPassword = await password.hash(newPassword);
+
+  await database.query({
+    text: `
+        UPDATE
+          users
+        SET
+          password = $1,
+          updated_at = NOW()
+        WHERE
+          id = $2
+        ;`,
+    values: [hashedPassword, userId],
+  });
+}
+
 async function setAiApiKey(
   userId: string,
   apiKey: string | null,
@@ -431,6 +454,7 @@ const user: UserModel = {
   setAiApiKey,
   hasAiApiKey,
   getAiApiKey,
+  resetPassword,
 };
 
 export default user;
