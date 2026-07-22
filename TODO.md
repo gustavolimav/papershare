@@ -755,7 +755,7 @@ today) while reviewing the Phase 11 design prototype's "Atividade" page.
         record of each blocked attempt to surface as an activity event
 - [x] `GET /api/v1/activity` (paginated) — scoped to
       `request.user.active_workspace_id`, same trust boundary as `GET
-    /api/v1/documents` (no separate `requireRole` call needed). See
+  /api/v1/documents` (no separate `requireRole` call needed). See
       CHANGELOG.
 - [x] Wire `ActivityFeed` up to the real endpoint above, replacing the
       mock data. See CHANGELOG.
