@@ -20,7 +20,7 @@
 | 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
 | 10    | Monetization                       | ✅ Done                                                                  |
 | 11    | Visual Identity & UI Redesign      | ✅ Done (US-39–51 all shipped; US-39/47 on `main`, remainder on PR)      |
-| 12    | Activity Feed                      | ⏳ Planned                                                               |
+| 12    | Activity Feed                      | ⏳ Views/link-creation/revisits done; NDA/blocked-download deferred      |
 | 13    | Global Links Inventory             | ⏳ Planned                                                               |
 | 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
 
@@ -729,20 +729,36 @@ an owner doesn't have to open each document individually to know what
 just happened. Confirmed as a genuinely new capability (doesn't exist
 today) while reviewing the Phase 11 design prototype's "Atividade" page.
 
-> 2026-07-22: `/activity` ships as a frontend-only mock (a nav item + a
-> static, hardcoded event list matching the prototype's grouping/copy) so
-> the sidebar and overall app shell match the design while the real
-> backend work below is still queued.
+> 2026-07-22: `/activity` shipped as a frontend-only mock first (a nav
+> item + a static, hardcoded event list matching the prototype's
+> grouping/copy), then got its real backend (US-52) the same day. Scoped
+> down from the original goal: views, link creation, and revisits are
+> real; NDA-acceptance and blocked-download events are deferred (see
+> below) since neither is persisted anywhere today.
 
-- [x] Frontend: `/activity` page grouped by day (`components/activity/ActivityFeed.tsx`), one row per event with an icon + description matching its type — currently static mock data, not wired to a real query
-- [ ] Aggregation query joining `link_views`, `share_links`, NDA
-      acceptances, and blocked-download attempts, scoped to a workspace
-      and ordered by `created_at desc`
-- [ ] `GET /api/v1/workspaces/[id]/activity` (paginated) — new endpoint,
-      new response shape (`types/index.ts`); no new tables expected, this
-      reads from data Phase 5/7 already record
-- [ ] Wire `ActivityFeed` up to the real endpoint above, replacing the
-      mock data
+- [x] Frontend: `/activity` page grouped by day (`components/activity/ActivityFeed.tsx`), one row per event with an icon + description matching its type. See CHANGELOG.
+- [x] Aggregation query joining `link_views` and `share_links`, scoped
+      to a workspace and ordered by `created_at desc` — covers views,
+      link creation, and revisits (`models/activity.ts`). NDA
+      acceptances and blocked-download attempts excluded: neither is
+      persisted anywhere today (`nda_text` is link config, not an
+      acceptance record; `allow_download` isn't enforced server-side,
+      only hidden in the UI) — would need new columns/tables and, for
+      blocked downloads, new server-side enforcement. Follow-up item,
+      not silently dropped:
+  - [ ] Persist NDA acceptance (e.g. a `link_views.nda_accepted_at`
+        column, set when a viewer with `nda_text` set on their link
+        submits the gate) and surface it as an activity event
+  - [ ] Enforce `allow_download` server-side on the file-download route
+        (today `pages/api/v1/share/[token]/file` never checks it — it's
+        a client-side-only hide in `ViewerControls.tsx`) and persist a
+        record of each blocked attempt to surface as an activity event
+- [x] `GET /api/v1/activity` (paginated) — scoped to
+      `request.user.active_workspace_id`, same trust boundary as `GET
+/api/v1/documents` (no separate `requireRole` call needed). See
+      CHANGELOG.
+- [x] Wire `ActivityFeed` up to the real endpoint above, replacing the
+      mock data. See CHANGELOG.
 - [x] Depends on Phase 11's app-shell sidebar (this is one of its nav
       destinations)
 

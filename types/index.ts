@@ -197,6 +197,34 @@ export interface DocumentListResponse {
   total: number;
 }
 
+// One row per event in a workspace's activity feed (Phase 12). "view" and
+// "link_created" are the only event types persisted today — NDA
+// acceptance and blocked-download attempts aren't recorded anywhere yet,
+// so they can't appear here until that's built (see TODO.md Phase 12).
+export interface ActivityEvent {
+  event_type: "view" | "link_created";
+  id: string;
+  document_id: string;
+  document_title: string;
+  // null for an anonymous viewer (no viewer_name/viewer_email on file);
+  // the link's creator username for a "link_created" row.
+  actor_name: string | null;
+  actor_email: string | null;
+  link_label: string | null;
+  pages_viewed: number | null;
+  page_count: number | null;
+  time_on_page: number | null;
+  // Only meaningful for "view" rows — true when this viewer_fingerprint
+  // already has an earlier link_views row on the same link.
+  is_revisit: boolean;
+  created_at: Date;
+}
+
+export interface ActivityListResponse {
+  events: ActivityEvent[];
+  total: number;
+}
+
 export interface ShareLink {
   id: string;
   token: string;
@@ -768,6 +796,13 @@ export interface MailerModel {
 export interface MigratorModel {
   listPendingMigrations(): Promise<RunMigration[]>;
   runPendingMigrations(): Promise<RunMigration[]>;
+}
+
+export interface ActivityModel {
+  findAllByWorkspaceId(
+    workspaceId: string,
+    pagination: { page: number; perPage: number },
+  ): Promise<ActivityListResponse>;
 }
 
 export interface DatabaseModel {

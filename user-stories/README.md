@@ -111,6 +111,14 @@ Stories are ordered by recommended implementation sequence within each phase. Te
 
 ---
 
+## Phase 12 — Activity Feed
+
+| ID                                                               | Title                 | One-sentence description                                                                                                               |
+| ---------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [US-52](./phase-12-activity-feed/US-52-activity-feed-backend.md) | Activity Feed Backend | Real `GET /api/v1/activity` (views, link creation, revisits) replacing the Phase 11 frontend-only mock; NDA/blocked-download deferred. |
+
+---
+
 ## Technical Debt
 
 | ID                                                       | Title                         | One-sentence description                                                                                            |
