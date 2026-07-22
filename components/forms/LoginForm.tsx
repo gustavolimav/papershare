@@ -77,15 +77,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Senha</Label>
-          <Link
-            href="/forgot-password"
-            className="text-sm text-primary underline-offset-4 hover:underline"
-          >
-            Esqueceu sua senha?
-          </Link>
-        </div>
+        <Label htmlFor="password">Senha</Label>
         <div className="relative">
           <Input
             id="password"
@@ -108,6 +100,14 @@ export function LoginForm() {
               <Eye className="h-4 w-4" />
             )}
           </button>
+        </div>
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-primary underline-offset-4 hover:underline"
+          >
+            Esqueceu sua senha?
+          </Link>
         </div>
       </div>
 
