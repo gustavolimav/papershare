@@ -18,6 +18,8 @@ import type {
   ShareLinkNotificationInfo,
   ShareLinkModel,
   SubscriptionPlan,
+  WorkspaceLinkSummary,
+  WorkspaceLinksResponse,
 } from "../types/index";
 
 const SHARE_LINK_COLUMNS = `
@@ -377,6 +379,71 @@ async function findAllByDocumentId(
       toResponse(row, await getAllowedEmails(row.id)),
     ),
   );
+}
+
+async function findAllByWorkspaceId(
+  workspaceId: string,
+  userId: string,
+  pagination: { page: number; perPage: number },
+): Promise<WorkspaceLinksResponse> {
+  await workspace.requireRole(workspaceId, userId, "viewer");
+
+  const offset = (pagination.page - 1) * pagination.perPage;
+
+  const [linksResult, countResult] = await Promise.all([
+    database.query<WorkspaceLinkSummary>({
+      text: `
+          SELECT
+            share_links.id, share_links.token, share_links.label,
+            share_links.document_id, documents.title AS document_title,
+            (
+              SELECT COUNT(*)::int FROM link_views lv
+              WHERE lv.share_link_id = share_links.id
+            ) AS view_count,
+            CASE
+              WHEN share_links.is_active
+                AND (
+                  share_links.expires_at IS NULL
+                  OR share_links.expires_at > now()
+                )
+                THEN 'active'
+              ELSE 'expired'
+            END AS status,
+            share_links.created_at
+          FROM
+            share_links
+          JOIN
+            documents ON documents.id = share_links.document_id
+          WHERE
+            documents.workspace_id = $1
+          ORDER BY
+            share_links.created_at DESC
+          LIMIT
+            $2
+          OFFSET
+            $3
+          ;`,
+      values: [workspaceId, pagination.perPage, offset],
+    }),
+    database.query<{ count: string }>({
+      text: `
+          SELECT
+            COUNT(*)::text AS count
+          FROM
+            share_links
+          JOIN
+            documents ON documents.id = share_links.document_id
+          WHERE
+            documents.workspace_id = $1
+          ;`,
+      values: [workspaceId],
+    }),
+  ]);
+
+  return {
+    links: linksResult.rows,
+    total: Number(countResult.rows[0]!.count),
+  };
 }
 
 async function findOneById(
@@ -883,6 +950,7 @@ async function getNdaText(token: string): Promise<string | null> {
 const shareLink: ShareLinkModel = {
   create,
   findAllByDocumentId,
+  findAllByWorkspaceId,
   findOneById,
   updateById,
   revokeById,

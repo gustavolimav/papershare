@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import { Check, Copy } from "lucide-react";
+import { fetcher } from "@/lib/fetcher";
+import { useWorkspaces } from "@/lib/useWorkspaces";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableHeader,
@@ -12,74 +16,62 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import type {
+  WorkspaceLinkSummary,
+  WorkspaceLinksResponse,
+} from "@/types/index";
 
-// Phase 13 (Global Links Inventory) isn't built yet — this is a
-// frontend-only mock of the design prototype's "Links" screen, listing
-// links across every document instead of one at a time (today's real
-// list only shows a single document's links, on its detail page).
-// Swap for a real cross-document query once Phase 13 lands.
-interface MockLink {
-  id: string;
-  path: string;
-  documentTitle: string;
-  views: number;
-  status: "ativo" | "expirado";
+const PER_PAGE = 50;
+
+function publicUrlFor(token: string): string {
+  return typeof window !== "undefined"
+    ? `${window.location.origin}/view/${token}`
+    : `/view/${token}`;
 }
 
-const MOCK_LINKS: MockLink[] = [
-  {
-    id: "1",
-    path: "papershare.io/view/a8f3k2",
-    documentTitle: "Series A Deck.pdf",
-    views: 88,
-    status: "ativo",
-  },
-  {
-    id: "2",
-    path: "papershare.io/view/q92lm1",
-    documentTitle: "Series A Deck.pdf",
-    views: 54,
-    status: "ativo",
-  },
-  {
-    id: "3",
-    path: "papershare.io/view/z10qwe",
-    documentTitle: "MSA — Acme Corp.docx",
-    views: 34,
-    status: "ativo",
-  },
-  {
-    id: "4",
-    path: "papershare.io/view/p55vbn",
-    documentTitle: "Q3 Board Update.pptx",
-    views: 12,
-    status: "ativo",
-  },
-  {
-    id: "5",
-    path: "papershare.io/view/r77tyu",
-    documentTitle: "Q3 Board Update.pptx",
-    views: 76,
-    status: "ativo",
-  },
-  {
-    id: "6",
-    path: "papershare.io/view/k22asd",
-    documentTitle: "Pricing Proposal.pdf",
-    views: 12,
-    status: "expirado",
-  },
-];
-
 export function LinksInventory() {
+  const { activeWorkspace } = useWorkspaces();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  async function handleCopy(link: MockLink) {
-    await navigator.clipboard.writeText(`https://${link.path}`);
+  const { data, error, isLoading } = useSWR<WorkspaceLinksResponse>(
+    activeWorkspace
+      ? `/api/v1/workspaces/${activeWorkspace.id}/links?page=1&per_page=${PER_PAGE}`
+      : null,
+    fetcher,
+  );
+
+  async function handleCopy(link: WorkspaceLinkSummary) {
+    await navigator.clipboard.writeText(publicUrlFor(link.token));
     setCopiedId(link.id);
     setTimeout(
       () => setCopiedId((current) => (current === link.id ? null : current)),
       1500,
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((key) => (
+          <Skeleton key={key} className="h-12 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        Não foi possível carregar os links.
+      </p>
+    );
+  }
+
+  if (!data || data.links.length === 0) {
+    return (
+      <p className="py-12 text-center text-muted-foreground">
+        Nenhum link criado ainda. Compartilhe um documento para gerar um link.
+      </p>
     );
   }
 
@@ -98,15 +90,17 @@ export function LinksInventory() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {MOCK_LINKS.map((link) => (
+          {data.links.map((link) => (
             <TableRow key={link.id}>
-              <TableCell className="font-mono text-sm">{link.path}</TableCell>
-              <TableCell className="font-medium">
-                {link.documentTitle}
+              <TableCell className="font-mono text-sm">
+                {publicUrlFor(link.token).replace(/^https?:\/\//, "")}
               </TableCell>
-              <TableCell>{link.views}</TableCell>
+              <TableCell className="font-medium">
+                {link.document_title}
+              </TableCell>
+              <TableCell>{link.view_count}</TableCell>
               <TableCell>
-                {link.status === "ativo" ? (
+                {link.status === "active" ? (
                   <Badge className="border-score-good/20 bg-score-good/15 text-score-good">
                     Ativo
                   </Badge>
