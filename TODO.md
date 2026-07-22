@@ -704,16 +704,21 @@ an owner doesn't have to open each document individually to know what
 just happened. Confirmed as a genuinely new capability (doesn't exist
 today) while reviewing the Phase 11 design prototype's "Atividade" page.
 
+> 2026-07-22: `/activity` ships as a frontend-only mock (a nav item + a
+> static, hardcoded event list matching the prototype's grouping/copy) so
+> the sidebar and overall app shell match the design while the real
+> backend work below is still queued.
+
+- [x] Frontend: `/activity` page grouped by day (`components/activity/ActivityFeed.tsx`), one row per event with an icon + description matching its type — currently static mock data, not wired to a real query
 - [ ] Aggregation query joining `link_views`, `share_links`, NDA
       acceptances, and blocked-download attempts, scoped to a workspace
       and ordered by `created_at desc`
 - [ ] `GET /api/v1/workspaces/[id]/activity` (paginated) — new endpoint,
       new response shape (`types/index.ts`); no new tables expected, this
       reads from data Phase 5/7 already record
-- [ ] Frontend: `/atividade` page grouped by day, one row per event with
-      an icon + description matching its type (view, NDA accept, link
-      created, download blocked, revisit)
-- [ ] Depends on Phase 11's app-shell sidebar (this is one of its nav
+- [ ] Wire `ActivityFeed` up to the real endpoint above, replacing the
+      mock data
+- [x] Depends on Phase 11's app-shell sidebar (this is one of its nav
       destinations)
 
 ---
@@ -726,12 +731,18 @@ to see a document's links from inside that document's own detail page.
 Confirmed as new (today's `ShareLinkList` is always scoped to a single
 document) while reviewing the prototype's "Links" page.
 
+> 2026-07-22: `/links` ships as a frontend-only mock (a nav item + a
+> static table matching the prototype's columns/copy, with a working
+> copy-link button) so the sidebar and overall app shell match the design
+> while the real backend work below is still queued.
+
+- [x] Frontend: `/links` page (`components/links-inventory/LinksInventory.tsx`) — table (link, document, views, status) + copy-link action per row — currently static mock data, not wired to a real query
 - [ ] `GET /api/v1/workspaces/[id]/links` — new endpoint joining
       `share_links` → `documents`, scoped to the workspace, returning
       document title alongside each link's existing fields
-- [ ] Frontend: `/links` page — table (link, document, views, status) +
-      copy-link action per row
-- [ ] Depends on Phase 11's app-shell sidebar
+- [ ] Wire `LinksInventory` up to the real endpoint above, replacing the
+      mock data
+- [x] Depends on Phase 11's app-shell sidebar
 
 ---
 
@@ -747,18 +758,30 @@ analytics view. Confirmed as new (no cross-document viewer identity
 exists today — `ViewerEngagement` is always scoped to one link) while
 reviewing the prototype's "Contatos" page.
 
+> 2026-07-22: `/contacts` ships as a frontend-only mock (a nav item + a
+> static contact list matching the prototype's layout/copy) so the
+> sidebar and overall app shell match the design while the real backend
+> work below is still queued. Its "Gerar follow-up" button currently just
+> toasts that the real feature is coming in this phase, rather than
+> calling the existing (per-link) follow-up-email endpoint — wiring it up
+> for real needs the cross-document aggregation below first, since
+> today's endpoint expects a single `linkId` and a contact here may have
+> viewed several different links.
+
+- [x] Frontend: `/contacts` page (`components/contacts/ContactsList.tsx`) — one row per contact — currently static mock data, not wired to a real query
 - [ ] Aggregation query: group `link_views` by `viewer_email` across the
       workspace, computing distinct-document count, most recent view,
       and a blended engagement score across all their views
 - [ ] `GET /api/v1/workspaces/[id]/contacts` — new endpoint
-- [ ] Frontend: `/contatos` page — one row/card per contact, "Gerar
-      follow-up" wired to the existing follow-up-email endpoint (US-27)
+- [ ] Wire `ContactsList` up to the real endpoint above, replacing the
+      mock data, and wire "Gerar follow-up" to the existing
+      follow-up-email endpoint (US-27)
 - [ ] Known limitation to call out in the design doc: a viewer only has
       an email on file if the link required one (NDA gate or
       `require_email`) — fingerprint-only anonymous viewers won't appear
       here, so this directory is necessarily a subset of total viewers,
       not everyone
-- [ ] Depends on Phase 11's app-shell sidebar
+- [x] Depends on Phase 11's app-shell sidebar
 
 ---
 

@@ -8,7 +8,6 @@ import { DocumentRow } from "@/components/documents/DocumentCard";
 import { UploadZone } from "@/components/documents/UploadZone";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableHeader,
@@ -30,9 +29,12 @@ import type { DocumentListResponse, DocumentResponse } from "@/types/index";
 
 const PER_PAGE = 10;
 
-export function DocumentList() {
+interface DocumentListProps {
+  search: string;
+}
+
+export function DocumentList({ search }: DocumentListProps) {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
   const [documentToDelete, setDocumentToDelete] =
     useState<DocumentResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -75,17 +77,6 @@ export function DocumentList() {
 
   return (
     <div className="space-y-6">
-      {data && data.documents.length > 0 && (
-        <Input
-          type="search"
-          placeholder="Buscar documentos..."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          className="max-w-xs"
-          aria-label="Buscar documentos"
-        />
-      )}
-
       {canEdit && atDocumentLimit && (
         <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
           Limite de 10 documentos do plano Free atingido. Faça upgrade em

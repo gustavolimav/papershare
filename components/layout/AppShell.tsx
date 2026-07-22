@@ -3,7 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, FileText, Plus, Settings } from "lucide-react";
+import {
+  Activity,
+  ChevronDown,
+  FileText,
+  Link2,
+  Plus,
+  Settings,
+  Users,
+} from "lucide-react";
 import { mutate } from "swr";
 import { useAuth } from "@/context/AuthContext";
 import { useWorkspaces } from "@/lib/useWorkspaces";
@@ -152,6 +160,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 space-y-1 px-3">
           <NavLink href="/dashboard" icon={FileText}>
             Documentos
+          </NavLink>
+          <NavLink href="/activity" icon={Activity}>
+            Atividade
+          </NavLink>
+          <NavLink href="/links" icon={Link2}>
+            Links
+          </NavLink>
+          <NavLink href="/contacts" icon={Users}>
+            Contatos
           </NavLink>
           <NavLink href="/settings" icon={Settings}>
             Configurações
