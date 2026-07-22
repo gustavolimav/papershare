@@ -93,19 +93,21 @@ Stories are ordered by recommended implementation sequence within each phase. Te
 
 ## Phase 11 — Visual Identity & UI Redesign
 
-| ID                                                                             | Title                                | One-sentence description                                                                           |
-| ------------------------------------------------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| [US-39](./phase-11-visual-identity/US-39-design-tokens.md)                     | Design Tokens & Typography           | Replace the neutral shadcn theme with the new palette/fonts and finish wiring dark mode.           |
-| [US-40](./phase-11-visual-identity/US-40-app-shell-sidebar.md)                 | App Shell (Sidebar Navigation)       | Replace the top-header-only nav with a persistent sidebar for every authenticated page.            |
-| [US-41](./phase-11-visual-identity/US-41-homepage-restyle.md)                  | Homepage Restyle                     | Restyle the marketing homepage's hero, feature sections, and pricing table.                        |
-| [US-42](./phase-11-visual-identity/US-42-auth-restyle.md)                      | Auth Pages Restyle                   | Restyle login, register, and password-reset pages to match.                                        |
-| [US-43](./phase-11-visual-identity/US-43-dashboard-restyle.md)                 | Dashboard Restyle                    | Turn the document list into a data table with a stat-card row.                                     |
-| [US-44](./phase-11-visual-identity/US-44-document-detail-restyle.md)           | Document Detail & Share-Link Restyle | Restyle the document detail page and share-link manager.                                           |
-| [US-45](./phase-11-visual-identity/US-45-analytics-restyle.md)                 | Analytics Dashboard Restyle          | Restyle the heatmap, AI-insight callout, and per-viewer engagement list.                           |
-| [US-46](./phase-11-visual-identity/US-46-settings-restyle.md)                  | Settings Restyle                     | Convert Settings from stacked sections to tab navigation.                                          |
-| [US-47](./phase-11-visual-identity/US-47-public-viewer-and-error-states.md)    | Public Viewer & Error States Restyle | Restyle the public viewer, its gates, and every link error state; add product-attribution footer.  |
-| [US-48](./phase-11-visual-identity/US-48-document-detail-responsive-fix.md)    | Document Detail Responsive Fix       | Fix header/share-link action rows overflowing instead of wrapping at narrow viewport widths.       |
-| [US-49](./phase-11-visual-identity/US-49-superadmin-as-settings-subsection.md) | Superadmin as Settings Subsection    | Fold Migrations + Feature Flags into Configurações as superadmin-only tabs; drop the sidebar item. |
+| ID                                                                             | Title                                | One-sentence description                                                                                           |
+| ------------------------------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| [US-39](./phase-11-visual-identity/US-39-design-tokens.md)                     | Design Tokens & Typography           | Replace the neutral shadcn theme with the new palette/fonts and finish wiring dark mode.                           |
+| [US-40](./phase-11-visual-identity/US-40-app-shell-sidebar.md)                 | App Shell (Sidebar Navigation)       | Replace the top-header-only nav with a persistent sidebar for every authenticated page.                            |
+| [US-41](./phase-11-visual-identity/US-41-homepage-restyle.md)                  | Homepage Restyle                     | Restyle the marketing homepage's hero, feature sections, and pricing table.                                        |
+| [US-42](./phase-11-visual-identity/US-42-auth-restyle.md)                      | Auth Pages Restyle                   | Restyle login, register, and password-reset pages to match.                                                        |
+| [US-43](./phase-11-visual-identity/US-43-dashboard-restyle.md)                 | Dashboard Restyle                    | Turn the document list into a data table with a stat-card row.                                                     |
+| [US-44](./phase-11-visual-identity/US-44-document-detail-restyle.md)           | Document Detail & Share-Link Restyle | Restyle the document detail page and share-link manager.                                                           |
+| [US-45](./phase-11-visual-identity/US-45-analytics-restyle.md)                 | Analytics Dashboard Restyle          | Restyle the heatmap, AI-insight callout, and per-viewer engagement list.                                           |
+| [US-46](./phase-11-visual-identity/US-46-settings-restyle.md)                  | Settings Restyle                     | Convert Settings from stacked sections to tab navigation.                                                          |
+| [US-47](./phase-11-visual-identity/US-47-public-viewer-and-error-states.md)    | Public Viewer & Error States Restyle | Restyle the public viewer, its gates, and every link error state; add product-attribution footer.                  |
+| [US-48](./phase-11-visual-identity/US-48-document-detail-responsive-fix.md)    | Document Detail Responsive Fix       | Fix header/share-link action rows overflowing instead of wrapping at narrow viewport widths.                       |
+| [US-49](./phase-11-visual-identity/US-49-superadmin-as-settings-subsection.md) | Superadmin as Settings Subsection    | Fold Migrations + Feature Flags into Configurações as superadmin-only tabs; drop the sidebar item.                 |
+| [US-50](./phase-11-visual-identity/US-50-auth-tabs.md)                         | Auth Tabs                            | Merge login/register into one tabbed auth card (real navigation between `/login` and `/register`, both URLs kept). |
+| [US-51](./phase-11-visual-identity/US-51-document-detail-tabs.md)              | Document Detail Tabs                 | Add a "Visão geral / Análises" tab bar across `/documents/[id]` and its `/analytics` route.                        |
 
 ---
 
@@ -137,6 +139,6 @@ For a single developer or agent working sequentially:
 6. **Phase 7 (AI):** US-14 → US-15 → US-17 → US-18 → US-16
 7. **Phase 9 (team workspaces):** US-28 → US-29 → US-30 → US-31 → US-32 → US-33 (strictly sequential — each story's endpoints/migrations are consumed by the next)
 8. **Phase 10 (monetization):** US-35 → US-36 → US-37, with US-38 (homepage) buildable any time after the design is settled (no code dependency, just needs the final pricing numbers)
-9. **Phase 11 (visual identity):** US-39 → US-40 (strictly sequential — US-40's sidebar shell needs US-39's tokens/fonts, and every later story needs US-40's `app/(app)/` route group to exist), then US-41 → US-47 in parallel — each touches a disjoint page/component set and only depends on US-40, not on each other. US-48 and US-49 are post-launch audit fixes: both depend on `main` already having US-44/US-46 (merged via PR #47), and are disjoint from each other.
+9. **Phase 11 (visual identity):** US-39 → US-40 (strictly sequential — US-40's sidebar shell needs US-39's tokens/fonts, and every later story needs US-40's `app/(app)/` route group to exist), then US-41 → US-47 in parallel — each touches a disjoint page/component set and only depends on US-40, not on each other. US-48, US-49, US-50, and US-51 are post-launch audit fixes: all depend on `main` already having the relevant US-4x restyle merged (via PR #47), and are disjoint from each other.
 
 For parallel teams: Phase 5 and Phase 6 (up to US-11) can be built concurrently. Phase 7 requires US-14 before any other AI story. Phase 9 does not parallelize well — US-31 in particular depends on every model/endpoint from US-28-30 existing first, and US-33 needs US-31/US-32 to have something real to render. Phase 10's US-38 (homepage) can run in parallel with US-35/36/37 — it's copy-only, no shared code.
