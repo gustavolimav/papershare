@@ -3,6 +3,7 @@ import { getServerUser } from "@/lib/auth-server";
 import document from "@/models/document";
 import { ForbiddenError, NotFoundError } from "@/infra/errors";
 import { DocumentDetailView } from "@/components/documents/DocumentDetailView";
+import { DocumentTabs } from "@/components/documents/DocumentTabs";
 
 export default async function DocumentDetailPage({
   params,
@@ -20,6 +21,7 @@ export default async function DocumentDetailPage({
 
     return (
       <main className="mx-auto max-w-3xl px-4 py-10">
+        <DocumentTabs documentId={doc.id} active="overview" />
         <DocumentDetailView initialDocument={doc} />
       </main>
     );

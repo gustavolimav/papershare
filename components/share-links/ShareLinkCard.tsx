@@ -122,7 +122,7 @@ export function ShareLinkCard({
         </p>
 
         {canEdit && (
-          <div className="flex gap-2 pt-1">
+          <div className="flex flex-wrap gap-2 pt-1">
             {link.is_active && (
               <>
                 <Button

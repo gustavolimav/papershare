@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { RegisterForm } from "@/components/forms/RegisterForm";
+import { AuthTabs } from "@/components/forms/AuthTabs";
 import {
   Card,
   CardHeader,
@@ -31,6 +32,7 @@ export default async function RegisterPage() {
         </Link>
         <Card className="w-full max-w-md shadow-sm">
           <CardHeader className="text-center">
+            <AuthTabs active="register" />
             <CardTitle className="text-2xl">Crie sua conta</CardTitle>
             <CardDescription>
               Comece a compartilhar seus documentos.

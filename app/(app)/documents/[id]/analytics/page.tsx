@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getServerUser } from "@/lib/auth-server";
 import document from "@/models/document";
 import { ForbiddenError, NotFoundError } from "@/infra/errors";
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
+import { DocumentTabs } from "@/components/documents/DocumentTabs";
 
 export default async function DocumentAnalyticsPage({
   params,
@@ -21,25 +21,9 @@ export default async function DocumentAnalyticsPage({
 
     return (
       <main className="mx-auto max-w-4xl px-6 py-10">
-        <nav className="mb-2 text-sm text-muted-foreground">
-          <Link
-            href="/dashboard"
-            className="hover:text-foreground hover:underline"
-          >
-            Dashboard
-          </Link>
-          <span className="mx-1.5">/</span>
-          <Link
-            href={`/documents/${doc.id}`}
-            className="hover:text-foreground hover:underline"
-          >
-            {doc.title}
-          </Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-foreground">Analytics</span>
-        </nav>
-        <h1 className="mb-6 text-2xl font-semibold tracking-tight">
-          Analytics
+        <DocumentTabs documentId={doc.id} active="analytics" />
+        <h1 className="mb-6 font-heading text-2xl font-semibold tracking-tight">
+          {doc.title} — Analytics
         </h1>
         <AnalyticsView documentId={doc.id} />
       </main>

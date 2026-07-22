@@ -30,12 +30,12 @@ navigation-styled-as-tabs treatment, not a route merge.
       visual style the prototype uses (plain text, active tab gets a
       `border-b-2 border-primary` underline and bolder weight, inactive
       tab is muted). Takes `documentId` and `active: "overview" |
-      "analytics"` props; each tab is a real `next/link` to
+    "analytics"` props; each tab is a real `next/link` to
       `/documents/${documentId}` or `/documents/${documentId}/analytics`
       — real navigation, not a client-side swap, so both URLs keep
       working unchanged.
 - [ ] `app/(app)/documents/[id]/page.tsx` renders `<DocumentTabs
-      documentId={doc.id} active="overview" />` right below the
+    documentId={doc.id} active="overview" />` right below the
       existing title/actions header (`DocumentMeta`), above
       `SummaryCard`/`ShareLinkList`.
 - [ ] `app/(app)/documents/[id]/analytics/page.tsx` renders the same
@@ -47,7 +47,7 @@ navigation-styled-as-tabs treatment, not a route merge.
       exist). Keep the page's own `<h1>Analytics</h1>` — the prototype
       shows a "{documento} — Análises" heading style; align this
       page's heading to read the same way (e.g. `{doc.title} —
-      Analytics`) instead of a bare "Analytics", so the document identity
+    Analytics`) instead of a bare "Analytics", so the document identity
       doesn't disappear now that the breadcrumb is gone.
 - [ ] Remove the standalone "Analytics" button from `DocumentMeta.tsx`'s
       header actions row now that the tab bar below it does the same
