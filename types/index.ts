@@ -225,6 +225,29 @@ export interface ActivityListResponse {
   total: number;
 }
 
+// One row per share link across every document in a workspace (Phase 13's
+// global links inventory, `/links`) — narrower than ShareLinkResponse,
+// which is scoped to a single document and includes settings fields this
+// cross-document table doesn't display. "expired" folds together both an
+// actually-expired link and a revoked one (is_active: false); the
+// distinction between the two is still visible on the link's own
+// document detail page (ShareLinkCard's "Revogado"/"Ativo" badges).
+export interface WorkspaceLinkSummary {
+  id: string;
+  token: string;
+  label: string | null;
+  document_id: string;
+  document_title: string;
+  view_count: number;
+  status: "active" | "expired";
+  created_at: Date;
+}
+
+export interface WorkspaceLinksResponse {
+  links: WorkspaceLinkSummary[];
+  total: number;
+}
+
 export interface ShareLink {
   id: string;
   token: string;
@@ -721,6 +744,11 @@ export interface ShareLinkModel {
     documentId: string,
     userId: string,
   ): Promise<ShareLinkResponse[]>;
+  findAllByWorkspaceId(
+    workspaceId: string,
+    userId: string,
+    pagination: { page: number; perPage: number },
+  ): Promise<WorkspaceLinksResponse>;
   findOneById(
     id: string,
     documentId: string,

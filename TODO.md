@@ -21,7 +21,7 @@
 | 10    | Monetization                       | ✅ Done                                                                  |
 | 11    | Visual Identity & UI Redesign      | ✅ Done (US-39–51 all shipped; US-39/47 on `main`, remainder on PR)      |
 | 12    | Activity Feed                      | ⏳ Views/link-creation/revisits done; NDA/blocked-download deferred      |
-| 13    | Global Links Inventory             | ⏳ Planned                                                               |
+| 13    | Global Links Inventory             | ✅ Done                                                                  |
 | 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
 
 ---
@@ -764,7 +764,7 @@ today) while reviewing the Phase 11 design prototype's "Atividade" page.
 
 ---
 
-## Phase 13 — Global Links Inventory ⏳
+## Phase 13 — Global Links Inventory ✅
 
 **Goal:** One page listing every share link across every document in a
 workspace — label/document/view-count/status — instead of only being able
@@ -772,17 +772,28 @@ to see a document's links from inside that document's own detail page.
 Confirmed as new (today's `ShareLinkList` is always scoped to a single
 document) while reviewing the prototype's "Links" page.
 
-> 2026-07-22: `/links` ships as a frontend-only mock (a nav item + a
-> static table matching the prototype's columns/copy, with a working
-> copy-link button) so the sidebar and overall app shell match the design
-> while the real backend work below is still queued.
+> 2026-07-22: `/links` shipped as a frontend-only mock first (a nav item
+>
+> - a static table matching the prototype's columns/copy, with a working
+>   copy-link button), then got its real backend (US-53) the same day.
+>   Unlike Phase 12's Activity Feed — which trusts
+>   `request.user.active_workspace_id` directly — this endpoint takes a
+>   workspace `id` from the URL path, so it needs an explicit
+>   `workspace.requireRole()` check, same as the existing
+>   `/workspaces/[id]/members` endpoint.
 
-- [x] Frontend: `/links` page (`components/links-inventory/LinksInventory.tsx`) — table (link, document, views, status) + copy-link action per row — currently static mock data, not wired to a real query
-- [ ] `GET /api/v1/workspaces/[id]/links` — new endpoint joining
-      `share_links` → `documents`, scoped to the workspace, returning
-      document title alongside each link's existing fields
-- [ ] Wire `LinksInventory` up to the real endpoint above, replacing the
-      mock data
+- [x] Frontend: `/links` page (`components/links-inventory/LinksInventory.tsx`) — table (link, document, views, status) + copy-link action per row. See CHANGELOG.
+- [x] `GET /api/v1/workspaces/[id]/links` (paginated) — joins
+      `share_links` → `documents`, scoped to the workspace via
+      `workspace.requireRole(workspaceId, userId, "viewer")`, returning
+      document title and a computed `view_count`/`status` alongside each
+      link (`models/shareLink.ts#findAllByWorkspaceId`). `status` folds
+      revoked and expired links into one `"expired"` value, matching the
+      two-state badge the design prototype uses — the exact
+      revoked-vs-expired distinction is still visible on the link's own
+      document detail page. See CHANGELOG.
+- [x] Wired `LinksInventory` up to the real endpoint above, replacing the
+      mock data. See CHANGELOG.
 - [x] Depends on Phase 11's app-shell sidebar
 
 ---
