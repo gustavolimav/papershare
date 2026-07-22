@@ -30,13 +30,13 @@ other two as a follow-up (see TODO.md's Phase 12 section).
 **Acceptance Criteria:**
 
 - [ ] New `types/index.ts` interfaces: `ActivityEvent` (`event_type:
-  "view" | "link_created"`, `id`, `document_id`, `document_title`,
+"view" | "link_created"`, `id`, `document_id`, `document_title`,
       `actor_name: string | null`, `actor_email: string | null`,
       `link_label: string | null`, `pages_viewed: number | null`,
       `page_count: number | null`, `time_on_page: number | null`,
       `is_revisit: boolean`, `created_at: Date`) and
       `ActivityListResponse` (`{ events: ActivityEvent[]; total: number
-  }`), same shape convention as `DocumentListResponse`.
+}`), same shape convention as `DocumentListResponse`.
 - [ ] New `models/activity.ts` exporting
       `findAllByWorkspaceId(workspaceId, pagination: { page: number;
     perPage: number }): Promise<ActivityListResponse>` — a `UNION
@@ -59,7 +59,7 @@ lv.created_at)` (a viewer's 2nd+ row for the same link).
       `pages/api/v1/documents/index.ts`'s `getHandler` exactly:
       `authMiddleware`, `validate(paginationSchema, request.query)`,
       call `activity.findAllByWorkspaceId(request.user!
-  .active_workspace_id!, { page, perPage: per_page })`, return
+.active_workspace_id!, { page, perPage: per_page })`, return
       `200`. No new `requireRole` call needed — same trust boundary as
       the documents list endpoint, which relies on
       `active_workspace_id` alone (a user can't set someone else's
