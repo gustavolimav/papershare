@@ -7,22 +7,22 @@
 
 ## Status
 
-| Phase | Name                               | Status                                                                                      |
-| ----- | ---------------------------------- | ------------------------------------------------------------------------------------------- |
-| 1     | Foundation                         | ✅ Done                                                                                     |
-| 2     | Authorization & Account Management | ✅ Done                                                                                     |
-| 3     | Documents Core                     | ✅ Done                                                                                     |
-| 4     | Share Links                        | ✅ Done                                                                                     |
-| 5     | Analytics & Tracking               | ✅ Done                                                                                     |
-| 6     | Frontend                           | ✅ Done                                                                                     |
-| 7     | Engagement, Trust & Growth         | ✅ Done                                                                                     |
-| 8     | AI Features                        | ✅ Done                                                                                     |
-| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred)                    |
-| 10    | Monetization                       | ✅ Done                                                                                     |
-| 11    | Visual Identity & UI Redesign      | ⏳ US-39–47, US-49 done (PR #47 merging US-40–46 to `main`); US-48 (responsive fix) planned |
-| 12    | Activity Feed                      | ⏳ Planned                                                                                  |
-| 13    | Global Links Inventory             | ⏳ Planned                                                                                  |
-| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                                                  |
+| Phase | Name                               | Status                                                                   |
+| ----- | ---------------------------------- | ------------------------------------------------------------------------ |
+| 1     | Foundation                         | ✅ Done                                                                  |
+| 2     | Authorization & Account Management | ✅ Done                                                                  |
+| 3     | Documents Core                     | ✅ Done                                                                  |
+| 4     | Share Links                        | ✅ Done                                                                  |
+| 5     | Analytics & Tracking               | ✅ Done                                                                  |
+| 6     | Frontend                           | ✅ Done                                                                  |
+| 7     | Engagement, Trust & Growth         | ✅ Done                                                                  |
+| 8     | AI Features                        | ✅ Done                                                                  |
+| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
+| 10    | Monetization                       | ✅ Done                                                                  |
+| 11    | Visual Identity & UI Redesign      | ✅ Done (US-39–51 all shipped; US-39/47 on `main`, remainder on PR)      |
+| 12    | Activity Feed                      | ⏳ Planned                                                               |
+| 13    | Global Links Inventory             | ⏳ Planned                                                               |
+| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
 
 ---
 
@@ -665,11 +665,12 @@ opened as PR #47) found the restyle itself matches closely once PR #47
 merges. Two concrete gaps surfaced, scoped as their own stories rather
 than folded into the (already-merged) originals:
 
-- [ ] **Document detail responsive fix** (US-48) — the header
+- [x] **Document detail responsive fix** (US-48) — the header
       actions row and each share link's Editar/Revogar/Duplicar row
       overflow instead of wrapping at narrow viewport widths (~530–700px),
       clipping buttons off-screen. Isolated to two components; every
       other restyled page already reflows correctly at the same widths.
+      See CHANGELOG.
 - [x] **Superadmin as Settings subsection** (US-49) — per explicit
       request, folded Migrations + Feature Flags into Configurações as
       two more (superadmin-only) tabs, removed the separate top-level
@@ -692,6 +693,30 @@ existing US-45/US-43 scope:
 - [x] Dashboard document list was missing the "Buscar documentos..."
       search input the prototype shows in its header row — added
       client-side title filtering. See CHANGELOG.
+
+Sidebar nav also gained three more destinations (Atividade, Links,
+Contatos) as frontend-only mocks matching the prototype — see Phase
+12/13/14 below for what's real vs. mocked there.
+
+A third pass (2026-07-22, after merging PR #47) found two more concrete
+IA mismatches, scoped as their own stories since both are structural
+(shared components spanning two routes each) rather than one-file CSS
+fixes:
+
+- [x] **Auth tabs** (US-50) — the prototype's login/register is one
+      screen with a segmented "Entrar / Criar conta" tab switcher; ours
+      was two separate pages linked only by a small text link at the
+      bottom. Added a shared tab switcher (real navigation between the
+      existing `/login`/`/register` routes, no route merge, no behavior
+      change). See CHANGELOG.
+- [x] **Document detail tabs** (US-51) — the prototype's document page
+      is one screen with a "Visão geral / Análises" tab bar; ours was an
+      "Analytics" button linking to a separate route with its own
+      breadcrumb. Added a shared tab bar (real navigation between the
+      existing `/documents/[id]` and `/documents/[id]/analytics`
+      routes, same route-preserving approach as US-50) —
+      `tests/e2e/engagement-score.spec.ts` (which navigates directly to
+      the analytics URL) re-run and still passes. See CHANGELOG.
 
 ---
 

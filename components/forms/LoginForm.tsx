@@ -125,16 +125,6 @@ export function LoginForm() {
       >
         {isSubmitting ? "Entrando..." : "Entrar"}
       </Button>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Não tem uma conta?{" "}
-        <Link
-          href="/register"
-          className="font-medium text-primary underline-offset-4 hover:underline"
-        >
-          Cadastre-se
-        </Link>
-      </p>
     </form>
   );
 }

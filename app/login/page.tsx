@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LoginForm } from "@/components/forms/LoginForm";
+import { AuthTabs } from "@/components/forms/AuthTabs";
 import {
   Card,
   CardHeader,
@@ -32,6 +33,7 @@ export default async function LoginPage() {
         </Link>
         <Card className="w-full max-w-md shadow-sm">
           <CardHeader className="text-center">
+            <AuthTabs active="login" />
             <CardTitle className="text-2xl">Bem-vindo de volta</CardTitle>
             <CardDescription>
               Acesse sua conta para gerenciar seus documentos.

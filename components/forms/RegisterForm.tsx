@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -218,16 +217,6 @@ export function RegisterForm() {
       >
         {isSubmitting ? "Criando conta..." : "Criar conta"}
       </Button>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Já tem uma conta?{" "}
-        <Link
-          href="/login"
-          className="font-medium text-primary underline-offset-4 hover:underline"
-        >
-          Entrar
-        </Link>
-      </p>
     </form>
   );
 }
