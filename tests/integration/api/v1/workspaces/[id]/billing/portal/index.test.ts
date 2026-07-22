@@ -104,8 +104,8 @@ describe("POST /api/v1/workspaces/[id]/billing/portal", () => {
   });
 
   // billing_stripe is off by default (no row = disabled) — a superadmin
-  // has to turn it on via /superadmin/feature-flags before the portal
-  // ever reaches Stripe.
+  // has to turn it on via the Feature flags tab in /settings before the
+  // portal ever reaches Stripe.
   test("As the owner, with a subscription but the billing_stripe feature flag disabled (default), returns 503", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const workspace = await createTeamWorkspace(cookie);

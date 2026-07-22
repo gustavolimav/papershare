@@ -8,6 +8,7 @@ import { ViewsChart } from "@/components/analytics/ViewsChart";
 import { TopLinksTable } from "@/components/analytics/TopLinksTable";
 import { LinkAnalyticsDrawer } from "@/components/analytics/LinkAnalyticsDrawer";
 import { InsightCard } from "@/components/analytics/InsightCard";
+import { PageHeatmapChart } from "@/components/analytics/PageHeatmapChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration } from "@/lib/formatters";
@@ -68,6 +69,17 @@ export function AnalyticsView({ documentId }: AnalyticsViewProps) {
           value={data.avg_pages_viewed?.toFixed(1) ?? "—"}
         />
       </div>
+
+      {data.page_breakdown.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Atenção página a página</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PageHeatmapChart data={data.page_breakdown} />
+          </CardContent>
+        </Card>
+      )}
 
       <InsightCard documentId={documentId} />
 

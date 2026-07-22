@@ -3,14 +3,23 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-type TabId = "perfil" | "ia" | "equipe" | "faturamento" | "perigo";
+type TabId =
+  | "perfil"
+  | "ia"
+  | "equipe"
+  | "faturamento"
+  | "perigo"
+  | "migrations"
+  | "feature-flags";
 
-const TABS: { id: TabId; label: string; destructive?: boolean }[] = [
+const TAB_META: { id: TabId; label: string; destructive?: boolean }[] = [
   { id: "perfil", label: "Perfil" },
   { id: "ia", label: "Chave de IA" },
   { id: "equipe", label: "Equipe" },
   { id: "faturamento", label: "Faturamento" },
   { id: "perigo", label: "Zona de perigo", destructive: true },
+  { id: "migrations", label: "Migrations" },
+  { id: "feature-flags", label: "Feature flags" },
 ];
 
 interface SettingsTabsProps {
@@ -19,6 +28,8 @@ interface SettingsTabsProps {
   equipe: React.ReactNode;
   faturamento: React.ReactNode;
   perigo: React.ReactNode;
+  migrations?: React.ReactNode;
+  featureFlags?: React.ReactNode;
 }
 
 // Panels for every tab stay mounted at all times — only visibility toggles
@@ -31,16 +42,24 @@ export function SettingsTabs({
   equipe,
   faturamento,
   perigo,
+  migrations,
+  featureFlags,
 }: SettingsTabsProps) {
-  const [active, setActive] = useState<TabId>("perfil");
-
-  const panels: Record<TabId, React.ReactNode> = {
+  const panels: Partial<Record<TabId, React.ReactNode>> = {
     perfil,
     ia,
     equipe,
     faturamento,
     perigo,
+    migrations,
+    "feature-flags": featureFlags,
   };
+
+  // Superadmin-only tabs simply aren't passed a panel for non-superadmins —
+  // filter them out entirely rather than rendering an empty tab.
+  const tabs = TAB_META.filter((tab) => panels[tab.id] !== undefined);
+
+  const [active, setActive] = useState<TabId>("perfil");
 
   return (
     <div className="flex flex-col gap-8 md:flex-row md:items-start">
@@ -48,7 +67,7 @@ export function SettingsTabs({
         aria-label="Seções de configurações"
         className="flex shrink-0 flex-row gap-1 overflow-x-auto md:w-48 md:flex-col md:overflow-visible"
       >
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const isActive = active === tab.id;
 
           return (
@@ -75,7 +94,7 @@ export function SettingsTabs({
       </nav>
 
       <div className="min-w-0 flex-1">
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <div key={tab.id} className={active === tab.id ? "block" : "hidden"}>
             {panels[tab.id]}
           </div>

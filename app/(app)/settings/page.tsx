@@ -7,6 +7,8 @@ import { TeamSettingsForm } from "@/components/workspaces/TeamSettingsForm";
 import { BillingSettingsForm } from "@/components/billing/BillingSettingsForm";
 import { DangerZone } from "@/components/settings/DangerZone";
 import { SettingsTabs } from "@/components/settings/SettingsTabs";
+import { MigrationsPanel } from "@/components/superadmin/MigrationsPanel";
+import { FeatureFlagsPanel } from "@/components/superadmin/FeatureFlagsPanel";
 
 export default async function SettingsPage() {
   const user = await getServerUser();
@@ -62,6 +64,22 @@ export default async function SettingsPage() {
           </div>
         }
         perigo={<DangerZone user={publicUser} />}
+        migrations={
+          publicUser.is_superadmin ? (
+            <div>
+              <h2 className="mb-3 text-lg font-semibold">Migrations</h2>
+              <MigrationsPanel />
+            </div>
+          ) : undefined
+        }
+        featureFlags={
+          publicUser.is_superadmin ? (
+            <div>
+              <h2 className="mb-3 text-lg font-semibold">Feature flags</h2>
+              <FeatureFlagsPanel />
+            </div>
+          ) : undefined
+        }
       />
     </main>
   );

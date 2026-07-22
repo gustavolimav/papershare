@@ -88,7 +88,7 @@ function clearSessionCookie(response: NextApiResponse): void {
 }
 
 // Accepts either the shared secret header (scripts/CI) or a logged-in
-// superadmin session (the /superadmin/migrations UI) — whichever is present.
+// superadmin session (the Migrations tab in /settings) — whichever is present.
 export async function migrationsAuthMiddleware(
   request: NextApiRequest,
   _response: NextApiResponse,

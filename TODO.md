@@ -7,22 +7,22 @@
 
 ## Status
 
-| Phase | Name                               | Status                                                                                                  |
-| ----- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| 1     | Foundation                         | ✅ Done                                                                                                 |
-| 2     | Authorization & Account Management | ✅ Done                                                                                                 |
-| 3     | Documents Core                     | ✅ Done                                                                                                 |
-| 4     | Share Links                        | ✅ Done                                                                                                 |
-| 5     | Analytics & Tracking               | ✅ Done                                                                                                 |
-| 6     | Frontend                           | ✅ Done                                                                                                 |
-| 7     | Engagement, Trust & Growth         | ✅ Done                                                                                                 |
-| 8     | AI Features                        | ✅ Done                                                                                                 |
-| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred)                                |
-| 10    | Monetization                       | ✅ Done                                                                                                 |
-| 11    | Visual Identity & UI Redesign      | ⏳ US-39–47 done (PR #47 merging US-40–46 to `main`); US-48–49 (audit fixes + Superadmin reorg) planned |
-| 12    | Activity Feed                      | ⏳ Planned                                                                                              |
-| 13    | Global Links Inventory             | ⏳ Planned                                                                                              |
-| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                                                              |
+| Phase | Name                               | Status                                                                                      |
+| ----- | ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1     | Foundation                         | ✅ Done                                                                                     |
+| 2     | Authorization & Account Management | ✅ Done                                                                                     |
+| 3     | Documents Core                     | ✅ Done                                                                                     |
+| 4     | Share Links                        | ✅ Done                                                                                     |
+| 5     | Analytics & Tracking               | ✅ Done                                                                                     |
+| 6     | Frontend                           | ✅ Done                                                                                     |
+| 7     | Engagement, Trust & Growth         | ✅ Done                                                                                     |
+| 8     | AI Features                        | ✅ Done                                                                                     |
+| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred)                    |
+| 10    | Monetization                       | ✅ Done                                                                                     |
+| 11    | Visual Identity & UI Redesign      | ⏳ US-39–47, US-49 done (PR #47 merging US-40–46 to `main`); US-48 (responsive fix) planned |
+| 12    | Activity Feed                      | ⏳ Planned                                                                                  |
+| 13    | Global Links Inventory             | ⏳ Planned                                                                                  |
+| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                                                  |
 
 ---
 
@@ -670,10 +670,28 @@ than folded into the (already-merged) originals:
       overflow instead of wrapping at narrow viewport widths (~530–700px),
       clipping buttons off-screen. Isolated to two components; every
       other restyled page already reflows correctly at the same widths.
-- [ ] **Superadmin as Settings subsection** (US-49) — per explicit
-      request, fold Migrations + Feature Flags into Configurações as
-      two more (superadmin-only) tabs, removing the separate top-level
-      "Superadmin" sidebar item and the `/superadmin/*` routes.
+- [x] **Superadmin as Settings subsection** (US-49) — per explicit
+      request, folded Migrations + Feature Flags into Configurações as
+      two more (superadmin-only) tabs, removed the separate top-level
+      "Superadmin" sidebar item and the `/superadmin/*` routes. See
+      CHANGELOG.
+
+A second, deeper pass (2026-07-22, using the actual rendered prototype
+side-by-side instead of just its source) found the first audit had been
+too shallow — the Analytics page in particular was missing its most
+visually dominant element. Fixed directly rather than re-queued as
+another story, since both were small and already covered by the
+existing US-45/US-43 scope:
+
+- [x] Document-level analytics page was missing the page-attention
+      heatmap the prototype shows prominently (it only rendered inside
+      the per-link drawer) — wired the already-existing
+      `getPageBreakdownByDocumentId` aggregation into the document
+      analytics response and render `PageHeatmapChart` inline, matching
+      the prototype's layout order. See CHANGELOG.
+- [x] Dashboard document list was missing the "Buscar documentos..."
+      search input the prototype shows in its header row — added
+      client-side title filtering. See CHANGELOG.
 
 ---
 

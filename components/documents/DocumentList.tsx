@@ -8,6 +8,7 @@ import { DocumentRow } from "@/components/documents/DocumentCard";
 import { UploadZone } from "@/components/documents/UploadZone";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableHeader,
@@ -31,6 +32,7 @@ const PER_PAGE = 10;
 
 export function DocumentList() {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [documentToDelete, setDocumentToDelete] =
     useState<DocumentResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -64,9 +66,26 @@ export function DocumentList() {
   }
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PER_PAGE)) : 1;
+  // Filters only the current page's already-fetched documents — a full
+  // server-side search across every page would need a new API query param,
+  // which isn't worth it yet at the current per-workspace document scale.
+  const visibleDocuments = data?.documents.filter((doc) =>
+    doc.title.toLowerCase().includes(search.trim().toLowerCase()),
+  );
 
   return (
     <div className="space-y-6">
+      {data && data.documents.length > 0 && (
+        <Input
+          type="search"
+          placeholder="Buscar documentos..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="max-w-xs"
+          aria-label="Buscar documentos"
+        />
+      )}
+
       {canEdit && atDocumentLimit && (
         <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
           Limite de 10 documentos do plano Free atingido. Faça upgrade em
@@ -97,7 +116,13 @@ export function DocumentList() {
         </p>
       )}
 
-      {data && data.documents.length > 0 && (
+      {data && data.documents.length > 0 && visibleDocuments?.length === 0 && (
+        <p className="py-8 text-center text-muted-foreground">
+          Nenhum documento encontrado para &quot;{search}&quot;.
+        </p>
+      )}
+
+      {visibleDocuments && visibleDocuments.length > 0 && (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -113,7 +138,7 @@ export function DocumentList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.documents.map((doc) => (
+              {visibleDocuments.map((doc) => (
                 <DocumentRow
                   key={doc.id}
                   doc={doc}

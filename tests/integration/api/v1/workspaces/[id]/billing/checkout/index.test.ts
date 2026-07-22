@@ -103,8 +103,8 @@ describe("POST /api/v1/workspaces/[id]/billing/checkout", () => {
 
   // billing_stripe is off by default (no row = disabled, same "absence
   // means off" pattern as a workspace with no subscriptions row resolving
-  // to Free) — a superadmin has to turn it on via
-  // /superadmin/feature-flags before checkout ever reaches Stripe.
+  // to Free) — a superadmin has to turn it on via the Feature flags tab
+  // in /settings before checkout ever reaches Stripe.
   test("As the owner, with the billing_stripe feature flag disabled (default), returns 503", async () => {
     const { cookie } = await orchestrator.createUserSession();
     const workspace = await createTeamWorkspace(cookie);

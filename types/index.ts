@@ -350,9 +350,11 @@ export interface FollowUpEmailSuggestion {
   viewer_email: string | null;
 }
 
-// Only on the per-link response: a page-by-page breakdown (and the
-// per-viewer engagement list) only make sense in the context of one link,
-// not aggregated across a document's links.
+// Only on the per-link response: the per-viewer engagement list needs one
+// link's context (the follow-up-email suggestion is requested per link).
+// The page-by-page breakdown doesn't have this problem — the document-level
+// response below aggregates it across every link, since they all point at
+// the same file.
 export interface LinkAnalyticsResponse extends LinkViewAnalytics {
   page_breakdown: PageBreakdown[];
   // null on a Free-plan workspace — engagement scoring is a Pro feature
@@ -369,6 +371,12 @@ export interface TopLink {
 
 export interface DocumentAnalyticsResponse extends LinkViewAnalytics {
   top_links: TopLink[];
+  // Aggregated across every share link of the document — unlike the
+  // per-viewer engagement list, a page-by-page breakdown means the same
+  // thing regardless of which link a view came in through (every link
+  // points at the same file), so this rolls up cleanly at the document
+  // level.
+  page_breakdown: PageBreakdown[];
 }
 
 export interface Suggestion {

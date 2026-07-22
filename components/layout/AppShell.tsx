@@ -3,13 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  FileText,
-  Plus,
-  Settings,
-  ShieldCheck,
-} from "lucide-react";
+import { ChevronDown, FileText, Plus, Settings } from "lucide-react";
 import { mutate } from "swr";
 import { useAuth } from "@/context/AuthContext";
 import { useWorkspaces } from "@/lib/useWorkspaces";
@@ -162,11 +156,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <NavLink href="/settings" icon={Settings}>
             Configurações
           </NavLink>
-          {user?.is_superadmin && (
-            <NavLink href="/superadmin/migrations" icon={ShieldCheck}>
-              Superadmin
-            </NavLink>
-          )}
         </nav>
 
         <div className="flex items-center gap-2 border-t border-sidebar-border px-4 py-4">
