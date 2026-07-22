@@ -29,7 +29,10 @@ export function ShareLinkList({ documentId, canEdit }: ShareLinkListProps) {
   return (
     <section className="space-y-4" aria-labelledby="share-links-heading">
       <div className="flex items-center justify-between">
-        <h2 id="share-links-heading" className="text-lg font-semibold">
+        <h2
+          id="share-links-heading"
+          className="font-heading text-lg font-semibold"
+        >
           Links de compartilhamento
         </h2>
         {canEdit && atLinkLimit && (

@@ -4,10 +4,17 @@ import { useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useWorkspaces } from "@/lib/useWorkspaces";
-import { DocumentCard } from "@/components/documents/DocumentCard";
+import { DocumentRow } from "@/components/documents/DocumentCard";
 import { UploadZone } from "@/components/documents/UploadZone";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +29,11 @@ import type { DocumentListResponse, DocumentResponse } from "@/types/index";
 
 const PER_PAGE = 10;
 
-export function DocumentList() {
+interface DocumentListProps {
+  search: string;
+}
+
+export function DocumentList({ search }: DocumentListProps) {
   const [page, setPage] = useState(1);
   const [documentToDelete, setDocumentToDelete] =
     useState<DocumentResponse | null>(null);
@@ -57,6 +68,12 @@ export function DocumentList() {
   }
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PER_PAGE)) : 1;
+  // Filters only the current page's already-fetched documents — a full
+  // server-side search across every page would need a new API query param,
+  // which isn't worth it yet at the current per-workspace document scale.
+  const visibleDocuments = data?.documents.filter((doc) =>
+    doc.title.toLowerCase().includes(search.trim().toLowerCase()),
+  );
 
   return (
     <div className="space-y-6">
@@ -90,17 +107,39 @@ export function DocumentList() {
         </p>
       )}
 
-      {data && data.documents.length > 0 && (
-        <div className="space-y-3">
-          {data.documents.map((doc) => (
-            <DocumentCard
-              key={doc.id}
-              doc={doc}
-              showUploader={showUploader}
-              canEdit={canEdit}
-              onDeleteRequest={setDocumentToDelete}
-            />
-          ))}
+      {data && data.documents.length > 0 && visibleDocuments?.length === 0 && (
+        <p className="py-8 text-center text-muted-foreground">
+          Nenhum documento encontrado para &quot;{search}&quot;.
+        </p>
+      )}
+
+      {visibleDocuments && visibleDocuments.length > 0 && (
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Visualizações</TableHead>
+                <TableHead>Links</TableHead>
+                <TableHead>Pontuação</TableHead>
+                <TableHead>Atualizado</TableHead>
+                <TableHead>
+                  <span className="sr-only">Ações</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visibleDocuments.map((doc) => (
+                <DocumentRow
+                  key={doc.id}
+                  doc={doc}
+                  showUploader={showUploader}
+                  canEdit={canEdit}
+                  onDeleteRequest={setDocumentToDelete}
+                />
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 

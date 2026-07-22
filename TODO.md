@@ -7,22 +7,22 @@
 
 ## Status
 
-| Phase | Name                               | Status                                                                   |
-| ----- | ---------------------------------- | ------------------------------------------------------------------------ |
-| 1     | Foundation                         | ✅ Done                                                                  |
-| 2     | Authorization & Account Management | ✅ Done                                                                  |
-| 3     | Documents Core                     | ✅ Done                                                                  |
-| 4     | Share Links                        | ✅ Done                                                                  |
-| 5     | Analytics & Tracking               | ✅ Done                                                                  |
-| 6     | Frontend                           | ✅ Done                                                                  |
-| 7     | Engagement, Trust & Growth         | ✅ Done                                                                  |
-| 8     | AI Features                        | ✅ Done                                                                  |
-| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
-| 10    | Monetization                       | ✅ Done                                                                  |
-| 11    | Visual Identity & UI Redesign      | ⏳ In Progress (US-39 done; US-40–47 remaining)                          |
-| 12    | Activity Feed                      | ⏳ Planned                                                               |
-| 13    | Global Links Inventory             | ⏳ Planned                                                               |
-| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
+| Phase | Name                               | Status                                                                                      |
+| ----- | ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1     | Foundation                         | ✅ Done                                                                                     |
+| 2     | Authorization & Account Management | ✅ Done                                                                                     |
+| 3     | Documents Core                     | ✅ Done                                                                                     |
+| 4     | Share Links                        | ✅ Done                                                                                     |
+| 5     | Analytics & Tracking               | ✅ Done                                                                                     |
+| 6     | Frontend                           | ✅ Done                                                                                     |
+| 7     | Engagement, Trust & Growth         | ✅ Done                                                                                     |
+| 8     | AI Features                        | ✅ Done                                                                                     |
+| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred)                    |
+| 10    | Monetization                       | ✅ Done                                                                                     |
+| 11    | Visual Identity & UI Redesign      | ⏳ US-39–47, US-49 done (PR #47 merging US-40–46 to `main`); US-48 (responsive fix) planned |
+| 12    | Activity Feed                      | ⏳ Planned                                                                                  |
+| 13    | Global Links Inventory             | ⏳ Planned                                                                                  |
+| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                                                  |
 
 ---
 
@@ -618,33 +618,38 @@ mergeable on its own and doesn't block on unrelated backend work.
       colors all currently grayscale) and typography (`Source Serif 4` +
       `Manrope`, replacing `next/font/google`'s `Inter`); also finishes
       the previously-half-installed dark mode wiring. See CHANGELOG.
-- [ ] **App shell** — persistent left sidebar (workspace switcher +
-      Documentos/Atividade/Links/Contatos/Configurações nav) replacing
-      today's top-header-only nav, for every authenticated page — this is
-      the shell Phases 12–14's new pages will live in
-- [ ] **Marketing homepage** (`/`) — restyle the US-38 feature sections +
-      pricing table to the new visual language; hero copy/layout revamp
-- [ ] **Auth** (`/login`, `/register`) — restyle to match
-- [ ] **Dashboard** (`/dashboard`) — document list becomes a data table
-      (Nome/Visualizações/Links/Pontuação/Atualizado) with a per-document
-      aggregate score column, replacing the current card grid; add a
-      stat-card row (Documentos, Visualizações · 7 dias, Links ativos,
-      Engajamento médio) with trend deltas vs. the prior period
-- [ ] **Document detail & share-link manager** (`/documents/[id]`) —
-      restyle, no behavior change
-- [ ] **Analytics dashboard** (`/documents/[id]/analytics`) — restyle the
-      heatmap, per-viewer engagement list, and AI-insight callout
-- [ ] **Settings** (`/settings`) — restyle Perfil/Chave de IA/Equipe/
-      Faturamento/Zona de perigo to the new visual language (prototype
-      uses tab-based navigation instead of today's stacked sections)
-- [x] **Public-facing pages** (`/view/[token]`) (US-47) — restyle the viewer,
-      the password/NDA gates, and add a "Desenvolvido com Papershare" footer
-      (new: light product-attribution branding on pages seen by people
-      who aren't Papershare customers themselves). See CHANGELOG.
-- [x] **Error/empty states** (US-47) — restyle (expired-link page confirmed
-      in the prototype; audited for other states — 404, revoked link,
-      generic fallback, corrupted-PDF load failure, unsupported-file-type
-      preview — while in there). See CHANGELOG.
+- [x] **App shell** (US-40) — persistent left sidebar (workspace switcher +
+      Documentos/Configurações nav, Atividade/Links/Contatos added when
+      Phases 12–14 ship) replacing today's top-header-only nav, for every
+      authenticated page — this is the shell those phases' new pages will
+      live in. See CHANGELOG.
+- [x] **Marketing homepage** (`/`, US-41) — restyle the US-38 feature
+      sections + pricing table to the new visual language; hero
+      copy/layout revamp. See CHANGELOG.
+- [x] **Auth** (`/login`, `/register`) — restyle to match (US-42). See CHANGELOG.
+- [x] **Dashboard** (`/dashboard`) (US-43) — document list becomes a data
+      table (Nome/Visualizações/Links/Pontuação/Atualizado) with a
+      per-document aggregate score column, replacing the current card
+      grid; added a stat-card row (Documentos, Links ativos, Engajamento
+      médio, Visualizações totais) — raw numbers only, no trend deltas
+      (need historical snapshots this phase doesn't have). See CHANGELOG.
+- [x] **Document detail & share-link manager** (`/documents/[id]`) (US-44) —
+      restyle, no behavior change. See CHANGELOG.
+- [x] **Analytics dashboard** (`/documents/[id]/analytics`, US-45) —
+      restyle the heatmap, per-viewer engagement list, and AI-insight
+      callout. See CHANGELOG.
+- [x] **Settings** (`/settings`) (US-46) — restyle Perfil/Chave de IA/
+      Equipe/Faturamento/Zona de perigo to the new visual language
+      (prototype uses tab-based navigation instead of today's stacked
+      sections). See CHANGELOG.
+- [x] **Public-facing pages** (`/view/[token]`) (US-47) — restyled the
+      viewer, the password/NDA gates, and added a "Desenvolvido com
+      Papershare" footer (light product-attribution branding on pages
+      seen by people who aren't Papershare customers themselves). See
+      CHANGELOG.
+- [x] **Error/empty states** (US-47) — restyled (expired-link page,
+      404, revoked link, and other gate/error states share the new
+      `ViewerCardShell`/`ViewerStateCard` pattern). See CHANGELOG.
 
 **Story breakdown** (see `user-stories/phase-11-visual-identity/`):
 US-39 (design tokens + finishing the dark-mode wiring) → US-40 (app
@@ -652,6 +657,41 @@ shell / sidebar — the one item every other page in this phase depends
 on) → US-41 through US-47 (homepage, auth, dashboard, document detail,
 analytics, settings, public viewer/error states — each independent of
 the others once US-40 lands).
+
+**Post-launch audit fixes** — a visual audit against the design
+prototype (2026-07-21, run after PRs #33/#39/#41/#46 turned out to have
+all merged into `feat/phase11-01-design-tokens` instead of `main`,
+opened as PR #47) found the restyle itself matches closely once PR #47
+merges. Two concrete gaps surfaced, scoped as their own stories rather
+than folded into the (already-merged) originals:
+
+- [ ] **Document detail responsive fix** (US-48) — the header
+      actions row and each share link's Editar/Revogar/Duplicar row
+      overflow instead of wrapping at narrow viewport widths (~530–700px),
+      clipping buttons off-screen. Isolated to two components; every
+      other restyled page already reflows correctly at the same widths.
+- [x] **Superadmin as Settings subsection** (US-49) — per explicit
+      request, folded Migrations + Feature Flags into Configurações as
+      two more (superadmin-only) tabs, removed the separate top-level
+      "Superadmin" sidebar item and the `/superadmin/*` routes. See
+      CHANGELOG.
+
+A second, deeper pass (2026-07-22, using the actual rendered prototype
+side-by-side instead of just its source) found the first audit had been
+too shallow — the Analytics page in particular was missing its most
+visually dominant element. Fixed directly rather than re-queued as
+another story, since both were small and already covered by the
+existing US-45/US-43 scope:
+
+- [x] Document-level analytics page was missing the page-attention
+      heatmap the prototype shows prominently (it only rendered inside
+      the per-link drawer) — wired the already-existing
+      `getPageBreakdownByDocumentId` aggregation into the document
+      analytics response and render `PageHeatmapChart` inline, matching
+      the prototype's layout order. See CHANGELOG.
+- [x] Dashboard document list was missing the "Buscar documentos..."
+      search input the prototype shows in its header row — added
+      client-side title filtering. See CHANGELOG.
 
 ---
 
@@ -664,16 +704,21 @@ an owner doesn't have to open each document individually to know what
 just happened. Confirmed as a genuinely new capability (doesn't exist
 today) while reviewing the Phase 11 design prototype's "Atividade" page.
 
+> 2026-07-22: `/activity` ships as a frontend-only mock (a nav item + a
+> static, hardcoded event list matching the prototype's grouping/copy) so
+> the sidebar and overall app shell match the design while the real
+> backend work below is still queued.
+
+- [x] Frontend: `/activity` page grouped by day (`components/activity/ActivityFeed.tsx`), one row per event with an icon + description matching its type — currently static mock data, not wired to a real query
 - [ ] Aggregation query joining `link_views`, `share_links`, NDA
       acceptances, and blocked-download attempts, scoped to a workspace
       and ordered by `created_at desc`
 - [ ] `GET /api/v1/workspaces/[id]/activity` (paginated) — new endpoint,
       new response shape (`types/index.ts`); no new tables expected, this
       reads from data Phase 5/7 already record
-- [ ] Frontend: `/atividade` page grouped by day, one row per event with
-      an icon + description matching its type (view, NDA accept, link
-      created, download blocked, revisit)
-- [ ] Depends on Phase 11's app-shell sidebar (this is one of its nav
+- [ ] Wire `ActivityFeed` up to the real endpoint above, replacing the
+      mock data
+- [x] Depends on Phase 11's app-shell sidebar (this is one of its nav
       destinations)
 
 ---
@@ -686,12 +731,18 @@ to see a document's links from inside that document's own detail page.
 Confirmed as new (today's `ShareLinkList` is always scoped to a single
 document) while reviewing the prototype's "Links" page.
 
+> 2026-07-22: `/links` ships as a frontend-only mock (a nav item + a
+> static table matching the prototype's columns/copy, with a working
+> copy-link button) so the sidebar and overall app shell match the design
+> while the real backend work below is still queued.
+
+- [x] Frontend: `/links` page (`components/links-inventory/LinksInventory.tsx`) — table (link, document, views, status) + copy-link action per row — currently static mock data, not wired to a real query
 - [ ] `GET /api/v1/workspaces/[id]/links` — new endpoint joining
       `share_links` → `documents`, scoped to the workspace, returning
       document title alongside each link's existing fields
-- [ ] Frontend: `/links` page — table (link, document, views, status) +
-      copy-link action per row
-- [ ] Depends on Phase 11's app-shell sidebar
+- [ ] Wire `LinksInventory` up to the real endpoint above, replacing the
+      mock data
+- [x] Depends on Phase 11's app-shell sidebar
 
 ---
 
@@ -707,18 +758,30 @@ analytics view. Confirmed as new (no cross-document viewer identity
 exists today — `ViewerEngagement` is always scoped to one link) while
 reviewing the prototype's "Contatos" page.
 
+> 2026-07-22: `/contacts` ships as a frontend-only mock (a nav item + a
+> static contact list matching the prototype's layout/copy) so the
+> sidebar and overall app shell match the design while the real backend
+> work below is still queued. Its "Gerar follow-up" button currently just
+> toasts that the real feature is coming in this phase, rather than
+> calling the existing (per-link) follow-up-email endpoint — wiring it up
+> for real needs the cross-document aggregation below first, since
+> today's endpoint expects a single `linkId` and a contact here may have
+> viewed several different links.
+
+- [x] Frontend: `/contacts` page (`components/contacts/ContactsList.tsx`) — one row per contact — currently static mock data, not wired to a real query
 - [ ] Aggregation query: group `link_views` by `viewer_email` across the
       workspace, computing distinct-document count, most recent view,
       and a blended engagement score across all their views
 - [ ] `GET /api/v1/workspaces/[id]/contacts` — new endpoint
-- [ ] Frontend: `/contatos` page — one row/card per contact, "Gerar
-      follow-up" wired to the existing follow-up-email endpoint (US-27)
+- [ ] Wire `ContactsList` up to the real endpoint above, replacing the
+      mock data, and wire "Gerar follow-up" to the existing
+      follow-up-email endpoint (US-27)
 - [ ] Known limitation to call out in the design doc: a viewer only has
       an email on file if the link required one (NDA gate or
       `require_email`) — fingerprint-only anonymous viewers won't appear
       here, so this directory is necessarily a subset of total viewers,
       not everyone
-- [ ] Depends on Phase 11's app-shell sidebar
+- [x] Depends on Phase 11's app-shell sidebar
 
 ---
 

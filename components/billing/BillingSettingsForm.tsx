@@ -54,7 +54,7 @@ export function BillingSettingsForm() {
     body?: object,
   ) {
     // Stripe-backed billing actions are behind a flag a superadmin has to
-    // turn on (see /superadmin/feature-flags) — off by default, so these
+    // turn on (see the Feature flags tab in /settings) — off by default, so these
     // buttons send people to a "work in progress" page instead of ever
     // reaching the checkout/portal API, which would 503 the same way.
     if (!billingEnabled) {

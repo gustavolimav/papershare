@@ -97,7 +97,14 @@ async function findAllByWorkspaceId(
   const offset = (pagination.page - 1) * pagination.perPage;
 
   const [documentsResult, countResult] = await Promise.all([
-    database.query<Document & { uploaded_by_username: string }>({
+    database.query<
+      Document & {
+        uploaded_by_username: string;
+        view_count: number;
+        active_link_count: number;
+        engagement_score: number;
+      }
+    >({
       text: `
           SELECT
             documents.id, documents.title, documents.description,
@@ -106,7 +113,39 @@ async function findAllByWorkspaceId(
             documents.user_id, documents.workspace_id, documents.ai_summary,
             documents.ai_summary_generated_at, documents.created_at,
             documents.updated_at, documents.deleted_at,
-            users.username AS uploaded_by_username
+            users.username AS uploaded_by_username,
+            (
+              SELECT COUNT(*)::int FROM link_views lv
+              JOIN share_links sl ON sl.id = lv.share_link_id
+              WHERE sl.document_id = documents.id
+            ) AS view_count,
+            (
+              SELECT COUNT(*)::int FROM share_links sl2
+              WHERE sl2.document_id = documents.id AND sl2.is_active = true
+            ) AS active_link_count,
+            (
+              -- Proxy for models/linkView.ts#computeEngagementScore, which is a
+              -- per-viewer formula (needs fingerprint grouping) that doesn't
+              -- reduce cleanly to one document-level subquery. Simpler first
+              -- cut, as allowed by US-43: average time_on_page across every
+              -- view of the document's links, normalized against the same
+              -- 120s "full marks" target that formula's time axis uses
+              -- (ENGAGEMENT_TIME_TARGET_SECONDS), capped at 100.
+              -- CASE, not COALESCE(LEAST(...), 0): Postgres's LEAST/GREATEST
+              -- ignore NULL arguments instead of propagating them, so
+              -- LEAST(100, NULL) evaluates to 100 — the no-views case must
+              -- be handled explicitly instead.
+              SELECT
+                CASE
+                  WHEN AVG(lv2.time_on_page) IS NULL THEN 0
+                  ELSE LEAST(100, ROUND(AVG(lv2.time_on_page) / 1.2))::int
+                END
+              FROM link_views lv2
+              JOIN share_links sl3 ON sl3.id = lv2.share_link_id
+              WHERE
+                sl3.document_id = documents.id
+                AND lv2.time_on_page IS NOT NULL
+            ) AS engagement_score
           FROM
             documents
           JOIN

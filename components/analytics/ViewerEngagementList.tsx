@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, Mail, Copy } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { formatDuration, formatDate } from "@/lib/formatters";
 import { useAiKeyConfigured } from "@/lib/useAiKeyConfigured";
 import type { FollowUpEmailSuggestion, ViewerEngagement } from "@/types/index";
@@ -14,14 +15,23 @@ interface ViewerEngagementListProps {
   viewers: ViewerEngagement[];
 }
 
-function scoreBadgeVariant(score: number): "default" | "secondary" | "outline" {
+// Soft-tinted badge (border + bg-at-15%-opacity + solid text), same
+// treatment as the destructive Badge variant already uses — keeps the
+// score readable against both light and dark card backgrounds since each
+// --score-* token already carries its own light/dark value.
+function scoreBadgeClass(score: number): string {
   if (score >= 70) {
-    return "default";
+    return "border-score-good/20 bg-score-good/15 text-score-good";
   }
   if (score >= 40) {
-    return "secondary";
+    return "border-score-warn/20 bg-score-warn/15 text-score-warn";
   }
-  return "outline";
+  return "border-score-critical/20 bg-score-critical/15 text-score-critical";
+}
+
+function initialFor(viewer: ViewerEngagement): string {
+  const source = viewer.viewer_name ?? viewer.viewer_email;
+  return source?.trim()[0]?.toUpperCase() ?? "?";
 }
 
 export function ViewerEngagementList({
@@ -122,29 +132,40 @@ function ViewerRow({
   return (
     <div className="rounded-lg border p-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
-            {viewer.viewer_name ?? viewer.viewer_email ?? "Visitante anônimo"}
-          </p>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-            <span>{formatDuration(viewer.total_time_on_page)}</span>
-            <span>·</span>
-            <span>{viewer.max_pages_viewed} página(s)</span>
-            <span>·</span>
-            <span>
-              {viewer.visit_count}{" "}
-              {viewer.visit_count === 1 ? "visita" : "visitas"}
-            </span>
-            <span>·</span>
-            <span>Última vez em {formatDate(viewer.last_viewed_at)}</span>
-            {viewer.downloaded && (
-              <span className="inline-flex items-center gap-1 text-foreground">
-                <Download className="h-3 w-3" /> Baixou
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-medium text-primary">
+            {initialFor(viewer)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">
+              {viewer.viewer_name ?? viewer.viewer_email ?? "Visitante anônimo"}
+            </p>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+              <span>{formatDuration(viewer.total_time_on_page)}</span>
+              <span>·</span>
+              <span>{viewer.max_pages_viewed} página(s)</span>
+              <span>·</span>
+              <span>
+                {viewer.visit_count}{" "}
+                {viewer.visit_count === 1 ? "visita" : "visitas"}
               </span>
-            )}
-          </p>
+              <span>·</span>
+              <span>Última vez em {formatDate(viewer.last_viewed_at)}</span>
+              {viewer.downloaded && (
+                <span className="inline-flex items-center gap-1 text-foreground">
+                  <Download className="h-3 w-3" /> Baixou
+                </span>
+              )}
+            </p>
+          </div>
         </div>
-        <Badge variant={scoreBadgeVariant(viewer.engagement_score)}>
+        <Badge
+          variant="outline"
+          className={cn(
+            "shrink-0 font-medium",
+            scoreBadgeClass(viewer.engagement_score),
+          )}
+        >
           {viewer.engagement_score}
         </Badge>
       </div>
@@ -160,7 +181,7 @@ function ViewerRow({
               disabled={isSuggesting}
             >
               <Mail className="mr-1 h-3.5 w-3.5" />
-              {isSuggesting ? "Gerando..." : "Sugerir e-mail"}
+              {isSuggesting ? "Gerando..." : "Gerar follow-up"}
             </Button>
           )}
 

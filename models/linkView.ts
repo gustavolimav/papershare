@@ -498,16 +498,17 @@ async function getAnalyticsByLinkId(
 async function getAnalyticsByDocumentId(
   documentId: string,
 ): Promise<DocumentAnalyticsResponse> {
-  const [statsResult, viewsByDay, topLinksResult] = await Promise.all([
-    database.query<{
-      total_views: number;
-      unique_viewers: number;
-      avg_time_on_page: number | null;
-      avg_pages_viewed: number | null;
-      first_viewed_at: Date | null;
-      last_viewed_at: Date | null;
-    }>({
-      text: `
+  const [statsResult, viewsByDay, topLinksResult, pageBreakdown] =
+    await Promise.all([
+      database.query<{
+        total_views: number;
+        unique_viewers: number;
+        avg_time_on_page: number | null;
+        avg_pages_viewed: number | null;
+        first_viewed_at: Date | null;
+        last_viewed_at: Date | null;
+      }>({
+        text: `
           SELECT
             COUNT(lv.id)::int AS total_views,
             COUNT(DISTINCT lv.viewer_fingerprint)::int AS unique_viewers,
@@ -522,15 +523,15 @@ async function getAnalyticsByDocumentId(
           WHERE
             sl.document_id = $1
           ;`,
-      values: [documentId],
-    }),
-    getViewsByDay(
-      `share_links sl ON sl.document_id = $1
+        values: [documentId],
+      }),
+      getViewsByDay(
+        `share_links sl ON sl.document_id = $1
         LEFT JOIN link_views lv ON lv.share_link_id = sl.id AND DATE(lv.created_at) = gs.day`,
-      documentId,
-    ),
-    database.query<TopLink>({
-      text: `
+        documentId,
+      ),
+      database.query<TopLink>({
+        text: `
           SELECT
             sl.id AS link_id,
             sl.label,
@@ -548,14 +549,16 @@ async function getAnalyticsByDocumentId(
           LIMIT
             5
           ;`,
-      values: [documentId],
-    }),
-  ]);
+        values: [documentId],
+      }),
+      getPageBreakdownByDocumentId(documentId),
+    ]);
 
   return {
     ...statsResult.rows[0]!,
     views_by_day: viewsByDay,
     top_links: topLinksResult.rows,
+    page_breakdown: pageBreakdown,
   };
 }
 
