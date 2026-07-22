@@ -248,6 +248,31 @@ export interface WorkspaceLinksResponse {
   total: number;
 }
 
+// One row per distinct viewer_email across every document/link in a
+// workspace (Phase 14's contacts directory, `/contacts`) — groups
+// link_views by email instead of by link, unlike ViewerEngagement (Phase
+// 5/7), which is always scoped to one link. A viewer without an email on
+// file (no NDA gate, no require_email) never appears here — this
+// directory is necessarily a subset of total viewers, not everyone.
+// most_recent_* exist so the frontend can wire "Gerar follow-up" straight
+// to the existing per-link follow-up-email endpoint without a second
+// round-trip to find which document/link/fingerprint to use.
+export interface WorkspaceContactSummary {
+  viewer_email: string;
+  viewer_name: string | null;
+  document_count: number;
+  last_viewed_at: Date;
+  engagement_score: number;
+  most_recent_document_id: string;
+  most_recent_link_id: string;
+  most_recent_viewer_fingerprint: string | null;
+}
+
+export interface WorkspaceContactsResponse {
+  contacts: WorkspaceContactSummary[];
+  total: number;
+}
+
 export interface ShareLink {
   id: string;
   token: string;
@@ -831,6 +856,14 @@ export interface ActivityModel {
     workspaceId: string,
     pagination: { page: number; perPage: number },
   ): Promise<ActivityListResponse>;
+}
+
+export interface ContactModel {
+  findAllByWorkspaceId(
+    workspaceId: string,
+    userId: string,
+    pagination: { page: number; perPage: number },
+  ): Promise<WorkspaceContactsResponse>;
 }
 
 export interface DatabaseModel {

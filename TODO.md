@@ -22,7 +22,7 @@
 | 11    | Visual Identity & UI Redesign      | ✅ Done (US-39–51 all shipped; US-39/47 on `main`, remainder on PR)      |
 | 12    | Activity Feed                      | ⏳ Views/link-creation/revisits done; NDA/blocked-download deferred      |
 | 13    | Global Links Inventory             | ✅ Done                                                                  |
-| 14    | Contacts / Viewer Directory        | ⏳ Planned                                                               |
+| 14    | Contacts / Viewer Directory        | ✅ Done                                                                  |
 
 ---
 
@@ -798,7 +798,7 @@ document) while reviewing the prototype's "Links" page.
 
 ---
 
-## Phase 14 — Contacts / Viewer Directory ⏳
+## Phase 14 — Contacts / Viewer Directory ✅
 
 **Goal:** Turn per-link viewer analytics (Phase 5/7, currently scoped to
 one link at a time) into a workspace-wide contact directory: group a
@@ -810,29 +810,30 @@ analytics view. Confirmed as new (no cross-document viewer identity
 exists today — `ViewerEngagement` is always scoped to one link) while
 reviewing the prototype's "Contatos" page.
 
-> 2026-07-22: `/contacts` ships as a frontend-only mock (a nav item + a
-> static contact list matching the prototype's layout/copy) so the
-> sidebar and overall app shell match the design while the real backend
-> work below is still queued. Its "Gerar follow-up" button currently just
-> toasts that the real feature is coming in this phase, rather than
-> calling the existing (per-link) follow-up-email endpoint — wiring it up
-> for real needs the cross-document aggregation below first, since
-> today's endpoint expects a single `linkId` and a contact here may have
-> viewed several different links.
+> 2026-07-22: `/contacts` shipped as a frontend-only mock first (a nav
+> item + a static contact list matching the prototype's layout/copy),
+> then got its real backend (US-54) the same day. The engagement score
+> here is a deliberately separate formula from `linkView.ts`'s per-link
+> one (same weights/targets, but normalizes "% pages read" per view
+> before averaging, since a contact may have viewed documents with
+> different page counts) — see US-54 for why it isn't a reuse.
 
 - [x] Frontend: `/contacts` page (`components/contacts/ContactsList.tsx`) — one row per contact — currently static mock data, not wired to a real query
-- [ ] Aggregation query: group `link_views` by `viewer_email` across the
+- [x] Aggregation query: groups `link_views` by `viewer_email` across the
       workspace, computing distinct-document count, most recent view,
       and a blended engagement score across all their views
-- [ ] `GET /api/v1/workspaces/[id]/contacts` — new endpoint
-- [ ] Wire `ContactsList` up to the real endpoint above, replacing the
-      mock data, and wire "Gerar follow-up" to the existing
-      follow-up-email endpoint (US-27)
-- [ ] Known limitation to call out in the design doc: a viewer only has
-      an email on file if the link required one (NDA gate or
-      `require_email`) — fingerprint-only anonymous viewers won't appear
-      here, so this directory is necessarily a subset of total viewers,
-      not everyone
+      (`models/contact.ts#findAllByWorkspaceId`). See CHANGELOG.
+- [x] `GET /api/v1/workspaces/[id]/contacts` — new endpoint, same
+      explicit `workspace.requireRole()` pattern as US-53's `/links`
+      endpoint. See CHANGELOG.
+- [x] Wired `ContactsList` up to the real endpoint above, replacing the
+      mock data, and wired "Gerar follow-up" to the existing
+      follow-up-email endpoint (US-27) using each contact's
+      most-recently-viewed document/link/fingerprint. See CHANGELOG.
+- [x] Known limitation, unchanged: a viewer only has an email on file if
+      the link required one (NDA gate or `require_email`) —
+      fingerprint-only anonymous viewers won't appear here, so this
+      directory is necessarily a subset of total viewers, not everyone
 - [x] Depends on Phase 11's app-shell sidebar
 
 ---
