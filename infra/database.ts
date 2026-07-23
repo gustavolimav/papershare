@@ -33,7 +33,7 @@ async function query<T extends QueryResultRow = any>(
   } catch (error) {
     throw new ServiceError({
       cause: error as Error,
-      message: "Error connecting to the database",
+      message: "Erro ao conectar ao banco de dados.",
     });
   }
 }

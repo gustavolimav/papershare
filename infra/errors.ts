@@ -51,8 +51,8 @@ export class ValidationError extends Error {
   public readonly statusCode = 400;
 
   constructor({ message, action }: ErrorConstructorOptions = {}) {
-    super(message || "A validation error occurred.");
-    this.action = action || "Check the provided data.";
+    super(message || "Ocorreu um erro de validação.");
+    this.action = action || "Verifique os dados enviados.";
   }
 
   toJSON() {
@@ -74,7 +74,7 @@ export class NotFoundError extends Error {
     super(message || "Nenhum recurso foi encontrado.", {
       cause,
     });
-    this.action = action || "Verfique se os parametros estão corretos.";
+    this.action = action || "Verifique se os parâmetros estão corretos.";
   }
 
   toJSON() {
@@ -90,12 +90,12 @@ export class NotFoundError extends Error {
 export class MethodNotAllowedError extends Error {
   public readonly name = "MethodNotAllowedError";
   public readonly action =
-    "Please check the API documentation for the correct usage.";
-  public readonly message = "Method Not Allowed";
+    "Verifique a documentação da API para o uso correto.";
+  public readonly message = "Método não permitido.";
   public readonly statusCode = 405;
 
   constructor() {
-    super("Method Not Allowed");
+    super("Método não permitido.");
   }
 
   toJSON() {
