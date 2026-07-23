@@ -854,7 +854,7 @@ These are not tied to a specific phase but should be addressed progressively.
 - [x] Connection pooling in `infra/database.ts` (uses `Pool` from `pg`)
 - [x] Environment variable validation on startup (fail fast) — `infra/env.ts` + `instrumentation.ts`, only for vars with no graceful runtime fallback (Postgres, `PEPPER`, storage credentials); everything else already degrades gracefully and just warns. See CHANGELOG.
 - [ ] API response envelope (`{ data, meta }`) for list endpoints
-- [ ] Pagination helper utility
+- [x] Pagination helper utility — `infra/pagination.ts#parsePagination`, adopted by all 4 paginated list endpoints (documents, activity, links, contacts) that existed by the time this was picked up. See CHANGELOG.
 - [x] Move migration endpoint behind an admin auth guard — `MIGRATIONS_SECRET` header check via `infra/auth.ts#migrationsAuthMiddleware`
   - [x] Extended (2026-07-15): `users.is_superadmin` column + `/superadmin/migrations` page, so a logged-in superadmin session works as an alternative to the secret header. Named "superadmin" (not "admin") to stay distinct from any future customer-facing admin role. No API/UI grants superadmin — promotion is a manual SQL `UPDATE`, documented in `CLAUDE.md`, to keep real emails out of this public repo's committed code.
 - [ ] Add `updated_at` trigger function in migrations (currently updated manually)

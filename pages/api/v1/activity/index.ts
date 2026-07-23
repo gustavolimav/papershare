@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import controller from "../../../../infra/controller";
 import { authMiddleware } from "../../../../infra/auth";
-import { validate, paginationSchema } from "../../../../infra/schemas";
+import { parsePagination } from "../../../../infra/pagination";
 import activity from "../../../../models/activity";
 import type {
   AuthenticatedNextApiRequest,
@@ -20,11 +20,11 @@ async function getHandler(
   request: AuthenticatedNextApiRequest,
   response: NextApiResponse<ActivityListResponse>,
 ) {
-  const { page, per_page } = validate(paginationSchema, request.query);
+  const pagination = parsePagination(request.query);
 
   const result = await activity.findAllByWorkspaceId(
     request.user!.active_workspace_id!,
-    { page, perPage: per_page },
+    pagination,
   );
 
   return response.status(200).json(result);

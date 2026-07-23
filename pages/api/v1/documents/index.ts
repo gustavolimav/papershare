@@ -9,10 +9,10 @@ import storage from "../../../../infra/storage";
 import {
   validate,
   documentCreateSchema,
-  paginationSchema,
   ALLOWED_MIME_TYPES,
   MAX_FILE_SIZE_BYTES,
 } from "../../../../infra/schemas";
+import { parsePagination } from "../../../../infra/pagination";
 import document from "../../../../models/document";
 import summarizer from "../../../../models/summarizer";
 import type {
@@ -39,11 +39,11 @@ async function getHandler(
   request: AuthenticatedNextApiRequest,
   response: NextApiResponse<DocumentListResponse>,
 ) {
-  const { page, per_page } = validate(paginationSchema, request.query);
+  const pagination = parsePagination(request.query);
 
   const result = await document.findAllByWorkspaceId(
     request.user!.active_workspace_id!,
-    { page, perPage: per_page },
+    pagination,
   );
 
   return response.status(200).json(result);

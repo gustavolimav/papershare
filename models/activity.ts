@@ -1,5 +1,10 @@
 import database from "../infra/database";
-import type { ActivityEvent, ActivityListResponse } from "../types/index";
+import type {
+  ActivityEvent,
+  ActivityListResponse,
+  ActivityModel,
+  PaginationParams,
+} from "../types/index";
 
 // Two shapes UNION ALL'd together — every column must line up in type
 // across both branches, hence the explicit NULL::type casts on whichever
@@ -63,10 +68,8 @@ const ACTIVITY_UNION = `
 
 async function findAllByWorkspaceId(
   workspaceId: string,
-  pagination: { page: number; perPage: number },
+  pagination: PaginationParams,
 ): Promise<ActivityListResponse> {
-  const offset = (pagination.page - 1) * pagination.perPage;
-
   const [eventsResult, countResult] = await Promise.all([
     database.query<ActivityEvent>({
       text: `
@@ -78,7 +81,7 @@ async function findAllByWorkspaceId(
           OFFSET
             $3
           ;`,
-      values: [workspaceId, pagination.perPage, offset],
+      values: [workspaceId, pagination.perPage, pagination.offset],
     }),
     database.query<{ count: string }>({
       text: `
@@ -94,6 +97,6 @@ async function findAllByWorkspaceId(
   };
 }
 
-const activity = { findAllByWorkspaceId };
+const activity: ActivityModel = { findAllByWorkspaceId };
 
 export default activity;

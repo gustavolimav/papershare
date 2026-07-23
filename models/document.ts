@@ -11,6 +11,7 @@ import type {
   DocumentListResponse,
   DocumentSummaryResponse,
   DocumentModel,
+  PaginationParams,
 } from "../types/index";
 
 const DOCUMENT_COLUMNS = `
@@ -92,10 +93,8 @@ async function create(input: DocumentCreateInput): Promise<DocumentResponse> {
 
 async function findAllByWorkspaceId(
   workspaceId: string,
-  pagination: { page: number; perPage: number },
+  pagination: PaginationParams,
 ): Promise<DocumentListResponse> {
-  const offset = (pagination.page - 1) * pagination.perPage;
-
   const [documentsResult, countResult] = await Promise.all([
     database.query<
       Document & {
@@ -160,7 +159,7 @@ async function findAllByWorkspaceId(
           OFFSET
             $3
           ;`,
-      values: [workspaceId, pagination.perPage, offset],
+      values: [workspaceId, pagination.perPage, pagination.offset],
     }),
     database.query<{ count: string }>({
       text: `
