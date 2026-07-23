@@ -852,7 +852,7 @@ These are not tied to a specific phase but should be addressed progressively.
 - [x] Add `ForbiddenError` (403) — already in `infra/errors.ts`
 - [x] Standardize error message language (mix of PT-BR and EN) — audit found the codebase had already drifted to near-full compliance; fixed the four remaining English strings, all in `infra/errors.ts`'s class defaults and `infra/database.ts`. See CHANGELOG.
 - [x] Connection pooling in `infra/database.ts` (uses `Pool` from `pg`)
-- [ ] Environment variable validation on startup (fail fast)
+- [x] Environment variable validation on startup (fail fast) — `infra/env.ts` + `instrumentation.ts`, only for vars with no graceful runtime fallback (Postgres, `PEPPER`, storage credentials); everything else already degrades gracefully and just warns. See CHANGELOG.
 - [ ] API response envelope (`{ data, meta }`) for list endpoints
 - [ ] Pagination helper utility
 - [x] Move migration endpoint behind an admin auth guard — `MIGRATIONS_SECRET` header check via `infra/auth.ts#migrationsAuthMiddleware`
