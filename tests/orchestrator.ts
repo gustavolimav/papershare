@@ -187,6 +187,52 @@ async function expireShareLink(linkId: string): Promise<void> {
   });
 }
 
+async function createDataRoom(
+  cookie: string,
+  workspaceId: string,
+  overrides?: { name?: string; document_ids?: string[] },
+  // returns `any` because the endpoint can respond with either a DataRoomResponse or an ErrorResponse
+): Promise<any> {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/workspaces/${workspaceId}/data-rooms`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie },
+      body: JSON.stringify({
+        name: overrides?.name ?? faker.lorem.words(3),
+        document_ids: overrides?.document_ids ?? [],
+      }),
+    },
+  );
+
+  return response.json();
+}
+
+async function createDataRoomLink(
+  cookie: string,
+  dataRoomId: string,
+  overrides?: { label?: string; password?: string; expires_at?: string },
+  // returns `any` because the endpoint can respond with either a DataRoomLinkResponse or an ErrorResponse
+): Promise<any> {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/data-rooms/${dataRoomId}/links`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie },
+      body: JSON.stringify(overrides ?? {}),
+    },
+  );
+
+  return response.json();
+}
+
+async function expireDataRoomLink(linkId: string): Promise<void> {
+  await database.query({
+    text: "UPDATE data_room_links SET expires_at = $1 WHERE id = $2",
+    values: [new Date(Date.now() - 1000), linkId],
+  });
+}
+
 // Mirrors models/passwordReset.ts's own hashing — the raw token is only
 // ever held by the caller (it's never re-derivable from the stored hash),
 // so tests need this to reach the same row by its hashed value.
@@ -342,6 +388,24 @@ interface Orchestrator {
   ): Promise<any>;
   // eslint-disable-next-line no-unused-vars
   expireShareLink(linkId: string): Promise<void>;
+  createDataRoom(
+    // eslint-disable-next-line no-unused-vars
+    cookie: string,
+    // eslint-disable-next-line no-unused-vars
+    workspaceId: string,
+    // eslint-disable-next-line no-unused-vars
+    overrides?: { name?: string; document_ids?: string[] },
+  ): Promise<any>;
+  createDataRoomLink(
+    // eslint-disable-next-line no-unused-vars
+    cookie: string,
+    // eslint-disable-next-line no-unused-vars
+    dataRoomId: string,
+    // eslint-disable-next-line no-unused-vars
+    overrides?: { label?: string; password?: string; expires_at?: string },
+  ): Promise<any>;
+  // eslint-disable-next-line no-unused-vars
+  expireDataRoomLink(linkId: string): Promise<void>;
   // eslint-disable-next-line no-unused-vars
   expirePasswordResetToken(token: string): Promise<void>;
   recordView(
@@ -388,6 +452,9 @@ const orchestrator: Orchestrator = {
   uploadDocument,
   createShareLink,
   expireShareLink,
+  createDataRoom,
+  createDataRoomLink,
+  expireDataRoomLink,
   expirePasswordResetToken,
   recordView,
   pushBackLinkViewCreatedAt,
