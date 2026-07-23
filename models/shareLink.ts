@@ -20,6 +20,7 @@ import type {
   SubscriptionPlan,
   WorkspaceLinkSummary,
   WorkspaceLinksResponse,
+  QueryParam,
 } from "../types/index";
 
 const SHARE_LINK_COLUMNS = `
@@ -471,7 +472,7 @@ async function updateById(
   assertGatedFeaturesAllowed(plan, input);
 
   const setClauses: string[] = [];
-  const values: unknown[] = [];
+  const values: QueryParam[] = [];
 
   if (input.label !== undefined) {
     values.push(input.label);

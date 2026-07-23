@@ -12,10 +12,11 @@ import type {
   PageTimeInput,
   ViewerEngagement,
   LinkViewModel,
+  QueryParam,
 } from "../types/index";
 
 interface Queryable {
-  query: (query: { text: string; values: unknown[] }) => Promise<unknown>;
+  query: (query: { text: string; values: QueryParam[] }) => Promise<unknown>;
 }
 
 async function persistPageTimes(

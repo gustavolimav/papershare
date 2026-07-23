@@ -10,12 +10,12 @@
 
 **Acceptance Criteria:**
 
-- [ ] The `any` type in `DatabaseQuery.values` in `infra/database.ts` (and/or `types/index.ts`) is replaced with a union of valid PostgreSQL parameter types
-- [ ] The replacement type covers all values currently passed as query params across the codebase: `string`, `number`, `boolean`, `Date`, `null`, `undefined`, and `Buffer` (for binary data)
-- [ ] No new TypeScript errors are introduced by this change — all existing call sites remain valid
-- [ ] `npm run lint:eslint:check` passes with no `@typescript-eslint/no-explicit-any` warnings related to query values
-- [ ] The TypeScript compiler (`tsc --noEmit`) reports zero errors after the change
-- [ ] A search of the codebase confirms no remaining `any` usages in query-related code
+- [x] The `any` type in `DatabaseQuery.values` in `infra/database.ts` (and/or `types/index.ts`) is replaced with a union of valid PostgreSQL parameter types
+- [x] The replacement type covers all values currently passed as query params across the codebase: `string`, `number`, `boolean`, `Date`, `null`, `undefined`, and `Buffer` (for binary data)
+- [x] No new TypeScript errors are introduced by this change — all existing call sites remain valid
+- [x] `npm run lint:eslint:check` passes with no `@typescript-eslint/no-explicit-any` warnings related to query values
+- [x] The TypeScript compiler (`tsc --noEmit`) reports zero errors after the change
+- [x] A search of the codebase confirms no remaining `any` usages in query-related code
 
 **Technical Context:**
 
@@ -39,3 +39,13 @@
   - Low-risk, isolated change — no runtime behaviour changes
   - May reveal latent bugs where objects or arrays were being accidentally passed as query params
   - Do this change in isolation before other PRs touch `infra/database.ts` to avoid merge conflicts
+
+**Resolution (2026-07-22):** No latent bugs found — every `values` array
+across the codebase already only ever held primitives. Two call sites
+needed their own local types widened from `unknown[]`/inferred-`any[]`
+to the new `QueryParam[]` so they stayed compatible with the narrower
+`DatabaseQuery`: `models/linkView.ts`'s local `Queryable` interface
+(used to duck-type both `infra/database.ts` and a raw `pg` `Client` for
+the transaction path) and `models/shareLink.ts#updateById`'s
+dynamically-built `values` array (conditionally pushes columns to
+update). No new columns/query shapes were needed.
