@@ -4,6 +4,7 @@ import type {
   WorkspaceContactSummary,
   WorkspaceContactsResponse,
   ContactModel,
+  PaginationParams,
 } from "../types/index";
 
 // Raw per-contact aggregates from the SQL query below — the scoring
@@ -95,11 +96,9 @@ const CONTACT_AGGREGATE_QUERY = `
 async function findAllByWorkspaceId(
   workspaceId: string,
   userId: string,
-  pagination: { page: number; perPage: number },
+  pagination: PaginationParams,
 ): Promise<WorkspaceContactsResponse> {
   await workspace.requireRole(workspaceId, userId, "viewer");
-
-  const offset = (pagination.page - 1) * pagination.perPage;
 
   const [contactsResult, countResult] = await Promise.all([
     database.query<ContactAggregateRow>({
@@ -112,7 +111,7 @@ async function findAllByWorkspaceId(
           OFFSET
             $3
           ;`,
-      values: [workspaceId, pagination.perPage, offset],
+      values: [workspaceId, pagination.perPage, pagination.offset],
     }),
     database.query<{ count: string }>({
       text: `

@@ -273,6 +273,27 @@ export interface WorkspaceContactsResponse {
   total: number;
 }
 
+// Shared shape every paginated model function takes, computed once by
+// infra/pagination.ts#parsePagination instead of each model re-deriving
+// `offset` from `page`/`perPage` itself.
+export interface PaginationParams {
+  page: number;
+  perPage: number;
+  offset: number;
+}
+
+// Not currently returned by any endpoint (every existing list response
+// keeps its own plain `total` field, and the one frontend consumer that
+// needs page count — DocumentList.tsx — already computes it inline from
+// `total`) — kept ready via infra/pagination.ts#buildPaginationMeta for
+// a future list endpoint to adopt without redesigning this shape then.
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
 export interface ShareLink {
   id: string;
   token: string;
@@ -690,7 +711,7 @@ export interface DocumentModel {
   create(input: DocumentCreateInput): Promise<DocumentResponse>;
   findAllByWorkspaceId(
     workspaceId: string,
-    pagination: { page: number; perPage: number },
+    pagination: PaginationParams,
   ): Promise<DocumentListResponse>;
   findOneById(id: string, userId: string): Promise<DocumentResponse>;
   updateById(
@@ -781,7 +802,7 @@ export interface ShareLinkModel {
   findAllByWorkspaceId(
     workspaceId: string,
     userId: string,
-    pagination: { page: number; perPage: number },
+    pagination: PaginationParams,
   ): Promise<WorkspaceLinksResponse>;
   findOneById(
     id: string,
@@ -863,7 +884,7 @@ export interface MigratorModel {
 export interface ActivityModel {
   findAllByWorkspaceId(
     workspaceId: string,
-    pagination: { page: number; perPage: number },
+    pagination: PaginationParams,
   ): Promise<ActivityListResponse>;
 }
 
@@ -871,7 +892,7 @@ export interface ContactModel {
   findAllByWorkspaceId(
     workspaceId: string,
     userId: string,
-    pagination: { page: number; perPage: number },
+    pagination: PaginationParams,
   ): Promise<WorkspaceContactsResponse>;
 }
 

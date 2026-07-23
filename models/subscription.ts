@@ -105,8 +105,7 @@ async function upsertFromStripeEvent(
           stripe_subscription_id = EXCLUDED.stripe_subscription_id,
           plan = EXCLUDED.plan,
           status = EXCLUDED.status,
-          current_period_end = EXCLUDED.current_period_end,
-          updated_at = NOW()
+          current_period_end = EXCLUDED.current_period_end
         ;`,
     values: [
       input.workspaceId,
@@ -125,8 +124,7 @@ async function markCanceled(stripeSubscriptionId: string): Promise<void> {
         UPDATE
           subscriptions
         SET
-          status = 'canceled',
-          updated_at = NOW()
+          status = 'canceled'
         WHERE
           stripe_subscription_id = $1
         ;`,
@@ -140,8 +138,7 @@ async function markPastDue(stripeSubscriptionId: string): Promise<void> {
         UPDATE
           subscriptions
         SET
-          status = 'past_due',
-          updated_at = NOW()
+          status = 'past_due'
         WHERE
           stripe_subscription_id = $1
         ;`,

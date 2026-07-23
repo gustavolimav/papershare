@@ -34,8 +34,7 @@ async function persistPageTimes(
           ON CONFLICT
             (link_view_id, page_number)
           DO UPDATE SET
-            time_on_page_seconds = link_view_pages.time_on_page_seconds + EXCLUDED.time_on_page_seconds,
-            updated_at = NOW()
+            time_on_page_seconds = link_view_pages.time_on_page_seconds + EXCLUDED.time_on_page_seconds
           ;`,
       values: [linkViewId, page, seconds],
     });
@@ -150,8 +149,7 @@ async function upsertViewWithDedup(
               viewer_name = COALESCE($2, viewer_name),
               time_on_page = COALESCE($3, time_on_page),
               pages_viewed = COALESCE($4, pages_viewed),
-              downloaded = downloaded OR $5,
-              updated_at = NOW()
+              downloaded = downloaded OR $5
             WHERE
               id = $6
             RETURNING
