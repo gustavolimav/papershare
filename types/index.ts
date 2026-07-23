@@ -273,6 +273,124 @@ export interface WorkspaceContactsResponse {
   total: number;
 }
 
+// US-55: a room groups several documents under one shareable link.
+// Deliberately its own tables/types, not a ShareLink extension — see
+// user-stories/phase-9-workspaces/US-55-data-rooms.md's scope note.
+export interface DataRoom {
+  id: string;
+  workspace_id: string;
+  name: string;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+// One row per document in a room, joined with the document's own title/
+// mime_type — allow_download is per-document, not per-recipient (no
+// authenticated-recipient concept exists to hang per-recipient overrides
+// on today).
+export interface DataRoomDocumentSummary {
+  document_id: string;
+  title: string;
+  mime_type: string;
+  page_count: number | null;
+  allow_download: boolean;
+}
+
+export interface DataRoomResponse {
+  id: string;
+  workspace_id: string;
+  name: string;
+  created_at: Date;
+  updated_at: Date;
+  documents: DataRoomDocumentSummary[];
+}
+
+// One row per room across a workspace (list view) — narrower than
+// DataRoomResponse, same "summary vs. full detail" split as
+// WorkspaceLinkSummary vs. ShareLinkResponse.
+export interface DataRoomSummary {
+  id: string;
+  name: string;
+  document_count: number;
+  created_at: Date;
+}
+
+export interface DataRoomListResponse {
+  data_rooms: DataRoomSummary[];
+  total: number;
+}
+
+export interface DataRoomCreateInput {
+  name: string;
+  document_ids: string[];
+}
+
+// document_ids/allow_download are provided together as a full-replace set
+// (same semantics as the share link update input's allowed-emails field)
+// — the frontend always submits "here's the current membership," not
+// incremental add/remove calls.
+export interface DataRoomUpdateInput {
+  name?: string;
+  documents?: { document_id: string; allow_download: boolean }[];
+}
+
+export interface DataRoomLink {
+  id: string;
+  token: string;
+  data_room_id: string;
+  user_id: string;
+  label: string | null;
+  password_hash: string | null;
+  expires_at: Date | null;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface DataRoomLinkResponse {
+  id: string;
+  token: string;
+  data_room_id: string;
+  label: string | null;
+  expires_at: Date | null;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  has_password: boolean;
+}
+
+export interface DataRoomLinkCreateInput {
+  label?: string;
+  password?: string;
+  expires_at?: string;
+}
+
+export interface DataRoomLinkUpdateInput {
+  label?: string | null;
+  password?: string | null;
+  expires_at?: string | null;
+  is_active?: boolean;
+}
+
+// Public, unauthenticated shape returned by the data-room-share token
+// route — deliberately excludes workspace_id/user_id and the documents'
+// storage_key (same narrowing rationale as ShareLinkWithDocument).
+export interface DataRoomLinkWithDocuments {
+  id: string;
+  token: string;
+  label: string | null;
+  expires_at: Date | null;
+  is_active: boolean;
+  has_password: boolean;
+  data_room: {
+    id: string;
+    name: string;
+  };
+  documents: DataRoomDocumentSummary[];
+}
+
 // Shared shape every paginated model function takes, computed once by
 // infra/pagination.ts#parsePagination instead of each model re-deriving
 // `offset` from `page`/`perPage` itself.
@@ -591,7 +709,10 @@ export type QueryParam =
   | Date
   | Buffer
   | null
-  | undefined;
+  | undefined
+  // `pg` serializes a JS array into a Postgres array literal, used by
+  // e.g. `= ANY($1::uuid[])` — only string[] so far (UUID lists).
+  | string[];
 
 export interface DatabaseQuery {
   text: string;
@@ -894,6 +1015,53 @@ export interface ContactModel {
     userId: string,
     pagination: PaginationParams,
   ): Promise<WorkspaceContactsResponse>;
+}
+
+export interface DataRoomModel {
+  create(
+    workspaceId: string,
+    userId: string,
+    input: DataRoomCreateInput,
+  ): Promise<DataRoomResponse>;
+  findAllByWorkspaceId(
+    workspaceId: string,
+    userId: string,
+    pagination: PaginationParams,
+  ): Promise<DataRoomListResponse>;
+  findOneById(id: string, userId: string): Promise<DataRoomResponse>;
+  updateById(
+    id: string,
+    userId: string,
+    input: DataRoomUpdateInput,
+  ): Promise<DataRoomResponse>;
+  deleteById(id: string, userId: string): Promise<void>;
+}
+
+export interface DataRoomLinkModel {
+  create(
+    dataRoomId: string,
+    userId: string,
+    input: DataRoomLinkCreateInput,
+  ): Promise<DataRoomLinkResponse>;
+  findAllByDataRoomId(
+    dataRoomId: string,
+    userId: string,
+  ): Promise<DataRoomLinkResponse[]>;
+  updateById(
+    id: string,
+    dataRoomId: string,
+    userId: string,
+    input: DataRoomLinkUpdateInput,
+  ): Promise<DataRoomLinkResponse>;
+  getByToken(
+    token: string,
+    password?: string,
+  ): Promise<DataRoomLinkWithDocuments>;
+  getFileByToken(
+    token: string,
+    documentId: string,
+    password?: string,
+  ): Promise<{ storage_key: string; mime_type: string }>;
 }
 
 export interface DatabaseModel {

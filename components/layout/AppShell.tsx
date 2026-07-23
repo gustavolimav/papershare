@@ -7,6 +7,7 @@ import {
   Activity,
   ChevronDown,
   FileText,
+  FolderLock,
   Link2,
   Plus,
   Settings,
@@ -169,6 +170,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </NavLink>
           <NavLink href="/contacts" icon={Users}>
             Contatos
+          </NavLink>
+          <NavLink href="/data-rooms" icon={FolderLock}>
+            Data rooms
           </NavLink>
           <NavLink href="/settings" icon={Settings}>
             Configurações

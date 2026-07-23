@@ -171,6 +171,83 @@ export const shareLinkUpdateSchema = z
     message: "Pelo menos um campo deve ser fornecido para atualização.",
   });
 
+export const dataRoomCreateSchema = z.object({
+  name: z
+    .string()
+    .min(1, "O 'name' é obrigatório.")
+    .max(255, "O 'name' deve ter no máximo 255 caracteres."),
+  document_ids: z
+    .array(z.string().uuid("Um dos 'document_ids' informados não é válido."))
+    .min(1, "Pelo menos um documento deve ser informado."),
+});
+
+export const dataRoomUpdateSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "O 'name' é obrigatório.")
+      .max(255, "O 'name' deve ter no máximo 255 caracteres.")
+      .optional(),
+    documents: z
+      .array(
+        z.object({
+          document_id: z
+            .string()
+            .uuid("Um dos 'document_id' informados não é válido."),
+          allow_download: z.boolean(),
+        }),
+      )
+      .min(1, "Pelo menos um documento deve ser informado.")
+      .optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Pelo menos um campo deve ser fornecido para atualização.",
+  });
+
+export const dataRoomLinkCreateSchema = z.object({
+  label: z
+    .string()
+    .max(255, "O 'label' deve ter no máximo 255 caracteres.")
+    .optional(),
+  password: z
+    .string()
+    .min(4, "A 'password' deve ter no mínimo 4 caracteres.")
+    .optional(),
+  expires_at: z
+    .string()
+    .datetime("A 'expires_at' deve ser uma data ISO válida.")
+    .refine(isFutureDate, {
+      message: "A data de expiração deve ser futura.",
+    })
+    .optional(),
+});
+
+export const dataRoomLinkUpdateSchema = z
+  .object({
+    label: z
+      .string()
+      .max(255, "O 'label' deve ter no máximo 255 caracteres.")
+      .nullable()
+      .optional(),
+    password: z
+      .string()
+      .min(4, "A 'password' deve ter no mínimo 4 caracteres.")
+      .nullable()
+      .optional(),
+    expires_at: z
+      .string()
+      .datetime("A 'expires_at' deve ser uma data ISO válida.")
+      .refine(isFutureDate, {
+        message: "A data de expiração deve ser futura.",
+      })
+      .nullable()
+      .optional(),
+    is_active: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Pelo menos um campo deve ser fornecido para atualização.",
+  });
+
 export const workspaceCreateSchema = z.object({
   name: z
     .string()

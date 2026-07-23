@@ -17,7 +17,7 @@
 | 6     | Frontend                           | ✅ Done                                                                  |
 | 7     | Engagement, Trust & Growth         | ✅ Done                                                                  |
 | 8     | AI Features                        | ✅ Done                                                                  |
-| 9     | Team Workspaces & Data Rooms       | ⏳ Partial ("workspaces básico" done; data rooms/custom domain deferred) |
+| 9     | Team Workspaces & Data Rooms       | ✅ Done (US-55 data rooms shipped; custom domain per workspace deferred) |
 | 10    | Monetization                       | ✅ Done                                                                  |
 | 11    | Visual Identity & UI Redesign      | ✅ Done (US-39–51 all shipped; US-39/47 on `main`, remainder on PR)      |
 | 12    | Activity Feed                      | ⏳ Views/link-creation/revisits done; NDA/blocked-download deferred      |
@@ -458,7 +458,7 @@ engagement scoring via cirrusinsight.com).
 
 ---
 
-## Phase 9 — Team Workspaces & Data Rooms ⏳
+## Phase 9 — Team Workspaces & Data Rooms ✅
 
 **Goal:** Move beyond single-user accounts toward the collaborative,
 multi-document product shape that DocSend/Papermark call a "data room" —
@@ -495,14 +495,24 @@ it's sequenced after the lower-effort wins above.
   - [x] US-33 — Frontend: header workspace switcher, workspace-creation
         modal, "Equipe" settings tab, "Enviado por" on document cards. See
         CHANGELOG for details.
-- [ ] Data rooms: group multiple documents into one named collection with
-      a single shareable link, with per-document and per-recipient
-      permission overrides (e.g. recipient A can download the term sheet
-      but only view the cap table) — next slice of this phase, not yet
-      scoped into stories
+- [x] **Data rooms** — US-55, group multiple documents from the same
+      workspace into one named collection with a single shareable link.
+      Scoped down from the original goal during implementation (confirmed
+      with the user 2026-07-23): permissions are **per-document only**,
+      not per-recipient — the link model has no authenticated-recipient
+      concept to hang a per-recipient override on (e.g. "recipient A can
+      download the term sheet but only view the cap table" would need an
+      invite/login system of its own, out of scope). See CHANGELOG for
+      the full implementation (new tables, models, API routes, frontend
+      pages).
 - [ ] Custom domain per workspace (e.g. `docs.yourcompany.com`) for
-      white-labeled sharing — pairs with Phase 7's custom branding — not
-      yet scoped into stories
+      white-labeled sharing — pairs with Phase 7's custom branding.
+      Explicitly deferred out of US-55 (confirmed with the user
+      2026-07-23): a real implementation needs DNS verification + SSL
+      provisioning via the Vercel Domains API (`VERCEL_API_TOKEN` isn't
+      configured in this project, and there's no real domain available to
+      validate an end-to-end flow against in this environment) — not yet
+      scoped into a story.
 
 ---
 
