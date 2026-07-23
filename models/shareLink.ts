@@ -21,6 +21,7 @@ import type {
   WorkspaceLinkSummary,
   WorkspaceLinksResponse,
   QueryParam,
+  PaginationParams,
 } from "../types/index";
 
 const SHARE_LINK_COLUMNS = `
@@ -385,11 +386,9 @@ async function findAllByDocumentId(
 async function findAllByWorkspaceId(
   workspaceId: string,
   userId: string,
-  pagination: { page: number; perPage: number },
+  pagination: PaginationParams,
 ): Promise<WorkspaceLinksResponse> {
   await workspace.requireRole(workspaceId, userId, "viewer");
-
-  const offset = (pagination.page - 1) * pagination.perPage;
 
   const [linksResult, countResult] = await Promise.all([
     database.query<WorkspaceLinkSummary>({
@@ -424,7 +423,7 @@ async function findAllByWorkspaceId(
           OFFSET
             $3
           ;`,
-      values: [workspaceId, pagination.perPage, offset],
+      values: [workspaceId, pagination.perPage, pagination.offset],
     }),
     database.query<{ count: string }>({
       text: `
@@ -531,7 +530,18 @@ async function updateById(
     setClauses.push(`brand_welcome_message = $${values.length}`);
   }
 
-  setClauses.push("updated_at = NOW()");
+  if (input.allowed_emails !== undefined) {
+    await replaceAllowedEmails(id, input.allowed_emails ?? []);
+  }
+
+  // allowed_emails lives in its own table (share_link_allowed_emails), so a
+  // request that only touches it (e.g. clearing the allow-list with an
+  // empty array) never adds a share_links column to update — skip the
+  // UPDATE entirely rather than run one with an empty SET clause.
+  if (setClauses.length === 0) {
+    return findLinkRow(id, documentId);
+  }
+
   values.push(id);
 
   const results = await database.query<ShareLink>({
@@ -547,10 +557,6 @@ async function updateById(
         ;`,
     values,
   });
-
-  if (input.allowed_emails !== undefined) {
-    await replaceAllowedEmails(id, input.allowed_emails ?? []);
-  }
 
   return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
@@ -569,8 +575,7 @@ async function revokeById(
         UPDATE
           share_links
         SET
-          is_active = FALSE,
-          updated_at = NOW()
+          is_active = FALSE
         WHERE
           id = $1
         RETURNING

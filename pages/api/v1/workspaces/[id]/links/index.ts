@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import controller from "../../../../../../infra/controller";
 import { authMiddleware } from "../../../../../../infra/auth";
-import { validate, paginationSchema } from "../../../../../../infra/schemas";
+import { parsePagination } from "../../../../../../infra/pagination";
 import shareLink from "../../../../../../models/shareLink";
 import type {
   AuthenticatedNextApiRequest,
@@ -27,12 +27,13 @@ async function getHandler(
   response: NextApiResponse<WorkspaceLinksResponse>,
 ) {
   const id = request.query.id as string;
-  const { page, per_page } = validate(paginationSchema, request.query);
+  const pagination = parsePagination(request.query);
 
-  const result = await shareLink.findAllByWorkspaceId(id, request.user!.id, {
-    page,
-    perPage: per_page,
-  });
+  const result = await shareLink.findAllByWorkspaceId(
+    id,
+    request.user!.id,
+    pagination,
+  );
 
   return response.status(200).json(result);
 }

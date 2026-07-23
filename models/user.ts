@@ -201,8 +201,7 @@ async function runUpdateQuery(userWithNewValues: User, username: string) {
         SET
           username = $1,
           password = $2,
-          email = $3,
-          updated_at = NOW()
+          email = $3
         WHERE
           LOWER(username) = LOWER($4)
         RETURNING
@@ -379,8 +378,7 @@ async function resetPassword(
         UPDATE
           users
         SET
-          password = $1,
-          updated_at = NOW()
+          password = $1
         WHERE
           id = $2
         ;`,
@@ -397,8 +395,7 @@ async function setAiApiKey(
         UPDATE
           users
         SET
-          ai_api_key_encrypted = $1,
-          updated_at = NOW()
+          ai_api_key_encrypted = $1
         WHERE
           id = $2
         ;`,
