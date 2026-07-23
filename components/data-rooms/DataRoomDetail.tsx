@@ -218,6 +218,8 @@ export function DataRoomDetail({ id }: DataRoomDetailProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Título</TableHead>
+                <TableHead>Visualizações</TableHead>
+                <TableHead>Última visualização</TableHead>
                 <TableHead>Permitir download</TableHead>
               </TableRow>
             </TableHeader>
@@ -226,6 +228,14 @@ export function DataRoomDetail({ id }: DataRoomDetailProps) {
                 <TableRow key={document.document_id}>
                   <TableCell className="font-medium">
                     {document.title}
+                  </TableCell>
+                  <TableCell>{document.view_count}</TableCell>
+                  <TableCell>
+                    {document.last_viewed_at
+                      ? new Date(document.last_viewed_at).toLocaleString(
+                          "pt-BR",
+                        )
+                      : "—"}
                   </TableCell>
                   <TableCell>
                     <Switch
