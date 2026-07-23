@@ -14,6 +14,25 @@ import type {
 
 const { Client, Pool } = pg;
 
+// On Vercel, every serverless function invocation gets its own process
+// with its own module scope — so this Pool (created once at import time)
+// is really "one small pool per concurrent invocation," not one pool
+// shared across the whole app the way it is for a long-running Docker/
+// local Node process. `pg`'s own default (max: 10) sized for the latter
+// would let enough concurrent invocations collectively exhaust a small
+// Postgres instance's total connection limit. `VERCEL` is a platform
+// env var Vercel sets automatically in every deployment (build and
+// runtime) — used here only to size the pool, not to change query
+// behavior. A short idleTimeoutMillis matters for the same reason: an
+// idle connection should release quickly rather than linger for as long
+// as a frozen/paused function container survives.
+//
+// This does not by itself make the *connection itself* pooled at the
+// database side — if the Postgres provider offers a PgBouncer-fronted
+// endpoint (e.g. Neon's `-pooler` hostname, Supabase's "Transaction"
+// pooling mode), point POSTGRES_HOST at that endpoint in production;
+// no code change needed, since the connection is already built from
+// plain host/port/user/db/password env vars.
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
   port: Number(process.env.POSTGRES_PORT),
@@ -21,6 +40,8 @@ const pool = new Pool({
   database: process.env.POSTGRES_DB,
   password: process.env.POSTGRES_PASSWORD,
   ssl: getSSLValues(),
+  max: process.env.VERCEL ? 1 : 10,
+  idleTimeoutMillis: process.env.VERCEL ? 10000 : 30000,
 });
 
 async function query<T extends QueryResultRow = any>(
