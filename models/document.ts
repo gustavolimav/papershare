@@ -236,8 +236,7 @@ async function updateById(
           documents
         SET
           title = COALESCE($1, title),
-          description = COALESCE($2, description),
-          updated_at = NOW()
+          description = COALESCE($2, description)
         WHERE
           id = $3
         RETURNING

@@ -41,8 +41,7 @@ async function setEnabled(
           ($1, $2)
         ON CONFLICT (key) DO UPDATE
         SET
-          enabled = $2,
-          updated_at = timezone('utc', now())
+          enabled = $2
         RETURNING
           *
         ;`,

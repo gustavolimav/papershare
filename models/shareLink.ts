@@ -530,7 +530,18 @@ async function updateById(
     setClauses.push(`brand_welcome_message = $${values.length}`);
   }
 
-  setClauses.push("updated_at = NOW()");
+  if (input.allowed_emails !== undefined) {
+    await replaceAllowedEmails(id, input.allowed_emails ?? []);
+  }
+
+  // allowed_emails lives in its own table (share_link_allowed_emails), so a
+  // request that only touches it (e.g. clearing the allow-list with an
+  // empty array) never adds a share_links column to update — skip the
+  // UPDATE entirely rather than run one with an empty SET clause.
+  if (setClauses.length === 0) {
+    return findLinkRow(id, documentId);
+  }
+
   values.push(id);
 
   const results = await database.query<ShareLink>({
@@ -546,10 +557,6 @@ async function updateById(
         ;`,
     values,
   });
-
-  if (input.allowed_emails !== undefined) {
-    await replaceAllowedEmails(id, input.allowed_emails ?? []);
-  }
 
   return toResponse(results.rows[0]!, await getAllowedEmails(id));
 }
@@ -568,8 +575,7 @@ async function revokeById(
         UPDATE
           share_links
         SET
-          is_active = FALSE,
-          updated_at = NOW()
+          is_active = FALSE
         WHERE
           id = $1
         RETURNING

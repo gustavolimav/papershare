@@ -203,8 +203,7 @@ async function updateById(
         UPDATE
           workspaces
         SET
-          name = $1,
-          updated_at = NOW()
+          name = $1
         WHERE
           id = $2
         RETURNING
