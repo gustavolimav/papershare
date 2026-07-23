@@ -867,7 +867,7 @@ These are not tied to a specific phase but should be addressed progressively.
 - [x] Hash session tokens before persisting (`models/session.ts`) — DB now stores SHA-256 hash, never the raw bearer token
 - [x] Explicit `sameSite: "lax"` on all session cookies
 - [x] Backstop against the check-then-insert race on unique username/email: unique-violation (`23505`) from Postgres is now caught and mapped to `ValidationError` in `models/user.ts`
-- [ ] Rate limiter (`infra/rate-limit.ts`) uses an in-memory `Map` and is a no-op outside `NODE_ENV=production` — doesn't survive multi-instance/serverless deploys (e.g. Vercel) and isn't exercised by CI. Needs a shared store (e.g. a Postgres-backed counter, consistent with this project's no-extra-infra approach) before relying on it in production.
+- [x] Rate limiter (`infra/rate-limit.ts`) now uses a Postgres-backed counter (new `rate_limit_log` table, migration `033`) instead of an in-memory `Map`, so it survives multi-instance/serverless deploys (e.g. Vercel). Still a no-op outside `NODE_ENV=production` — that gate stays, since existing test fixtures (login/upload helpers) make many rapid same-"IP" requests that would otherwise trip it — but the core counting logic (`checkAndRecord`) is now directly covered by `tests/integration/api/v1/rate-limit.test.ts`, closing most of the "isn't exercised by CI" gap. See CHANGELOG.
 - [ ] DB connection pool in `infra/database.ts` is created at module scope — fine for a long-running Docker/Node process, but a serverless deploy target needs a pooled connection strategy (e.g. Neon's pooled connection string or a serverless driver) decided before Phase 3 adds more I/O-heavy endpoints.
 
 ### Stripe / billing (2026-07-17)
