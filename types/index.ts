@@ -563,9 +563,18 @@ export interface PasswordResetEmailInput {
 }
 
 // Database Query Types
+export type QueryParam =
+  | string
+  | number
+  | boolean
+  | Date
+  | Buffer
+  | null
+  | undefined;
+
 export interface DatabaseQuery {
   text: string;
-  values?: any[];
+  values?: QueryParam[];
 }
 
 export interface DatabaseResult<T extends QueryResultRow = any>

@@ -848,7 +848,7 @@ These are not tied to a specific phase but should be addressed progressively.
 
 ### Code Quality
 
-- [ ] Replace `any` types in `DatabaseQuery.values` with proper typing
+- [x] Replace `any` types in `DatabaseQuery.values` with proper typing — new `QueryParam` union (`string | number | boolean | Date | Buffer | null | undefined`) in `types/index.ts`. See CHANGELOG.
 - [x] Add `ForbiddenError` (403) — already in `infra/errors.ts`
 - [ ] Standardize error message language (mix of PT-BR and EN)
 - [x] Connection pooling in `infra/database.ts` (uses `Pool` from `pg`)
